@@ -220,6 +220,7 @@ function SWEP:ShootBullet(damage, num_bullets, aimcone)
 								door:SetNotSolid(true)
                 				door:SetNoDraw(true)
                 				-- Attempt to fix PVS problems.
+								door:EmitSound("Metal_Box.Break", 140)
                 				door:DoorUnlock()
                 				door:Fire("open", "", 0)
                 				door:Fire("lock", "", 1.2)
@@ -429,6 +430,8 @@ function SWEP:Think()
 		return
 	end
 
+
+
 	local attach = self:GetCurAttachment()
 	self.KnownAttachment = self.KnownAttachment or ""
 	
@@ -508,9 +511,6 @@ function SWEP:IronsightsThink()
 	if (self.CanDecreaseBlowback or 0) < CurTime() then
 		self:SetIronsightsRecoil( math.Clamp( self:GetIronsightsRecoil() - (FrameTime() * 600), 0, 1) )
 	end
-
-	self.BobScale = self:GetIronsights() and 0 or 0
-	self.SwayScale = self:GetIronsights() and 0 or 0
 
 	if not self:CanIronsight() then
 		self:SetIronsights( false )
@@ -716,6 +716,11 @@ SWEP.ViewModelAngle = Angle( 0, 0, 0 )
 
 function SWEP:OffsetThink()
 	local offset_pos, offset_ang, no_lerp = self:GetOffset()
+	--[[local offset_base = (self.Owner:GetVelocity():LengthSqr() > 97.5^2)
+	
+	if offset_base and not offset_pos then
+		offset_pos = vector_origin - Vector(0,0,0.5)
+	end ]]
 
 	if not offset_pos then 
 		local centered = GetConVar("longsword_centered")
@@ -723,7 +728,11 @@ function SWEP:OffsetThink()
 		local x = self.IronsightsPos.x
 		offset_pos = isCentered and Vector(x,vector_origin.y,vector_origin.z-2) or vector_origin 
 	end
-	if not offset_ang then offset_ang = angle_zero end
+	if not offset_ang then
+		local centered = GetConVar("longsword_centered")
+		local isCentered = centered:GetBool()
+		offset_ang = isCentered and self.IronsightsAng or angle_zero
+	end
 
 
 	if self.ViewModelOffset then
@@ -886,6 +895,8 @@ function SWEP:GetViewModelPosition( pos, ang )
 	local sway = self.SwayLevel or 2.5
 	local bob = self.SwayBob or 2.4
 	local idle = self.SwayIdle or 2.4
+	
+	--pos = pos - (self.IronsightsPos or Vector()) 
 
 	ang:RotateAroundAxis( ang:Right(), self.ViewModelAngle.p )
 	ang:RotateAroundAxis( ang:Up(), self.ViewModelAngle.y )
@@ -971,15 +982,15 @@ function SWEP:GetViewModelPosition( pos, ang )
 		end
 	end
 
-	pos = pos + ang:Up() * 0.75 * c_jump
+	pos = pos + ang:Up() * .75 * c_jump
 	ang.p = ang.p + (c_jump or 0) * 3
 	ang.r = ang.r + c_look
 
 	if bob != 0 and c_move > 0 then
 		local p = c_move * c_sight * bob
 
-		pos = pos + ang:Forward() * c_move * c_sight * fd - ang:Up() * 0.75 * c_move + ang:Right() * 0.5 * c_move * c_sight
-		ang.y = ang.y - math.sin(ct * 8.4) * 1.2 * p
+		pos = pos + ang:Forward() * c_move * c_sight * fd - ang:Up() * .75 * c_move + ang:Right() * .5 * c_move * c_sight
+		ang.y = ang.y - math.sin(ct * 8.4) * 1.7 * p
 		ang.p = ang.p - math.sin(ct * 16.8) * 0.8 * p
 		ang.r = ang.r - math.cos(ct * 8.4) * 0.3 * p
 	end
@@ -989,8 +1000,10 @@ function SWEP:GetViewModelPosition( pos, ang )
 
 		ang.p = ang.p - math.sin(ct * 0.5) * p
 		ang.y = ang.y - math.sin(ct) * 0.5 * p
-		ang.r = ang.r - math.sin(ct * 2) * 0.25 * p
+		ang.r = ang.r - math.sin(ct) * 0.5 * p
 	end
+
+	--pos = pos + (self.IronsightsPos or Vector()) 
 
 	return pos, ang
 end
@@ -1174,4 +1187,4 @@ hook.Add("ShouldDrawHUDBox", "longswordimpulseHUDStopDrawing", function()
 	return tobool(v)
 end)
 
-print("[longsword] Longsword weapon base loaded. Version 1. Copyright 2019 vin")
+print("[Longsword²] Longsword² weapon base loaded. Version 2.0 Copyright 2019-2022 Jake Green (vin) and Nick S. (urnotnick)")
