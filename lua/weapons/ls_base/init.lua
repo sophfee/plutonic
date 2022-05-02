@@ -5,4 +5,9 @@
 -- Purpose: Loads all files to their correct clients.
 -- Todo: N/A
 
+-- [ Load Clientside Files ] --
+
+AddCSLuaFile("/client/viewmodel.lua")
+
+
 include( "/client/viewmodel.lua" )
