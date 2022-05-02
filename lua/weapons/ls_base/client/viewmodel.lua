@@ -1,12 +1,6 @@
 --      Copyright (c) 2022, Nick S. All rights reserved      --
 -- Longsword2 is a project built upon Longsword Weapon Base. --
 
--- Load file to client.
-if SERVER then
-	AddCSLuaFile()
-	return
-end
-
 -- SWEP Customizable Values
 SWEP.CustomEvents        = SWEP.CustomEvents or {}
 SWEP.ViewModelPos        = Vector( 0, 0, 0 )
