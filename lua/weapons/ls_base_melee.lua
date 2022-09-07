@@ -42,6 +42,9 @@ end
 
 function SWEP:Think()
 	self:IdleThink()
+	if self.CustomThink then
+		self.CustomThink(self)
+	end
 end
 
 function SWEP:Reload()

@@ -7,9 +7,91 @@ SWEP.ViewModelPos        = Vector( 0, 0, 0 )
 SWEP.ViewModelAngle      = Angle( 0, 0, 0 )
 SWEP.SwayRightMultiplier = 3.0 -- 3 is a good baseline.
 SWEP.SwayUpMultiplier    = 3.0 -- 3 is a good baseline.
-SWEP.SwayLevel           = 1.0
+SWEP.SwayLevel           = 0.3
 SWEP.SwayBob             = 1.0
 SWEP.SwayIdle            = 0.5
+
+-- quad bezier lerp from roblox ez dub
+local function rbxLerp(a,b,c)
+	return a + (b - a) * c
+end
+
+local function quadBezier(t, p0, p1, p2)
+	local l1 = rbxLerp(p0, p1, t)
+	local l2 = rbxLerp(p1, p2, t)
+	local quad = rbxLerp(l1, l2, t)
+	return quad
+end
+
+local function vecBezier(t,v0,v1,v2)
+	return Vector(quadBezier(t,v0.x,v1.x,v2.x),quadBezier(t,v0.y,v1.y,v2.y),quadBezier(t,v0.z,v1.z,v2.z))
+end
+
+SWEP.IronsightsLerp = 0
+
+-- Cleaning this up (nick)
+function SWEP:GetOffset()
+	if self:GetReloading() then return end
+
+	if self.LoweredPos and self:IsSprinting() then
+		return self.LoweredPos, self.LoweredAng
+	end
+
+	local centered = GetConVar("longsword_centered")
+	local isCentered = centered:GetBool()
+	local is_pos =self.IronsightsPos
+	local v1 = isCentered and Vector(is_pos.x,0,-2) or Vector(0,0,0)
+	local v2 = Vector(is_pos.x*1.2,is_pos.y*0.8,is_pos.x*0.8)
+	--local v3 = Vector(is_pos.x*1.2,is_pos.y/1.125,is_pos.z/1.125)
+	local ironsights_pos = vecBezier(quadBezier(self.IronsightsLerp,0,0.4,1),v1,v2,is_pos)
+
+	if self:GetIronsights() then
+		local offset_pos =  LerpVector(self:GetIronsightsRecoil(),Vector(),VectorRand(-0.06,0.06))
+		self.IronsightsLerp = math.Approach(self.IronsightsLerp, 1, FrameTime()*self.IronsightsSpeed)
+		return ironsights_pos + LerpVector(self:GetIronsightsRecoil(),Vector(),self.BlowbackPos) + (offset_pos or Vector()), self.IronsightsAng + LerpAngle(self:GetIronsightsRecoil(),Angle(),self.BlowbackAngle or Angle()) + Angle(0,0,(1-self.IronsightsLerp)*-self.IronsightsRocking)
+	else
+		self.IronsightsLerp = math.Approach(self.IronsightsLerp, 0, FrameTime()*self.IronsightsSpeed)
+	end
+	if self.IronsightsLerp > 0 then
+		return ironsights_pos, Angle(0,0,self.IronsightsLerp*self.IronsightsRocking)
+	end
+end
+
+SWEP.ViewModelPos = Vector( 0, 0, 0 )
+SWEP.ViewModelAngle = Angle( 0, 0, 0 )
+
+function SWEP:OffsetThink()
+	local offset_pos, offset_ang, no_lerp = self:GetOffset()
+	--[[local offset_base = (self.Owner:GetVelocity():LengthSqr() > 97.5^2)
+	
+	if offset_base and not offset_pos then
+		offset_pos = vector_origin - Vector(0,0,0.5)
+	end ]]
+
+	if not offset_pos then 
+		local centered = GetConVar("longsword_centered")
+		local isCentered = centered:GetBool()
+		local x = self.IronsightsPos.x
+		offset_pos = isCentered and Vector(x,vector_origin.y,vector_origin.z-2) or vector_origin 
+	end
+	if not offset_ang then
+		local centered = GetConVar("longsword_centered")
+		local isCentered = centered:GetBool()
+		offset_ang = isCentered and self.IronsightsAng or angle_zero
+	end
+
+
+	if self.ViewModelOffset then
+		offset_pos = offset_pos + self.ViewModelOffset
+	end
+
+	if self.ViewModelOffsetAng then
+		offset_ang = offset_ang + self.ViewModelOffsetAng
+	end
+
+	self.ViewModelPos = LerpVector(FrameTime() * (11 * (self.IronsightsSpeed/4)), self.ViewModelPos, offset_pos)
+	self.ViewModelAngle = LerpAngle(FrameTime() * (11 * (self.IronsightsSpeed/4)), self.ViewModelAngle, offset_ang)
+end
 
 function SWEP:PlayAnim(act)
 

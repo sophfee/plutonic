@@ -5,9 +5,33 @@
 -- Purpose: Loads all files to their correct clients.
 -- Todo: N/A
 
--- [ Load Clientside Files ] --
+-- Shared Files (for Server)
+include("shared/base.lua")
+include("shared/datatables.lua")
+include("shared/anim.lua")
+include("shared/attachment.lua")
+include("shared/spread.lua")
+include("shared/think.lua")
+include("shared/worldmodel.lua")
 
-AddCSLuaFile("/client/viewmodel.lua")
+-- ServerSide Files
+include("server/sound.lua")
 
+-- Shared Files (for Client)
+AddCSLuaFile("shared/base.lua")
+AddCSLuaFile("shared/datatables.lua")
+AddCSLuaFile("shared/anim.lua")
+AddCSLuaFile("shared/attachment.lua")
+AddCSLuaFile("shared/spread.lua")
+AddCSLuaFile("shared/think.lua")
+AddCSLuaFile("shared/worldmodel.lua")
 
-include( "/client/viewmodel.lua" )
+-- ClientSide Files
+AddCSLuaFile("client/viewmodel.lua")
+AddCSLuaFile("client/sound.lua")
+AddCSLuaFile("client/fov.lua")
+AddCSLuaFile("client/replacement.lua")
+AddCSLuaFile("client/debug.lua")
+AddCSLuaFile("client/crosshair.lua")
+
+print("[Longsword²] Longsword² weapon base loaded. Version 2.0 Copyright 2019-2022 Jake Green (vin) and Nick S. (urnotnick)")
