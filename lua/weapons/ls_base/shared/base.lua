@@ -257,18 +257,22 @@ function SWEP:ShootEffects()
 	end
 
 	
-	--self.Owner:MuzzleFlash()
+	-- self.Owner:MuzzleFlash()
 	self:PlayAnimWorld(ACT_VM_PRIMARYATTACK)
-	if self.IronsightsMuzzleFlash then
-		--PrintTable(self:GetAttachments())
-		local attachment = self:LookupAttachment(  self.IronsightsMuzzleFlashAttachment or "muzzle")
-		if not attachment then
-			attachment = self:LookupAttachment("muzzle")
-		end
-		ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, self, attachment)
-		--self:LS2_ParticleEffectAttach(self.IronsightsMuzzleFlash, attachment)
-	end
+
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
+
+	if self.IronsightsMuzzleFlash and CLIENT then
+		local attachment = self:LookupAttachment( self.IronsightsMuzzleFlashAttachment or "muzzle")
+		local ef = EffectData()
+					ef:SetOrigin(self.Owner:GetShootPos())
+					ef:SetStart(self.Owner:GetShootPos())
+					ef:SetNormal(self.Owner:EyeAngles():Forward())
+					ef:SetEntity(self)
+					ef:SetAttachment(1)
+					ef:SetScale(self.IronsightsMuzzleFlashScale or 1)
+		self:CreateParticleEffect("hl2mmod_muzzleflash_smg1", 2, {attachtype=PATTACH_POINT_FOLLOW,entity=self,position=self.Owner:GetShootPos()})
+	end
 
 	if self.CustomShootEffects then
 		self.CustomShootEffects(self)
@@ -304,7 +308,7 @@ else
 		local eff = net.ReadString()
 		local att = net.ReadInt(32)
 
-		--ParticleEffectAttach( eff, PATTACH_POINT_FOLLOW, usr, att )
+		ParticleEffectAttach( eff, PATTACH_POINT_FOLLOW, ent, att )
 	end)	
 end
 
@@ -489,19 +493,8 @@ end
 
 function SWEP:FireAnimationEvent( pos, ang, event, options )
 	
+	--print(options)
 	-- Disables animation based muzzle event
-	if ( event == 21 ) then return true end
-
-	-- Disable thirdperson muzzle flash
-	if ( event == 5001 ) then
-		-- Pray to jod this works
-		if self.IronsightsMuzzleFlash then
-			ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, self, attachment)
-			return true
-		end
-	end
-
-	-- Disable thirdperson muzzle flash
-	if ( event == 5003 ) then return true end
+	return true
 
 end
