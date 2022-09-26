@@ -493,7 +493,13 @@ function SWEP:FireAnimationEvent( pos, ang, event, options )
 	if ( event == 21 ) then return true end
 
 	-- Disable thirdperson muzzle flash
-	if ( event == 5001 ) then return true end
+	if ( event == 5001 ) then
+		-- Pray to jod this works
+		if self.IronsightsMuzzleFlash then
+			ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, self, attachment)
+			return true
+		end
+	end
 
 	-- Disable thirdperson muzzle flash
 	if ( event == 5003 ) then return true end
