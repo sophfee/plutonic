@@ -211,8 +211,16 @@ end
 
 function SWEP:ShootEffects()
 	if not self:GetIronsights() or not self.UseIronsightsRecoil then
-		self:PlayAnim(ACT_VM_PRIMARYATTACK)
-		self:QueueIdle()
+		if self.PrimaryFireSequence then
+			local vm = self.Owner:GetViewModel()
+			vm.ResetSequenceInfo( vm )
+			vm.SetSequence( vm, self.PrimaryFireSequence )
+			vm:SendViewModelMatchingSequence(vm:LookupSequence(self.PrimaryFireSequence))
+		else
+			self:PlayAnim(ACT_VM_PRIMARYATTACK)
+			self:QueueIdle()
+		end
+		
 	else
 		self.ViewModelPos = self.IronsightsPos + self.BlowbackPos + (self.ViewModelOffset or Vector())
 		self.ViewModelAng = self.IronsightsAng + self.BlowbackAngle + (self.ViewModelOFfsetAng or Angle())
@@ -221,11 +229,10 @@ function SWEP:ShootEffects()
 	end
 
 	if CLIENT then
-		local isThirdperson = hook.Run("ShouldDrawLocalPlayer", self.Owner)
-
-		if true then
+		if not (impulse.IronsightsMuzzleFlashFix and not self:GetIronsights()) then
 			local vm = self.Owner:GetViewModel()
-			local attachment = vm:LookupAttachment("muzzle")
+			--PrintTable(vm:GetAttachments())
+			local attachment = vm:LookupAttachment( self.IronsightsMuzzleFlashAttachment or "muzzle")
 			local posang = vm:GetAttachment(attachment)
 
 			if posang then
@@ -236,26 +243,69 @@ function SWEP:ShootEffects()
 					--posang.Ang:RotateAroundAxis(Vector(0,0,1),180)
 					 ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, vm, attachment)
 				else
-					local ef = EffectData()
+					--[[local ef = EffectData()
 					ef:SetOrigin(self.Owner:GetShootPos())
 					ef:SetStart(self.Owner:GetShootPos())
 					ef:SetNormal(self.Owner:EyeAngles():Forward())
 					ef:SetEntity(self.Owner:GetViewModel())
 					ef:SetAttachment(attachment)
 					ef:SetScale(self.IronsightsMuzzleFlashScale or 1)
-					util.Effect(self.IronsightsMuzzleFlash or "CS_MuzzleFlash", ef)
+					util.Effect(self.IronsightsMuzzleFlash or "CS_MuzzleFlash", ef)]]
 				end
 			end
 		end
 	end
 
-	self.Owner:MuzzleFlash()
+	
+	--self.Owner:MuzzleFlash()
 	self:PlayAnimWorld(ACT_VM_PRIMARYATTACK)
+	if self.IronsightsMuzzleFlash then
+		--PrintTable(self:GetAttachments())
+		local attachment = self:LookupAttachment(  self.IronsightsMuzzleFlashAttachment or "muzzle")
+		if not attachment then
+			attachment = self:LookupAttachment("muzzle")
+		end
+		ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, self, attachment)
+		--self:LS2_ParticleEffectAttach(self.IronsightsMuzzleFlash, attachment)
+	end
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
 
 	if self.CustomShootEffects then
 		self.CustomShootEffects(self)
 	end
+end
+
+if SERVER then
+	util.AddNetworkString("Longsword2_World_MuzzleFlash")
+
+	function SWEP:LS2_ParticleEffectAttach(effect, attachment)
+
+		local rf = RecipientFilter()
+		rf:AddAllPlayers()
+		--rf:AddPVS( self.Owner.GetPos( self.Owner ) )
+		--rf:RemovePlayer( self.Owner )
+
+		net.Start( "Longsword2_World_MuzzleFlash" )
+		net.WriteEntity( self.Owner )
+		net.WriteEntity( self )
+		net.WriteString( effect )
+		net.WriteInt( attachment, 32 )
+		net.Send( rf )
+	end
+else
+	net.Receive("Longsword2_World_MuzzleFlash", function()
+
+		-- The entity the particle go to
+		local usr = net.ReadEntity()
+		
+		
+
+		local ent = net.ReadEntity()
+		local eff = net.ReadString()
+		local att = net.ReadInt(32)
+
+		--ParticleEffectAttach( eff, PATTACH_POINT_FOLLOW, usr, att )
+	end)	
 end
 
 function SWEP:IsSprinting()
@@ -435,4 +485,17 @@ function SWEP:FinishReload()
 
 	self:SetClip1( self:Clip1() + amount )
 	self.Owner:RemoveAmmo( amount, self:GetPrimaryAmmoType() )
+end
+
+function SWEP:FireAnimationEvent( pos, ang, event, options )
+	
+	-- Disables animation based muzzle event
+	if ( event == 21 ) then return true end
+
+	-- Disable thirdperson muzzle flash
+	if ( event == 5001 ) then return true end
+
+	-- Disable thirdperson muzzle flash
+	if ( event == 5003 ) then return true end
+
 end
