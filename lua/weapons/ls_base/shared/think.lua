@@ -62,6 +62,31 @@ function SWEP:BurstThink()
 	end
 end
 
+-- ADS noises
+sound.Add({
+	name = "Longsword2.ADS.In",
+	sound = {
+		"weapons/ins2/uni/uni_ads_in_01.wav",
+		"weapons/ins2/uni/uni_ads_in_02.wav",
+		"weapons/ins2/uni/uni_ads_in_03.wav",
+		"weapons/ins2/uni/uni_ads_in_04.wav",
+		"weapons/ins2/uni/uni_ads_in_05.wav",
+		"weapons/ins2/uni/uni_ads_in_06.wav"
+	},
+	level = 60,
+	channel = CHAN_WEAPON,
+	pitch = {95,105}
+})
+
+sound.Add({
+	name = "Longsword2.ADS.Out",
+	sound = {
+		"weapons/ins2/uni/uni_ads_out_01.wav"
+	},
+	level = 60,
+	channel = CHAN_WEAPON,
+	pitch = {95,105}
+})
 
 function SWEP:IronsightsThink()
 	if (self.CanDecreaseBlowback or 0) < CurTime() then
@@ -75,8 +100,10 @@ function SWEP:IronsightsThink()
 
 	if self.Owner:KeyDown( IN_ATTACK2 ) and not self:GetIronsights() then
 		self:SetIronsights( true )
+		self:EmitSound("Longsword2.ADS.In")
 	elseif not self.Owner:KeyDown( IN_ATTACK2 ) and self:GetIronsights() then
 		self:SetIronsights( false )
+		self:EmitSound("Longsword2.ADS.Out")
 	end
 end
 function SWEP:ReloadThink()

@@ -63,6 +63,45 @@ SWEP.CanBreachDoors = false
 SWEP.SwayScale = 0
 SWEP.BobScale = 0
 
+SWEP.Reverb = {}
+SWEP.Reverb.Primary = {}
+SWEP.Reverb.Primary.IndoorEnabled = false
+SWEP.Reverb.Primary.Indoor = Sound("")
+SWEP.Reverb.Primary.IndoorRange = 1200
+SWEP.Reverb.Primary.OutdoorEnabled = false
+SWEP.Reverb.Primary.Outdoor = Sound("")
+SWEP.Reverb.Primary.OutdoorRange = 5000
+
+sound.Add({
+	name = "Longsword2.Draw",
+	sound = {
+		"weapons/ins2/uni/uni_weapon_draw_01.wav",
+		"weapons/ins2/uni/uni_weapon_draw_02.wav",
+		"weapons/ins2/uni/uni_weapon_draw_03.wav"
+	},
+	level = 60,
+	channel = CHAN_WEAPON,
+	pitch = {95,105}
+})
+
+sound.Add({
+	name = "Longsword2.Raise",
+	sound = {
+		"weapons/ins2/uni/uni_lean_in_01.wav",
+		"weapons/ins2/uni/uni_lean_in_02.wav",
+		"weapons/ins2/uni/uni_lean_in_03.wav",
+		"weapons/ins2/uni/uni_lean_in_04.wav"
+	},
+	level = 60,
+	channel = CHAN_WEAPON,
+	pitch = {95,105}
+})
+
+-- impulse
+function SWEP:OnLowered()
+	self:EmitSound("Longsword2.Raise")
+end
+
 function SWEP:Initialize()
 	self:SetIronsights(false)
 
@@ -113,6 +152,7 @@ function SWEP:Deploy()
 
 	self:PlayAnim(ACT_VM_DRAW)
 	self.Owner:GetViewModel():SetPlaybackRate(1)
+	self:EmitSound(Sound("Longsword2.Draw"))
 
 	return true
 end
@@ -337,8 +377,8 @@ function SWEP:PrimaryAttack()
 		self:AddRecoil()
 		self:ViewPunch()
 
-		self:EmitSound(self.Primary.Sound)
-
+		--self:EmitSound(self.Primary.Sound)
+		self:InternalEchoHandle()
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetReloadTime(CurTime() + self.Primary.Delay)
 	else

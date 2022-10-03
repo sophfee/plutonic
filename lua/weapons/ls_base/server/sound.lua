@@ -1,4 +1,5 @@
 util.AddNetworkString("Longsword.EmitSound")
+util.AddNetworkString("Longsword.Echo")
 function SWEP:EmitWorldSound(snd)
 	net.Start("Longsword.EmitSound")
 	net.WriteEntity(self)

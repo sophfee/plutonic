@@ -16,6 +16,7 @@ include("shared/worldmodel.lua")
 
 -- ServerSide Files
 include("server/sound.lua")
+include("server/echo.lua")
 
 -- Shared Files (for Client)
 AddCSLuaFile("shared/base.lua")
@@ -33,5 +34,5 @@ AddCSLuaFile("client/fov.lua")
 AddCSLuaFile("client/replacement.lua")
 AddCSLuaFile("client/debug.lua")
 AddCSLuaFile("client/crosshair.lua")
-
+AddCSLuaFile("client/echo.lua")
 print("[Longsword²] Longsword² weapon base loaded. Version 2.0 Copyright 2019-2022 Jake Green (vin) and Nick S. (urnotnick)")
