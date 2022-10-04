@@ -42,14 +42,15 @@ net.Receive("Longsword.Echo", function()
 
 	local shouldPlay = true
 
-	if not inside and sourceInside then
-		shouldPlay = false
-	end
-
 	if shouldPlay and inside then
-		Entity( srcEntity ):EmitSound( snd, 140, 100, 0.4 )
+		
+		Entity( srcEntity ):EmitSound( snd, 140, 100, 0.4, CHAN_WEAPON, SND_NOFLAGS, 1 )
+		
 	elseif shouldPlay and not inside then
-		Entity( srcEntity ):EmitSound( snd, 140, 100, 1 )
+		local ent = Entity( srcEntity )
+		if ent:GetPos():DistToSqr(LocalPlayer():GetPos()) > 6000^2 then
+			Entity( srcEntity ):EmitSound( snd, 140, 100, 1, CHAN_WEAPON, SND_NOFLAGS, 1 )
+		end
 	end
 end)
 
@@ -82,5 +83,9 @@ function SWEP:InternalEchoHandle()
 end
 
 function SWEP:PrimaryEcho(inside)
-	surface.PlaySound(inside and self.Reverb.Primary.Indoor or self.Reverb.Primary.Outdoor)
+	if inside then
+		self:EmitSound( self.Primary.Sound, 140, 100, 1, CHAN_WEAPON, SND_NOFLAGS, 104)
+	else
+		self:EmitSound( self.Primary.Sound, 140, 100, 1, CHAN_WEAPON, SND_NOFLAGS, 21)
+	end
 end

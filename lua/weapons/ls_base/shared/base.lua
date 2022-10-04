@@ -99,7 +99,7 @@ sound.Add({
 
 -- impulse
 function SWEP:OnLowered()
-	self:EmitSound("Longsword2.Raise")
+	self:EmitSound("Longsword2.Raise", nil, nil, nil, CHAN_WEAPON, SND_NOFLAGS, 1)
 end
 
 function SWEP:Initialize()

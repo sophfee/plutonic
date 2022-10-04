@@ -44,6 +44,6 @@ function SWEP:PrimaryEcho(inside)
 	net.WriteBool(inside)
 	net.WriteVector(self.Owner:GetPos())
 	net.WriteUInt(self.Owner:EntIndex(), 16)
-	net.WriteString(inside and self.Reverb.Primary.Indoor or self.Reverb.Primary.Outdoor)
+	net.WriteString(self.Primary.Sound)
 	net.Send( rf )
 end
