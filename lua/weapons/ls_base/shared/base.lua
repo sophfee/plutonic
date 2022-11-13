@@ -80,7 +80,7 @@ sound.Add({
 		"weapons/ins2/uni/uni_weapon_draw_03.wav"
 	},
 	level = 60,
-	channel = CHAN_WEAPON,
+	channel = CHAN_AUTO,
 	pitch = {95,105}
 })
 
@@ -93,13 +93,13 @@ sound.Add({
 		"weapons/ins2/uni/uni_lean_in_04.wav"
 	},
 	level = 60,
-	channel = CHAN_WEAPON,
+	channel = CHAN_AUTO,
 	pitch = {95,105}
 })
 
 -- impulse
 function SWEP:OnLowered()
-	self:EmitSound("Longsword2.Raise", nil, nil, nil, CHAN_WEAPON, SND_NOFLAGS, 1)
+	self:EmitSound("Longsword2.Raise", nil, nil, nil, nil, SND_NOFLAGS, 1)
 end
 
 function SWEP:Initialize()
@@ -152,7 +152,7 @@ function SWEP:Deploy()
 
 	self:PlayAnim(ACT_VM_DRAW)
 	self.Owner:GetViewModel():SetPlaybackRate(1)
-	self:EmitSound(Sound("Longsword2.Draw"))
+	self:EmitSound(Sound("Longsword2.Draw"), nil, nil, nil, nil, SND_NOFLAGS, 1)
 
 	return true
 end
@@ -279,7 +279,7 @@ function SWEP:ShootEffects()
 				
 
 				if (self.IronsightsMuzzleParticle) then
-					--posang.Ang:RotateAroundAxis(Vector(0,1,0),-90)
+					posang.Ang:RotateAroundAxis(Vector(0,1,0),-90)
 					--posang.Ang:RotateAroundAxis(Vector(0,0,1),180)
 					 ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, vm, attachment)
 				else
@@ -377,8 +377,8 @@ function SWEP:PrimaryAttack()
 		self:AddRecoil()
 		self:ViewPunch()
 
-		--self:EmitSound(self.Primary.Sound)
-		self:InternalEchoHandle()
+		self:EmitSound(self.Primary.Sound, nil, nil, nil, nil, SND_NOFLAGS, 1)
+
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetReloadTime(CurTime() + self.Primary.Delay)
 	else

@@ -74,7 +74,7 @@ sound.Add({
 		"weapons/ins2/uni/uni_ads_in_06.wav"
 	},
 	level = 60,
-	channel = CHAN_WEAPON,
+	channel = CHAN_AUTO,
 	pitch = {95,105}
 })
 
@@ -84,7 +84,7 @@ sound.Add({
 		"weapons/ins2/uni/uni_ads_out_01.wav"
 	},
 	level = 60,
-	channel = CHAN_WEAPON,
+	channel = CHAN_AUTO,
 	pitch = {95,105}
 })
 
