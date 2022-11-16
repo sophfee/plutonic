@@ -269,7 +269,8 @@ function SWEP:ShootEffects()
 	end
 
 	if CLIENT then
-		if not (impulse.IronsightsMuzzleFlashFix and not self:GetIronsights()) then
+		self.CrosshairGapBoost = 24
+		if not (self.IronsightsMuzzleFlashFix and not self:GetIronsights()) then
 			local vm = self.Owner:GetViewModel()
 			--PrintTable(vm:GetAttachments())
 			local attachment = vm:LookupAttachment( self.IronsightsMuzzleFlashAttachment or "muzzle")
