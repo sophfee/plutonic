@@ -250,6 +250,10 @@ function SWEP:ShootBullet(damage, num_bullets, aimcone)
 end
 
 function SWEP:ShootEffects()
+	if CLIENT then
+		self.CrosshairGapBoost = 16
+	end
+
 	if not self:GetIronsights() or not self.UseIronsightsRecoil then
 		if self.PrimaryFireSequence then
 			local vm = self.Owner:GetViewModel()
@@ -280,18 +284,11 @@ function SWEP:ShootEffects()
 				
 
 				if (self.IronsightsMuzzleParticle) then
-					posang.Ang:RotateAroundAxis(Vector(0,1,0),-90)
+					--posang.Ang:RotateAroundAxis(Vector(0,1,0),-90)
 					--posang.Ang:RotateAroundAxis(Vector(0,0,1),180)
-					 ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, vm, attachment)
+					ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, vm, attachment)
 				else
-					--[[local ef = EffectData()
-					ef:SetOrigin(self.Owner:GetShootPos())
-					ef:SetStart(self.Owner:GetShootPos())
-					ef:SetNormal(self.Owner:EyeAngles():Forward())
-					ef:SetEntity(self.Owner:GetViewModel())
-					ef:SetAttachment(attachment)
-					ef:SetScale(self.IronsightsMuzzleFlashScale or 1)
-					util.Effect(self.IronsightsMuzzleFlash or "CS_MuzzleFlash", ef)]]
+					--ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, vm, attachment)
 				end
 			end
 		end
@@ -302,18 +299,6 @@ function SWEP:ShootEffects()
 	self:PlayAnimWorld(ACT_VM_PRIMARYATTACK)
 
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
-
-	if self.IronsightsMuzzleFlash and CLIENT then
-		local attachment = self:LookupAttachment( self.IronsightsMuzzleFlashAttachment or "muzzle")
-		local ef = EffectData()
-					ef:SetOrigin(self.Owner:GetShootPos())
-					ef:SetStart(self.Owner:GetShootPos())
-					ef:SetNormal(self.Owner:EyeAngles():Forward())
-					ef:SetEntity(self)
-					ef:SetAttachment(1)
-					ef:SetScale(self.IronsightsMuzzleFlashScale or 1)
-		self:CreateParticleEffect("hl2mmod_muzzleflash_smg1", 2, {attachtype=PATTACH_POINT_FOLLOW,entity=self,position=self.Owner:GetShootPos()})
-	end
 
 	if self.CustomShootEffects then
 		self.CustomShootEffects(self)
@@ -378,7 +363,7 @@ function SWEP:PrimaryAttack()
 		self:AddRecoil()
 		self:ViewPunch()
 
-		self:EmitSound(self.Primary.Sound, nil, nil, nil, nil, SND_NOFLAGS, 1)
+		self:EmitSound(self.Primary.Sound)
 
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetReloadTime(CurTime() + self.Primary.Delay)
