@@ -7,7 +7,7 @@ net.Receive("Longsword.EmitSound", function()
 	local snd = net.ReadString()
 
 	if owner == LocalPlayer() then
-		local shouldPlay = impulse.GetSetting("view_thirdperson")
+		local shouldPlay = impulse and impulse.GetSetting("view_thirdperson") or true
 
 		if shouldPlay then
 			entity:EmitSound(snd)

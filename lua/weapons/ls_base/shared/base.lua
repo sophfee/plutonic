@@ -491,7 +491,7 @@ function SWEP:Reload()
 	self:QueueIdle()
 
 	if self.ReloadSound then 
-		self:EmitSound(self.ReloadSound)
+		self:EmitSound(Sound(self.ReloadSound))
 	elseif self.OnReload then
 		self.OnReload(self)
 	end
