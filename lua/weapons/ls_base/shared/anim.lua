@@ -1,5 +1,11 @@
 function SWEP:PlayAnim(act)
 
+	if self.Owner:IsNPC() then
+
+		return
+
+	end
+
 	if self.CustomEvents[act] then
 		act = self.CustomEvents[act]
 	end

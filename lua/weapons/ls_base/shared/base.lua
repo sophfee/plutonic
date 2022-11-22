@@ -151,7 +151,9 @@ function SWEP:Deploy()
 	end
 
 	self:PlayAnim(ACT_VM_DRAW)
-	self.Owner:GetViewModel():SetPlaybackRate(1)
+	if self.Owner:IsPlayer() then
+		self.Owner:GetViewModel():SetPlaybackRate(1)
+	end
 	self:EmitSound(Sound("Longsword2.Draw"), nil, nil, nil, nil, SND_NOFLAGS, 1)
 
 	return true
@@ -434,6 +436,7 @@ function SWEP:OnRemove()
 end
 
 function SWEP:QueueIdle()
+	if self.Owner:IsNPC() then return end
 	self:SetNextIdle( CurTime() + self.Owner:GetViewModel():SequenceDuration() + 0.1 )
 end
 
@@ -444,6 +447,9 @@ function SWEP:CanShoot()
 end
 
 function SWEP:ViewPunch()
+
+	if self.Owner:IsNPC() then return end
+
 	local punch = Angle()
 
 	local mul = self:GetIronsights() and 0.65 or 1
@@ -474,6 +480,10 @@ end
 
 
 function SWEP:CanReload()
+	if self.Owner:IsNPC() then
+		return self:Clip1() < self.Primary.ClipSize
+		and not self:GetReloading() and self:GetNextPrimaryFire() < CurTime()
+	end
 	return self:Ammo1() > 0 and self:Clip1() < self.Primary.ClipSize
 		and not self:GetReloading() and self:GetNextPrimaryFire() < CurTime()
 end

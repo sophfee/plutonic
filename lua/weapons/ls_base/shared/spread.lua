@@ -1,6 +1,11 @@
 
 function SWEP:CalculateSpread()
 	local spread = self.Primary.Cone
+
+	if self.Owner:IsNPC() then
+		return spread
+	end
+
 	local maxSpeed = self.LoweredPos and self.Owner:GetWalkSpeed() or self.Owner:GetRunSpeed()
 
 	spread = spread + self.Primary.Cone * math.Clamp( self.Owner:GetVelocity():Length2D() / maxSpeed, 0, self.Spread.VelocityMod )
