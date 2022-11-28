@@ -201,8 +201,6 @@ function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_d
 	bullet.Damage	= damage
 	bullet.AmmoType = "Pistol"
 
-	
-
 	if CLIENT then
 		bullet.Callback = function(attacker, tr)
 
@@ -364,7 +362,7 @@ function SWEP:ShootEffects()
 
 	if CLIENT then
 		self.CrosshairGapBoost = 24
-		if not (self.IronsightsMuzzleFlashFix and not self:GetIronsights()) then
+		if true then
 			local vm = self.Owner:GetViewModel()
 			--PrintTable(vm:GetAttachments())
 			local attachment = vm:LookupAttachment( self.IronsightsMuzzleFlashAttachment or "muzzle")
@@ -376,6 +374,17 @@ function SWEP:ShootEffects()
 				if (self.IronsightsMuzzleParticle) then
 					--posang.Ang:RotateAroundAxis(Vector(0,1,0),-90)
 					--posang.Ang:RotateAroundAxis(Vector(0,0,1),180)
+					local mzFlash = DynamicLight( self:EntIndex() + 1 )
+					if ( mzFlash ) then
+						mzFlash.Pos = posang.Pos
+						mzFlash.r = 200
+						mzFlash.g = 60
+						mzFlash.b = 0
+						mzFlash.Brightness = 5
+						mzFlash.Size = 90
+						mzFlash.Decay = 1024
+						mzFlash.DieTime = CurTime() + 0.1
+					end
 					ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, vm, attachment)
 				else
 					--ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, vm, attachment)
