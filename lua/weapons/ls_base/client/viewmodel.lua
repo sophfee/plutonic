@@ -48,7 +48,13 @@ function SWEP:GetOffset()
 	if self:GetIronsights() then
 		local offset_pos =  LerpVector(self:GetIronsightsRecoil(),Vector(),VectorRand(-0.06,0.06))
 		self.IronsightsLerp = math.Approach(self.IronsightsLerp, 1, FrameTime()*self.IronsightsSpeed)
-		return ironsights_pos + LerpVector(self:GetIronsightsRecoil(),Vector(),self.BlowbackPos) + (offset_pos or Vector()), self.IronsightsAng + LerpAngle(self:GetIronsightsRecoil(),Angle(),self.BlowbackAngle or Angle()) + Angle(0,0,(1-self.IronsightsLerp)*-self.IronsightsRocking)
+		return ironsights_pos + LerpVector(
+			self:GetIronsightsRecoil(),
+			Vector(),
+			self.BlowbackPos
+		) + (
+			offset_pos or Vector()),
+			self.IronsightsAng + LerpAngle(self:GetIronsightsRecoil(),Angle(),self.BlowbackAngle or Angle()) + Angle(0,0,(1-self.IronsightsLerp)*-self.IronsightsRocking)
 	else
 		self.IronsightsLerp = math.Approach(self.IronsightsLerp, 0, FrameTime()*self.IronsightsSpeed)
 	end
@@ -175,57 +181,40 @@ local c_look   = 0
 local c_move   = 0
 local c_sight  = 0
 
+local function LerpC(t, a, b, powa)
+    return a + (b - a) * math.pow(t, powa)
+end
+
+SWEP.VMDeltaX = 0
+SWEP.VMDeltaY = 0
+
+SWEP.VMPos = Vector()
+SWEP.VMAng = Angle()
+
+SWEP.VMPos_Target = Vector()
+SWEP.VMAng_Target = Angle()
+
+hook.Add("CreateMove", "Longsword2.StartCommand", function(ply, ucmd)
+
+	if ply.GetActiveWeapon then
+		local wep = ply:GetActiveWeapon()
+
+		if IsValid(wep) then
+			if wep.IsLongsword then
+				wep.VMDeltaX = wep.VMDeltaX + ucmd:GetMouseX() * 0.004
+				wep.VMDeltaY = wep.VMDeltaY + ucmd:GetMouseY() * 0.004
+			end
+		end
+	end
+	
+end)
+
+local pi2 = math.pi * 1.1
+
 function SWEP:GetViewModelPosition( pos, ang )
-	
-	local sway = self.SwayLevel or 1.0
-	local bob  = self.SwayBob   or 1.0
-	local idle = self.SwayIdle  or 0.5
-
-	ang:RotateAroundAxis( ang:Right(),   self.ViewModelAngle.p )
-	ang:RotateAroundAxis( ang:Up(),      self.ViewModelAngle.y )
-	ang:RotateAroundAxis( ang:Forward(), self.ViewModelAngle.r )
-
-	pos = pos + self.ViewModelPos.x * ang:Right()
-	pos = pos + self.ViewModelPos.y * ang:Forward()
-	pos = pos + self.ViewModelPos.z * ang:Up()
-
-	local predicted = IsFirstTimePredicted()
-	local ft        = FrameTime()
-	local ct        = RealTime()
-
-	-- camera move lag, based on QTG weapon base
-	local aDelta = self.Owner:EyeAngles() - lastAng
-
-	if aDelta.y >= 180 then
-		aDelta.y = aDelta.y - 360
-	elseif aDelta.y <= -180 then
-		aDelta.y = aDelta.y + 360
-	end
-
-	aDelta.p = math.Clamp(aDelta.p, -5, 5)
-	aDelta.y = math.Clamp(aDelta.y, -5, 5)
-	aDelta.r = math.Clamp(aDelta.r, -5, 5)
-
-	if self:GetIronsights() or self:GetReloading() then
-		aDelta = aDelta * 0.1
-	end
-
-	if predicted then
-		cacheAng = LerpAngle(math.Clamp(ft * 10, 0, 1), cacheAng, aDelta)
-	end
-
-	swayAng = LerpAngle(FrameTime()*100,swayAng,self.Owner:EyeAngles())
-	
-	lastAng = self.Owner:EyeAngles()
-	swayAng = swayAng + Angle(lastAng.p/2,lastAng.y/2,lastAng.r/2)
-
-	local psway = sway / (self.SwayFactor or 6)
-	ang:RotateAroundAxis(ang:Right(), - cacheAng.p * sway)
-	ang:RotateAroundAxis(ang:Up(), cacheAng.y * sway)
-	ang:RotateAroundAxis(ang:Forward(), cacheAng.y * sway)
-	pos = pos + (ang:Right()*self.SwayRightMultiplier) * cacheAng.y * psway + (ang:Up()*self.SwayUpMultiplier)* cacheAng.p * psway
-
-	-- player movement and wep movement, based on QTG weapon base cuz i dont like maths
+	local ft = FrameTime()
+	local ft8 = ft * 8
+	local ct = RealTime()
 	local ovel = self.Owner:GetVelocity()
 	local move = Vector(ovel.x, ovel.y, 0)
 	local movement = move:LengthSqr()
@@ -235,50 +224,69 @@ function SWEP:GetViewModelPosition( pos, ang )
 	local rd = self.Owner:GetRight():Dot(vel)
 	local fd = (self.Owner:GetForward():Dot(vel) + 1) / 2
 
-	if predicted then
-		local ft8 = math.min(ft * 8, 1)
-		local onGround = self.Owner:OnGround()
+	-- [[ OFFSET ]] --
+	pos = pos + (ang:Right() * self.ViewModelOffset.x)
+	pos = pos + (ang:Forward() * self.ViewModelOffset.y)
+	pos = pos + (ang:Up() * self.ViewModelOffset.z)
 
-		if self:GetIronsights() then
-			movepercent = movepercent * 0.32
-		end
+	ang:RotateAroundAxis( ang:Right(),   self.ViewModelOffsetAng.p )
+	ang:RotateAroundAxis( ang:Up(),      self.ViewModelOffsetAng.y )
+	ang:RotateAroundAxis( ang:Forward(), self.ViewModelOffsetAng.r )
 
-		local c_move2 = movepercent
-		c_move = Lerp(ft8, c_move or 0, onGround and movepercent or 0)
-		c_sight = Lerp(ft8, c_sight or 0, self:GetIronsights() and onGround and not self:GetReloading() and not self:IsSprinting() and 0.1 or 1)
 
-		local jump = self:GetIronsights() and math.Clamp(ovel.z / 120, -0.25, 0.5) or 0
-		c_jump = Lerp(ft8, c_jump or 0, (self.Owner:GetMoveType() == MOVETYPE_NOCLIP or self:GetIronsights()) and jump or math.Clamp(ovel.z / 120, -1.5, 1))
+	-- [[ SWAY ]] --
 
-		if rd > 0.5 then
-			c_look = Lerp(math.Clamp(ft * 5, 0, 1), c_look, 20 * c_move2)
-		elseif rd < -0.5 then
-			c_look = Lerp(math.Clamp(ft * 5, 0, 1), c_look, -20 * c_move2)
-		else
-			c_look = Lerp(math.Clamp(ft * 5, 0, 1), c_look, 0)
-		end
+	self.VMDeltaX = math.Clamp(self.VMDeltaX, -11, 11)
+	self.VMDeltaY = math.Clamp(self.VMDeltaY, -11, 11)
+
+	self.VMDeltaX = Lerp(FrameTime() * pi2, self.VMDeltaX, 0)
+	self.VMDeltaY = Lerp(FrameTime() * pi2, self.VMDeltaY, 0)
+	
+	-- Perform VM Rotations and shit
+	ang:RotateAroundAxis(ang:Up(), self.VMDeltaX)
+	ang:RotateAroundAxis(ang:Right(), self.VMDeltaY)
+
+	-- Offset the viewmodel
+	pos = pos + (ang:Right() * (self.VMDeltaX/6))
+	pos = pos + (ang:Up() * -(self.VMDeltaY/6))
+
+	-- [[ END SWAY ]] --
+
+	-- [[ BOBBING ]] --
+
+	local vel = self.Owner:GetVelocity()
+	local len = vel:Length()
+
+	pos = pos + (ang:Right() * (len/600) * math.sin(CurTime() * 18))
+	pos = pos + (ang:Up() * -(len/600) * math.cos(CurTime() * 18))
+	
+	c_move = Lerp(ft8, c_move or 0, onGround and movepercent or 0)
+	pos = pos + ang:Forward() * c_move * 0 * fd - ang:Up() * .75 * c_move + ang:Right() * .5 * c_move
+		ang.y = ang.y - math.sin(ct * 8.4) * 1.7
+		ang.p = ang.p - math.sin(ct * 16.8) * 0.8
+		ang.r = ang.r - math.cos(ct * 8.4) * 0.3
+
+	-- We lerp all positions to avoid jittering
+	
+	if self:GetIronsights() then
+		pos = pos + self.IronsightsPos.x * ang:Right()
+		pos = pos + self.IronsightsPos.y * ang:Forward()
+		pos = pos + self.IronsightsPos.z * ang:Up()
+
+		ang:RotateAroundAxis( ang:Right(),   self.IronsightsAng.p )
+		ang:RotateAroundAxis( ang:Up(),      self.IronsightsAng.y )
+		ang:RotateAroundAxis( ang:Forward(), self.IronsightsAng.r )
 	end
 
-	pos = pos + ang:Up() * .75 * c_jump
-	ang.p = ang.p + (c_jump or 0) * 3
-	ang.r = ang.r + c_look
+	
 
-	if bob != 0 and c_move > 0 then
-		local p = c_move * c_sight * bob
+	self.VMPos_Target = pos
 
-		pos = pos + ang:Forward() * c_move * c_sight * fd - ang:Up() * .75 * c_move + ang:Right() * .5 * c_move * c_sight
-		ang.y = ang.y - math.sin(ct * 8.4) * 1.7 * p
-		ang.p = ang.p - math.sin(ct * 16.8) * 0.8 * p
-		ang.r = ang.r - math.cos(ct * 8.4) * 0.3 * p
-	end
+	
+	self.VMAng_Target = ang
 
-	if idle != 0 then
-		local p = (1 - c_move) * c_sight * idle
+	self.VMPos = LerpVector(FrameTime(), self.VMPos_Target, self.VMPos)
+	self.VMAng = LerpAngle(FrameTime(), self.VMAng_Target, self.VMAng)
 
-		ang.p = ang.p - math.sin(ct * 0.5) * p
-		ang.y = ang.y - math.sin(ct) * 0.5 * p
-		ang.r = ang.r - math.sin(ct) * 0.5 * p
-	end
-
-	return pos, ang
+	return self.VMPos, self.VMAng
 end
