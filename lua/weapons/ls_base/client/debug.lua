@@ -70,16 +70,14 @@ function SWEP:DrawHUD()
 		surface.DrawText("Next Shot: "..(ns > 0 and ns or "CLEAR"))
 
 		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 210)
-		surface.DrawText("Warble: " .. tostring(self.VMWarble))
+		
+		surface.DrawText("Rattle: " .. tostring(math.Round(self.VMRattleVelocity, 4)))
 
 		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 230)
 		surface.DrawText("Sway X: " .. tostring(self.VMDeltaX))
 
 		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 250)
 		surface.DrawText("Sway Y: " .. tostring(self.VMDeltaY))
-
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 270)
-		surface.DrawText("TS Last Input: " .. tostring((self.LastInput or 0) - CurTime()))
 
 
 		local attach = self:GetCurAttachment()

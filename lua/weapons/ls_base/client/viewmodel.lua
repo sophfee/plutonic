@@ -189,9 +189,14 @@ SWEP.VMDeltaX = 0
 SWEP.VMDeltaY = 0
 SWEP.VMRoll = 0
 
-SWEP.VMWarble = false
-SWEP.VMWarbleEndTime = 0
-SWEP.VMWarbleDiretion = 0
+SWEP.VMRecoilPos = Vector(0, 0, 0)
+SWEP.VMRecoilAng = Angle(0, 0, 0)
+
+SWEP.VMRattle = false
+SWEP.VMRattleVelocity = 0
+SWEP.VMRattlePos = Vector(0, 0, 0)
+SWEP.VMRattleAng = Angle(0, 0, 0)
+
 
 SWEP.VMPos = Vector(0, 0, 0)
 SWEP.VMAng = Angle(0, 0, 0)
@@ -233,9 +238,13 @@ hook.Add("StartCommand", "Longsword2.StartCommand", function(ply, ucmd)
 	
 end)
 
+local abs = math.abs
+
 local pi2 = math.pi * 1.2
 
 function SWEP:GetViewModelPosition( pos, ang )
+
+
 	local ft = FrameTime()
 	local ft8 = ft * 8
 	local ct = RealTime()
@@ -269,13 +278,37 @@ function SWEP:GetViewModelPosition( pos, ang )
 		ang:RotateAroundAxis( ang:Forward(), offsetang.r )
 	end
 
-	if self.LastInput then
-		if self.LastInput < CurTime() and math.abs(self.VMDeltaX) < 4 then
-			local rt = (CurTime() + math.pi)- self.LastInput
-			self.VMDeltaX = self.VMDeltaX + (self.VMWarbleDiretion * math.sin(rt * 20) * 1)
+	-- Rattle
+	if self.LastInput < CurTime() then
+		-- Reflect the current dir
+		if not self.VMRattle then
+			self.VMRattleVelocity = self.VMDeltaX / -4
+			self.VMRattle = true
+
+			self.VMRattlePos = Vector(0, 0, 0)
+			self.VMRattleAng = Angle(0, 0, 0)
 		end
+		
 	end
+
+	local rattle = self.VMRattleVelocity
+		
+
+	if abs(rattle) > 0 then
+		self.VMRattleVelocity = math.Approach(rattle, 0, ft * 0.5)
+			
+		self.VMRattlePos = LerpVector(ft, self.VMRattlePos, (ang:Right() * math.sin(-rattle)  * 1))
+		self.VMRattleAng = LerpAngle(ft, self.VMRattleAng, Angle(math.sin(-rattle) * 8, 0, 0))
+
+		--ang:RotateAroundAxis(ang:Up(), self.VMRattleAng.p)
+		--pos = pos + self.VMRattlePos
 	
+	else
+
+
+		self.VMRattle = false
+		
+	end
 
 	self.VMDeltaX = math.Clamp(self.VMDeltaX, -11, 11)
 	self.VMDeltaY = math.Clamp(self.VMDeltaY, -11, 11)
@@ -297,10 +330,11 @@ function SWEP:GetViewModelPosition( pos, ang )
 
 	local degRoll = math.deg(math.sin(self.VMRoll * math.pi))
 
-	ang:RotateAroundAxis(ang:Forward(), degRoll * 0.2)
-	--ang:RotateAroundAxis(ang:Up(), self.VMRoll * -7)
+	ang:RotateAroundAxis(ang:Forward(), degRoll * (math.pi / 10))
+	--ang:RotateAroundAxis(ang:Right(), self.VMRoll * 7)
+	ang:RotateAroundAxis(ang:Up(), self.VMRoll * (math.pi / 5	))
 	pos = pos + (ang:Right() * (degRoll /80))
-	pos = pos + (ang:Up() * (degRoll /120))
+	pos = pos + (ang:Up() * (degRoll /80 ))
 
 
 	-- [[ END SWAY ]] --
@@ -321,18 +355,56 @@ function SWEP:GetViewModelPosition( pos, ang )
 	end
 
 	if move > 0 then
-		pos = pos - ang:Up() * move * 0.7
+		pos = pos - ang:Up() * move * 1.7
+		-- Compress our weapon slightly when we move
+		if not self:GetIronsights() then
+			ang:RotateAroundAxis(ang:Forward(), move * -15)
+			pos = pos - ang:Right() * 1.5 * move
+		end
+		
 	end
 	if onGround then
-		ang.y = ang.y - math.sin(ct * 8.4) * 3.4 * move
-		ang.p = ang.p - math.sin(ct * 16.8) * 1.6 * move
-		ang.r = ang.r - math.cos(ct * 8.4) * 0.6 * move
-	else
-		ang.y = ang.y - math.sin(ct * 8.4) * 3.4 * math.Rand(0,1)
-		ang.p = ang.p - math.sin(ct * 16.8) * 1.6 * math.Rand(0,1)
+		local cycle = math.sin(ct * 8.4) 
+		local cycle2 = math.cos(ct * 16.8) 
 
-		ang.r = ang.r - (ovel.z/60)
-		pos.z = pos.z - (ovel.z/600)
+		-- Horizontal
+		ang:RotateAroundAxis(ang:Up(), cycle * 2 * move)
+		pos = pos + ang:Right() * cycle * 0.5 * move
+
+		-- Vertical
+		ang:RotateAroundAxis(ang:Right(), cycle2 * -0.3 * move)
+		pos = pos + ang:Up() * cycle2 * 0.3 * move
+
+		-- Special sprint case for rifles
+		if move >= 0.8 and self.LoweredPos then
+
+			local cycle = math.sin(ct * 9.7 * 2) 
+			local cycle2 = math.cos(ct * 19.4 * 2) 
+
+			-- Horizontal
+
+			-- Vertical
+			ang:RotateAroundAxis(ang:Forward(), cycle * 3 * move)
+			ang:RotateAroundAxis(ang:Up(), cycle* -0.3 * move)
+			ang:RotateAroundAxis(ang:Right(), cycle * -0.74 * move)
+			pos = pos + ang:Right() * cycle * 0.1 * move
+			pos = pos + ang:Forward() * cycle * 0.4 * move
+			--pos = pos + ang:Up() * cycle2 * 0.3 * move
+		
+		end
+
+
+	else
+		local cycle = math.sin(ct * 8.4* movement) 
+		local cycle2 = math.cos(ct * 16.8* movement) 
+
+		-- Horizontal
+		ang:RotateAroundAxis(ang:Up(), cycle * 2 * move)
+		pos = pos + ang:Right() * cycle * 0.5 
+
+		-- Vertical
+		ang:RotateAroundAxis(ang:Right(), cycle2 * -0.3 * move)
+		pos = pos + ang:Up() * cycle2 * 0.3 * movement	
 	end
 	-- We lerp all positions to avoid jittering
 	
@@ -341,11 +413,23 @@ function SWEP:GetViewModelPosition( pos, ang )
 	-- Calculate offsets (real)
 	
 
-	self.VMPos_Target = pos
-	self.VMAng_Target = ang
+	self.VMPos = pos
+	self.VMAng = ang
 
-	self.VMPos = LerpVector(FrameTime(), self.VMPos_Target, self.VMPos)
-	self.VMAng = LerpAngle(FrameTime(), self.VMAng_Target, self.VMAng)
+	self.VMPos = self.VMPos + (self.VMAng:Right() * self.VMRecoilPos.x)
+	self.VMPos = self.VMPos + (self.VMAng:Up() * self.VMRecoilPos.y)
+	self.VMPos = self.VMPos + (self.VMAng:Forward() * self.VMRecoilPos.z)
+
+	self.VMAng:RotateAroundAxis(self.VMAng:Right(), self.VMRecoilAng.x)
+	self.VMAng:RotateAroundAxis(self.VMAng:Up(), self.VMRecoilAng.y)
+	self.VMAng:RotateAroundAxis(self.VMAng:Forward(), self.VMRecoilAng.z)
+
+	self.VMRecoilPos = LerpVector(FrameTime() * 6, self.VMRecoilPos, Vector(0, 0, 0))
+	self.VMRecoilAng = LerpAngle(FrameTime() * 6, self.VMRecoilAng, Angle(0, 0, 0))
+
+	-- Recoil is last so it's overriding all
+
+	
 
 	return self.VMPos, self.VMAng
 end

@@ -340,6 +340,8 @@ end
 function SWEP:ShootEffects()
 	if CLIENT then
 		self.CrosshairGapBoost = 16
+		self.VMRecoilPos = self.BlowbackPos
+		self.VMRecoilAng = self.BlowbackAngle
 	end
 
 	if not self:GetIronsights() or not self.UseIronsightsRecoil then
