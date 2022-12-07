@@ -242,6 +242,42 @@ local abs = math.abs
 
 local pi2 = math.pi * 1.2
 
+local walk_pos_in = {
+	Vector(
+		-0.1, 
+		-0.1, 
+		-0.4
+	)
+}
+local walk_pos_out = {
+	Vector(
+		0.4, 
+		0, 
+		-0.1
+	)
+}
+
+local walk_ang_in = {
+	Angle(
+		0, 
+		-4, 
+		4
+	)
+}
+
+local walk_ang_out = {
+	Angle(
+		2, 
+		-2, 
+		2
+	)
+}
+
+SWEP.VMWalkBobInCyclePos = walk_pos_in[1]
+SWEP.VMWalkBobInCycleAng = walk_ang_in[1]
+SWEP.VMWalkBobOutCyclePos = walk_pos_out[1]
+SWEP.VMWalkBobOutCycleAng = walk_ang_out[1]
+
 function SWEP:GetViewModelPosition( pos, ang )
 
 
@@ -313,7 +349,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 	self.VMDeltaX = math.Clamp(self.VMDeltaX, -11, 11)
 	self.VMDeltaY = math.Clamp(self.VMDeltaY, -11, 11)
 
-	self.VMDeltaX = Lerp(FrameTime() * pi2, self.VMDeltaX, 0)
+	self.VMDeltaX =  Lerp(FrameTime() * pi2, self.VMDeltaX, 0)
 	self.VMDeltaY = Lerp(FrameTime() * pi2, self.VMDeltaY, 0)
 
 	
@@ -364,16 +400,20 @@ function SWEP:GetViewModelPosition( pos, ang )
 		
 	end
 	if onGround then
-		local cycle = math.sin(ct * 8.4) 
-		local cycle2 = math.cos(ct * 16.8) 
+		local cycle = math.sin(ct * 8.4)
+		local cycle2 = math.cos(ct * 16.8)
+
+		local stepcycle = math.cos(ct * 10.4)
+		pos = pos + ang:Right() * stepcycle * 1.1 * move
+		ang:RotateAroundAxis(ang:Up(), stepcycle * 1.2 * move)
+
+		pos = pos + ang:Up() * cycle2 * 0.7 * move
+		ang:RotateAroundAxis(ang:Right(), cycle2 * -1.95 * move)
+
+		ang:RotateAroundAxis(ang:Forward(), cycle * 1.97 * move)
 
 		-- Horizontal
-		ang:RotateAroundAxis(ang:Up(), cycle * 2 * move)
-		pos = pos + ang:Right() * cycle * 0.5 * move
 
-		-- Vertical
-		ang:RotateAroundAxis(ang:Right(), cycle2 * -0.3 * move)
-		pos = pos + ang:Up() * cycle2 * 0.3 * move
 
 		-- Special sprint case for rifles
 		if move >= 0.8 and self.LoweredPos then
