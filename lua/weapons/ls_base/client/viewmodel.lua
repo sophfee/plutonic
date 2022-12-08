@@ -135,8 +135,11 @@ function SWEP:PreDrawViewModel(vm)
 	end
 end
 
-local mat = Material("ph_scope/ph_scope_lens5")
-mat:SetTexture("$basetexture", rtx)
+local mat = Material("models/weapons/tfa_ins2/optics/aimpoint_lense")
+mat:SetTexture("$basetexture", rtx:GetName())
+mat:SetInt("$translucent", 1)
+mat:SetInt("$additive", 1)
+mat:Recompute()
 
 function SWEP:ViewModelDrawn()
 	local vm = self.Owner:GetViewModel()
@@ -185,29 +188,24 @@ function SWEP:ViewModelDrawn()
 	ang:RotateAroundAxis(ang:Forward(), c.Ang.r)
 	att:SetAngles(ang)
 	att:DrawModel()
-	--PrintTable(att:GetMaterials())
+	PrintTable(att:GetMaterials())
 
-	--[[self.VMRenderTarget:SetTexture("$basetexture", rtx)
-	if not self.asdasd then
-		self.asdasd = true
-		local m = self.VMRenderTarget:GetMatrix("$basetexturetransform")
+	self.VMRenderTarget:SetTexture("$basetexture", rtx)
+	if not self.VMInitRT3 then
+		self.VMInitRT3 = true
+		local m = mat:GetMatrix("$basetexturetransform")
 		m:SetScale(Vector(-1,1, 0))
-		self.VMRenderTarget:SetMatrix("$basetexturetransform", m)
-		self.VMRenderTarget:SetFloat("$phong", 1)
-	self.VMRenderTarget:SetFloat("$phongexponent", 100)
-	self.VMRenderTarget:SetFloat("$phongboost", 1)
-	--self.VMRenderTarget:SetFloat("$phongfresnelranges", 1)
-	
-	self.VMRenderTarget	:SetTexture("$bumpmap", "models/debug/debugwhite")
-	self.VMRenderTarget:Recompute()
-	end]]
+		mat:SetMatrix("$basetexturetransform", m)
+		mat:SetVector("$envmaptint", Vector(0,0,0))
+		mat:Recompute()
+	end
 
 	
 
 	
 
-	--att:SetSubMaterial(1, "")
-	att:SetSubMaterial(2, "ph_scope/ph_scope_lens5")
+	--att:SetSubMaterial(1, "models/weapons/tfa_ins2/optics/aimpoint_reticule_holo")
+	att:SetSubMaterial(1, "")
 	--att:GetSubMaterial()
 
 	
@@ -227,7 +225,7 @@ local function LerpC(t, a, b, powa)
 end
 
 -- General math caching
-local abs, min, max, clamp, sin, cos, rad, deg = math.abs, math.min, math.max, math.Clamp, math.sin, math.cos, math.rad, math.deg
+local abs, min, max, clamp, sin, cos, rad, deg, pi, pi2, round, Curtime, Frametime, Realtime, vec, ang, lerp, lerpAngle, lerpVector, approach = math.abs, math.min, math.max, math.Clamp, math.sin, math.cos, math.rad, math.deg, math.pi, math.pi * 2, math.Round, CurTime, FrameTime, RealTime, Vector, Angle, Lerp, LerpAngle, LerpVector, math.Approach
 
 -- General easings
 local easeInOutQuad, easeOutElastic, easeInOutQuint = math.ease.InOutQuad, math.ease.OutElastic, math.ease.InOutQuint
@@ -274,26 +272,26 @@ hook.Add("StartCommand", "Longsword2.StartCommand", function(ply, ucmd)
 				if wep:GetIronsights() then
 					local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
 
-					if math.abs(x) > 0 or math.abs(y) > 0 then
+					if abs(x) > 0 or abs(y) > 0 then
 						wep.LastInput = CurTime()
 
 						wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.03
 
 						if wep.VMSwayX > 0 then
-							wep.VMSwayX = math.min(wep.VMSwayX, wep.VMDeltaX) + x * 0.03
+							wep.VMSwayX = min(wep.VMSwayX, wep.VMDeltaX) + x * 0.03
 							--wep.VMDeltaX = wep.VMSwayX
 						else
-							wep.VMSwayX = math.max(wep.VMSwayX, wep.VMDeltaX) + x * 0.03
+							wep.VMSwayX = max(wep.VMSwayX, wep.VMDeltaX) + x * 0.03
 							--wep.VMDeltaX = wep.VMSwayX
 						end
 
 						wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.03
 
 						if wep.VMSwayY > 0 then
-							wep.VMSwayY = math.min(wep.VMSwayY, wep.VMDeltaY) + y * 0.03
+							wep.VMSwayY = min(wep.VMSwayY, wep.VMDeltaY) + y * 0.03
 							--wep.VMDeltaX = wep.VMSwayX
 						else
-							wep.VMSwayY = math.max(wep.VMSwayY, wep.VMDeltaY) + y * 0.03
+							wep.VMSwayY = max(wep.VMSwayY, wep.VMDeltaY) + y * 0.03
 							--wep.VMDeltaX = wep.VMSwayX
 						end
 					end
@@ -304,26 +302,26 @@ hook.Add("StartCommand", "Longsword2.StartCommand", function(ply, ucmd)
 					local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
 					
 
-					if math.abs(x) > 0 or math.abs(y) > 0 then
+					if abs(x) > 0 or abs(y) > 0 then
 						wep.LastInput = CurTime()
 
 						wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.12
 
 						if wep.VMSwayX > 0 then
-							wep.VMSwayX = math.min(wep.VMSwayX, wep.VMDeltaX) + x * 0.12
+							wep.VMSwayX = min(wep.VMSwayX, wep.VMDeltaX) + x * 0.12
 							--wep.VMDeltaX = wep.VMSwayX
 						else
-							wep.VMSwayX = math.max(wep.VMSwayX, wep.VMDeltaX) + x * 0.12
+							wep.VMSwayX = max(wep.VMSwayX, wep.VMDeltaX) + x * 0.12
 							--wep.VMDeltaX = wep.VMSwayX
 						end
 
 						wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.12
 
 						if wep.VMSwayY > 0 then
-							wep.VMSwayY = math.min(wep.VMSwayY, wep.VMDeltaY) + y * 0.12
+							wep.VMSwayY = min(wep.VMSwayY, wep.VMDeltaY) + y * 0.12
 							--wep.VMDeltaX = wep.VMSwayX
 						else
-							wep.VMSwayY = math.max(wep.VMSwayY, wep.VMDeltaY) + y * 0.12
+							wep.VMSwayY = max(wep.VMSwayY, wep.VMDeltaY) + y * 0.12
 							--wep.VMDeltaX = wep.VMSwayX
 						end
 					end
@@ -339,10 +337,6 @@ hook.Add("StartCommand", "Longsword2.StartCommand", function(ply, ucmd)
 	end
 	
 end)
-
-local abs = math.abs
-
-local pi2 = math.pi * 1.2
 
 local walk_pos_in = {
 	Vector(
@@ -421,29 +415,30 @@ sound.Add({
 })
 
 
-
 function SWEP:GetViewModelPosition( pos, ang )
 
-
-	local ft = FrameTime()
+	local ft = Frametime()
 	local ft8 = ft * 8
-	local ct = RealTime()
+	local ct = Curtime()
+	local rt = Realtime()
+	
 	local ovel = self.Owner:GetVelocity()
-	local move = Vector(ovel.x, ovel.y, 0)
+	local move = vec(ovel.x, ovel.y, 0)
 	local movement = move:LengthSqr()
-	local movepercent = math.Clamp(movement / self.Owner:GetRunSpeed() ^ 2, 0, 1)
+	local movepercent = clamp(movement / self.Owner:GetRunSpeed() ^ 2, 0, 1)
 
 	local vel = move:GetNormalized()
 	local rd = self.Owner:GetRight():Dot(vel)
 	local fd = (self.Owner:GetForward():Dot(vel) + 1) / 2
 	local onGround = self.Owner:OnGround()
 
+	local isIronsights = self:GetIronsights()
+
 
 	-- [[ SWAY ]] --
 
 	local toffset, toffsetang = self:GetOffset()
 	if self.VMOffsetPos then
-		--self.VMOffsetPos = LerpVector(ft / 8, self.VMOffsetPos or toffset, toffset)
 		local offset = self.VMOffsetPos
 		pos = pos + (ang:Right() * offset.x)
 		pos = pos + (ang:Forward() * offset.y)
@@ -451,58 +446,18 @@ function SWEP:GetViewModelPosition( pos, ang )
 	end
 
 	if self.VMOffsetAng then
-		--self.VMOffsetAng = LerpAngle(ft / 8, self.VMOffsetAng or toffsetang, toffsetang)
 		local offsetang = self.VMOffsetAng
 		ang:RotateAroundAxis( ang:Right(),   offsetang.p )
 		ang:RotateAroundAxis( ang:Up(),      offsetang.y )
 		ang:RotateAroundAxis( ang:Forward(), offsetang.r )
 	end
 
-	-- Rattle
-	if self.LastInput < CurTime() then
-		-- Reflect the current dir
-		if not self.VMRattle then
-			self.VMRattleVelocity = self.VMDeltaX / -4
-			self.VMRattle = true
+	local dt = clamp( abs( (ct - self.LastInput) /1.8 ), 0, 1)
 
-			self.VMRattlePos = Vector(0, 0, 0)
-			self.VMRattleAng = Angle(0, 0, 0)
-		end
-		
-	end
+	local elt = (1 - easeOutElastic(dt))
 
-	if math.Round(self.VMDeltaX, 6) == 0 then
-		self.VMStillXFor = self.VMStillXFor + ft
-	else
-		self.VMStillXFor = 0	
-	end
-
-	local rattle = self.VMRattleVelocity
-		
-
-	if abs(rattle) > 0 then
-		self.VMRattleVelocity = math.Approach(rattle, 0, ft * 0.5)
-			
-		self.VMRattlePos = LerpVector(ft, self.VMRattlePos, (ang:Right() * math.sin(-rattle)  * 1))
-		self.VMRattleAng = LerpAngle(ft, self.VMRattleAng, Angle(math.sin(-rattle) * 8, 0, 0))
-
-		--ang:RotateAroundAxis(ang:Up(), self.VMRattleAng.p)
-		--pos = pos + self.VMRattlePos
-	
-	else
-
-
-		self.VMRattle = false
-		
-	end
-
-	--self.VMDeltaX = math.Clamp(self.VMDeltaX, -11, 11)
-	--self.VMDeltaY = math.Clamp(self.VMDeltaY, -11, 11)
-
-	local dt = math.Clamp( abs((CurTime() - self.LastInput)/1.8), 0, 1)
-
-	self.VMDeltaX = Lerp(ft8, self.VMDeltaX, self.VMSwayX * (1 - math.ease.OutElastic(dt))) 
-	self.VMDeltaY = Lerp(ft8, self.VMDeltaY, self.VMSwayY * (1 - math.ease.OutElastic(dt))) 
+	self.VMDeltaX = lerp(ft8, self.VMDeltaX, self.VMSwayX * elt) 
+	self.VMDeltaY = lerp(ft8, self.VMDeltaY, self.VMSwayY * elt) 
 
 	
 	-- Perform VM Rotations and shit
@@ -510,20 +465,18 @@ function SWEP:GetViewModelPosition( pos, ang )
 	ang:RotateAroundAxis(ang:Right(), self.VMDeltaY)
 
 	-- Offset the viewmodel
-	pos = pos + (ang:Right() * (self.VMDeltaX/(math.pi*1.7)))
-	pos = pos + (ang:Up() * -(self.VMDeltaY/(math.pi*1.7)))
+	pos = pos + (ang:Right() * (self.VMDeltaX/(pi*1.7)))
+	pos = pos + (ang:Up() * -(self.VMDeltaY/(pi*1.7)))
 
 	-- Roll
-	self.VMRoll = Lerp(ft8, self.VMRoll, rd * movepercent)
+	self.VMRoll = lerp(ft8, self.VMRoll, rd * movepercent)
 
-	local degRoll = math.deg(math.sin(self.VMRoll * math.pi))
+	local degRoll = deg(sin(self.VMRoll * pi))
 
-	ang:RotateAroundAxis(ang:Forward(), degRoll * (math.pi / 10))
-	--ang:RotateAroundAxis(ang:Right(), self.VMRoll * 7)
-	ang:RotateAroundAxis(ang:Up(), self.VMRoll * (math.pi / 5	))
+	ang:RotateAroundAxis(ang:Forward(), degRoll * (pi / 10))
+	ang:RotateAroundAxis(ang:Up(), self.VMRoll * (pi / 5	))
 	pos = pos + (ang:Right() * (degRoll /80))
 	pos = pos + (ang:Up() * (degRoll /80 ))
-
 
 	-- [[ END SWAY ]] --
 
@@ -532,12 +485,12 @@ function SWEP:GetViewModelPosition( pos, ang )
 	local vel = self.Owner:GetVelocity()
 	local len = vel:Length()
 	
-	c_move = Lerp(ft8, c_move or 0, onGround and movepercent or 0)
+	c_move = lerp(ft8, c_move or 0, onGround and movepercent or 0)
 	--pos = pos + ang:Forward() * c_move  * fd - ang:Up() * .75 * c_move + ang:Right() * .5 * c_move
 	local p = c_move * c_sight * 1
-	local move = math.Clamp(len / self.Owner:GetRunSpeed(), 0, 1)
+	local move = clamp(len / self.Owner:GetRunSpeed(), 0, 1)
 
-	if self:GetIronsights() then
+	if isIronsights then
 		move = move * 0.2
 	
 	end
@@ -545,17 +498,17 @@ function SWEP:GetViewModelPosition( pos, ang )
 	if move > 0 then
 		pos = pos - ang:Up() * move * 1.7
 		-- Compress our weapon slightly when we move
-		if not self:GetIronsights() then
+		if not isIronsights then
 			ang:RotateAroundAxis(ang:Forward(), move * -8)
 			pos = pos - ang:Right() * 0.5 * move
 		end
 		
 	end
 	if onGround then
-		local cycle = math.sin(ct * 8.4)
-		local cycle2 = math.cos(ct * 16.8)
+		local cycle = sin(rt * 8.4)
+		local cycle2 = cos(rt * 16.8)
 
-		local stepcycle = math.cos(ct * 10.4)
+		local stepcycle = cos(rt * 10.4)
 		pos = pos + ang:Right() * stepcycle * 1.1 * move
 		ang:RotateAroundAxis(ang:Up(), stepcycle * 1.2 * move)
 
@@ -570,11 +523,11 @@ function SWEP:GetViewModelPosition( pos, ang )
 		-- Special sprint case for rifles
 		if move >= 0.8 and self.LoweredPos then
 
-			local cycle = math.sin(ct * 9.7 * 2) 
-			local cycle2 = math.cos(ct * 19.4 * 2) 
+			local cycle = sin(rt * 9.7 * 2) 
+			local cycle2 = cos(rt * 19.4 * 2) 
 
-			if (self.VMLastSprintSound or 0) < CurTime() then
-				self.VMLastSprintSound = CurTime() + 0.33
+			if (self.VMLastSprintSound or 0) < ct then
+				self.VMLastSprintSound = ct + 0.33
 				self:EmitSound("Longsword2.Sprint")
 			end
 			-- Horizontal
@@ -588,7 +541,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 			--pos = pos + ang:Up() * cycle2 * 0.3 * move
 		
 		elseif move >= 0.2 then
-			if (self.VMLastWalkSound or 0) < CurTime() then
+			if (self.VMLastWalkSound or 0) < ct then
 				self.VMLastWalkSound = CurTime() + 0.33
 				self:EmitSound("Longsword2.Walk")
 			end
@@ -596,8 +549,8 @@ function SWEP:GetViewModelPosition( pos, ang )
 
 
 	else
-		local cycle = math.sin(ct * 8.4* movement) 
-		local cycle2 = math.cos(ct * 16.8* movement) 
+		local cycle = sin(rt * 8.4* movement) 
+		local cycle2 = cos(rt * 16.8* movement) 
 
 		-- Horizontal
 		ang:RotateAroundAxis(ang:Up(), cycle * 2 * move)
@@ -608,16 +561,16 @@ function SWEP:GetViewModelPosition( pos, ang )
 		pos = pos + ang:Up() * cycle2 * 0.3 * movement	
 	end
 
-	if math.Round(move, 4) == 0 then
+	if round(move, 4) == 0 then
 
-		if not self:GetIronsights() then
+		if not isIronsights then
 
-			local t = CurTime() - (self.VMLastMoved or CurTime())
-			local lt = math.Clamp(t, 0, 1)
+			local t = ct - (self.VMLastMoved or ct)
+			local lt = clamp(t, 0, 1)
 
-			local cycle = math.cos(t * 0.8) * lt  
-			local vycle = math.sin(t * 0.8) * lt
-			local tycle = math.sin(t * 0.8) * lt
+			local cycle = cos(t * 0.8) * lt  
+			local vycle = sin(t * 0.8) * lt
+			local tycle = sin(t * 0.8) * lt
 
 			-- Horizontal
 			ang:RotateAroundAxis(ang:Up(), cycle * 0.7)
@@ -631,13 +584,13 @@ function SWEP:GetViewModelPosition( pos, ang )
 			ang:RotateAroundAxis(ang:Forward(), tycle * 1.5)
 		end
 	else 
-		self.VMLastMoved = CurTime()
+		self.VMLastMoved = ct
 	end
 
-	if self.Owner:KeyDown(IN_DUCK) and not self:GetIronsights() then
-		self.VMCrouchDelta = math.Approach(self.VMCrouchDelta, 1, ft)	
+	if self.Owner:KeyDown(IN_DUCK) and not isIronsights then
+		self.VMCrouchDelta = approach(self.VMCrouchDelta, 1, ft)	
 	else	
-		self.VMCrouchDelta = math.Approach(self.VMCrouchDelta, 0, ft)
+		self.VMCrouchDelta = approach(self.VMCrouchDelta, 0, ft)
 	end
 
 	if self.VMCrouchDelta > 0 then
@@ -662,8 +615,8 @@ function SWEP:GetViewModelPosition( pos, ang )
 	self.VMAng:RotateAroundAxis(self.VMAng:Up(), self.VMRecoilAng.y)
 	self.VMAng:RotateAroundAxis(self.VMAng:Forward(), self.VMRecoilAng.r)
 
-	self.VMRecoilPos = LerpVector(FrameTime() * 6, self.VMRecoilPos, Vector(0, 0, 0))
-	self.VMRecoilAng = LerpAngle(FrameTime() * 6, self.VMRecoilAng, Angle(0, 0, 0))
+	self.VMRecoilPos = lerpVector(ft * 6, self.VMRecoilPos, Vector(0, 0, 0))
+	self.VMRecoilAng = lerpAngle(ft * 6, self.VMRecoilAng, Angle(0, 0, 0))
 
 	-- Recoil is last so it's overriding all
 
@@ -672,7 +625,8 @@ function SWEP:GetViewModelPosition( pos, ang )
 	return self.VMPos, self.VMAng
 end
 
-local aimdot = Material("ph_scope/ph_scope_lens5")
+local aimdot = Material("models/weapons/tfa_ins2/optics/po4x_reticule")
+local aimdot2 = Material("models/weapons/tfa_ins2/optics/aimpoint_reticule_sc")
 local bl = Material("pp/blurscreen")
 
 
@@ -723,24 +677,42 @@ function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
 	render.SetColorModulation(1, 1, 1, 255)
 	render.SetMaterial(aimdot)
 		local pos = att:GetPos()
-		pos = pos + (att:GetAngles():Forward() * 44)
+		pos = pos + (att:GetAngles():Forward() * 2)
 		pos = pos + (att:GetAngles():Up() * 1.4)
+
+		local fpos = pos + (att:GetAngles():Forward() * 36)
 		
 		local sc = pos:ToScreen()
 
+		--render.SetStencilReferenceValue(54)
+
+		--render.SetStencilCompareFunction(STENCIL_ALWAYS)
 		
+		
+		--render.SetBlend(0)
+			
+			render.SetMaterial(aimdot)
+			local rangle = att:GetAngles()
+			rangle:RotateAroundAxis(rangle:Up(), 180)
+			render.DrawQuadEasy(pos + rangle:Up() * 24, rangle:Right(), 4, 1, color_white, 0)
+			--draw.NoTexture()
+			--render.DrawSphere(pos , 32, 50, 50, Color(255, 255, 255, 255))
+			
+		--
+		render.SetBlend(1)
+		
+		render.SetStencilReferenceValue(32)
 		--render.DrawScreenQuad()
-		
 	render.SetStencilPassOperation(STENCIL_REPLACE)
 	render.SetStencilZFailOperation(STENCIL_KEEP)
 	render.SetStencilCompareFunction(STENCIL_GREATER)
 
 	if self:GetIronsights() then
 		
-		for i = 1, 10 do
-			bl:SetFloat("$blur", i * 6)
+		for i = 1, 4 do
+			bl:SetFloat("$blur", (i / 10) * 20)
 			bl:Recompute()
-			render.SetStencilReferenceValue(32 - i)
+			--render.SetStencilReferenceValue(32 - i)
 			render.SetMaterial(bl)
 			render.DrawScreenQuad()
 		end
@@ -757,7 +729,7 @@ function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
 
 		
 
-		render.ClearRenderTarget(rtx, Color(0,0,0,0))
+		render.ClearRenderTarget(rtx, Color(0,0,0,255))
 		if self:GetIronsights() then
 		--render.PushRenderTarget(rtx)
 			render.BlurRenderTarget(rtx, ScrW(), ScrH(), 3)
@@ -772,7 +744,25 @@ function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
 			drawviewmodel = false,
         	fov = 14.6,	
 		})
-		render.DrawScreenQuad()
+
+		--cam.Start2D()
+		--render.SetStencilReferenceValue(32)
+
+		
+
+		render.SetMaterial(aimdot)
+		render.UpdatePowerOfTwoTexture()
+		
+		render.DrawQuadEasy(pos, rangle:Forward(), 16, 9, Color(255, 255, 255, 255), 180)
+
+		render.SetMaterial(aimdot2)
+		render.DrawQuadEasy(fpos, rangle:Forward(), 16 * 3.4, 9 * 3.4, Color(255, 255, 255, 255), 180)
+		--cam.End2D()
+		
+		--render.SetMaterial(aimdot)
+		--render.DrawTextureToScreen(aimdot:GetTexture("$basetexture"))
+		
+		
 		end
 
 		local pang = att:GetAngles()
@@ -783,3 +773,16 @@ function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
 	
 	--render.DrawTextureToScreen(bl:GetTexture("$basetexture"))
 end
+
+-- Landing effect
+hook.Add("OnPlayerHitGround", "Longsword2.PlayerLanding", function(ply, _, __, speed)
+	if ply:Alive() and ply:GetActiveWeapon():IsValid() then
+		local wep = ply:GetActiveWeapon()
+		if wep.IsLongsword then
+			
+			wep.LastInput = CurTime()
+			wep.VMSwayY = speed/30
+			wep.VMSwayX = math.random(-1, 1) * speed/50
+		end
+	end
+end)

@@ -101,9 +101,19 @@ function SWEP:IronsightsThink()
 	if self.Owner:KeyDown( IN_ATTACK2 ) and not self:GetIronsights() then
 		self:SetIronsights( true )
 		self:EmitSound("Longsword2.ADS.In")
+		if CLIENT then
+			self.LastInput = CurTime()
+			self.VMSwayX = 9
+			self.VMSwayY = 3
+		end
 	elseif not self.Owner:KeyDown( IN_ATTACK2 ) and self:GetIronsights() then
 		self:SetIronsights( false )
 		self:EmitSound("Longsword2.ADS.Out")
+		if CLIENT then
+			self.LastInput = CurTime()
+			self.VMSwayX = -8
+			self.VMSwayY = -3
+		end
 	end
 end
 function SWEP:ReloadThink()
