@@ -36,7 +36,13 @@ local rtx = GetRenderTargetEx("ls2_rt", 512, 512, RT_SIZE_NO_CHANGE, MATERIAL_RT
 
 SWEP.VMRenderTarget = CreateMaterial("ls2_sight_rt", "UnlitGeneric", {
 	["$model"] = 1,
-	["$basetexture"] = rtx:GetName()
+	["$basetexture"] = rtx:GetName(),
+	["$phong"] = 1,
+	["$phongexponent"] = 100,
+	["$phongboost"] = 1,
+	["$phongfresnelranges"] = "[0 0.5 1]",
+	["$phongalbedotint"] = "[1 1 1]",
+	["$phongtint"] = "[1 1 1]"
 })
 
 -- Cleaning this up (nick)
@@ -129,6 +135,9 @@ function SWEP:PreDrawViewModel(vm)
 	end
 end
 
+local mat = Material("ph_scope/ph_scope_lens5")
+mat:SetTexture("$basetexture", rtx)
+
 function SWEP:ViewModelDrawn()
 	local vm = self.Owner:GetViewModel()
 
@@ -178,20 +187,28 @@ function SWEP:ViewModelDrawn()
 	att:DrawModel()
 	--PrintTable(att:GetMaterials())
 
-	self.VMRenderTarget:SetTexture("$basetexture", rtx)
+	--[[self.VMRenderTarget:SetTexture("$basetexture", rtx)
 	if not self.asdasd then
 		self.asdasd = true
 		local m = self.VMRenderTarget:GetMatrix("$basetexturetransform")
 		m:SetScale(Vector(-1,1, 0))
 		self.VMRenderTarget:SetMatrix("$basetexturetransform", m)
-		self.VMRenderTarget:Recompute()
-	end
+		self.VMRenderTarget:SetFloat("$phong", 1)
+	self.VMRenderTarget:SetFloat("$phongexponent", 100)
+	self.VMRenderTarget:SetFloat("$phongboost", 1)
+	--self.VMRenderTarget:SetFloat("$phongfresnelranges", 1)
+	
+	self.VMRenderTarget	:SetTexture("$bumpmap", "models/debug/debugwhite")
+	self.VMRenderTarget:Recompute()
+	end]]
+
+	
 
 	
 
 	--att:SetSubMaterial(1, "")
-	--att:SetSubMaterial(2, "")
-	att:SetSubMaterial(1, "!ls2_sight_rt")
+	att:SetSubMaterial(2, "ph_scope/ph_scope_lens5")
+	--att:GetSubMaterial()
 
 	
 	self:DrawHoloSight(pos, ang, att)
@@ -655,7 +672,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 	return self.VMPos, self.VMAng
 end
 
-local aimdot = Material("sprites/glow04_noz")
+local aimdot = Material("ph_scope/ph_scope_lens5")
 local bl = Material("pp/blurscreen")
 
 
@@ -712,22 +729,28 @@ function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
 		local sc = pos:ToScreen()
 
 		
-		
-		cam.Start2D()
-			surface.SetMaterial(aimdot)
-			surface.SetDrawColor(255, 255, 255, 255)
-			surface.DrawTexturedRect(sc.x - 16, sc.y - 16, 32, 32)
-		cam.End2D()
+		--render.DrawScreenQuad()
 		
 	render.SetStencilPassOperation(STENCIL_REPLACE)
 	render.SetStencilZFailOperation(STENCIL_KEEP)
 	render.SetStencilCompareFunction(STENCIL_GREATER)
 
-	
+	if self:GetIronsights() then
+		
+		for i = 1, 10 do
+			bl:SetFloat("$blur", i * 6)
+			bl:Recompute()
+			render.SetStencilReferenceValue(32 - i)
+			render.SetMaterial(bl)
+			render.DrawScreenQuad()
+		end
+	end
+
 	render.SetStencilReferenceValue(0)
 	render.SetStencilEnable(false)
 	render.ClearStencil()
 
+	
 	render.UpdateFullScreenDepthTexture()
 
 	render.PushRenderTarget(rtx,0,0,512,512)
@@ -739,10 +762,6 @@ function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
 		--render.PushRenderTarget(rtx)
 			render.BlurRenderTarget(rtx, ScrW(), ScrH(), 3)
 		-- render.PopRenderTarget()
-		end
-
-		local pang = att:GetAngles()
-		
 		render.RenderView({
 			origin = pos,
 			angles = pang ,
@@ -751,8 +770,14 @@ function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
 			w = -512,
 			h = 512,
 			drawviewmodel = false,
-        	fov = 11.6,	
+        	fov = 14.6,	
 		})
+		render.DrawScreenQuad()
+		end
+
+		local pang = att:GetAngles()
+		
+		
 		render.PopRenderTarget()
 	
 	
