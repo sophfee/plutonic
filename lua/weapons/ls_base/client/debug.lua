@@ -71,10 +71,10 @@ function SWEP:DrawHUD()
 
 		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 210)
 		
-		surface.DrawText("Rattle: " .. tostring(math.Round(self.VMRattleVelocity, 4)))
+		surface.DrawText("Sway X: " .. tostring(math.Round(self.VMSwayX, 8)))
 
 		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 230)
-		surface.DrawText("Sway X: " .. tostring(self.VMDeltaX))
+		surface.DrawText("Delta X: " .. tostring(math.Round(self.VMDeltaX, 8)))
 
 		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 250)
 		surface.DrawText("Sway Y: " .. tostring(self.VMDeltaY))

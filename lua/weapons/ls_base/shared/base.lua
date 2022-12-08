@@ -356,8 +356,8 @@ function SWEP:ShootEffects()
 		end
 		
 	else
-		self.ViewModelPos = self.IronsightsPos + self.BlowbackPos + (self.ViewModelOffset or Vector())
-		self.ViewModelAng = self.IronsightsAng + self.BlowbackAngle + (self.ViewModelOFfsetAng or Angle())
+		--self.ViewModelPos = self.IronsightsPos + self.BlowbackPos + (self.ViewModelOffset or Vector())
+		--self.ViewModelAng = self.IronsightsAng + self.BlowbackAngle + (self.ViewModelOFfsetAng or Angle())
 		self:SetIronsightsRecoil( 2 )
 		self.CanDecreaseBlowback = CurTime() + 0.1
 	end
