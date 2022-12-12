@@ -10,6 +10,7 @@ include("shared/attachment.lua")
 include("shared/spread.lua")
 include("shared/think.lua")
 include("shared/worldmodel.lua")
+include("shared/reload.lua")
 
 -- [ Now Load Client Specific Files ] --
 include("client/viewmodel.lua")

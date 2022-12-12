@@ -444,6 +444,14 @@ sound.Add(
 )
 
 function SWEP:GetViewModelPosition(pos, ang)
+
+	self.VMDeltaX = self.VMDeltaX or 0
+	self.VMDeltaY = self.VMDeltaY or 0
+	self.VMRoll = self.VMRoll or 0
+	self.VMSwayX = self.VMSwayX or 0
+	self.VMSwayY = self.VMSwayY or 0
+	self.LastInput = self.LastInput or Curtime()
+
 	local ft = Frametime()
 	local ft8 = ft * 8
 	local ct = Curtime()
@@ -482,11 +490,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	local elt = (1 - easeOutElastic(dt))
 
-	self.VMDeltaX = self.VMDeltaX or 0
-	self.VMDeltaY = self.VMDeltaY or 0
-	self.VMRoll = self.VMRoll or 0
-	self.VMSwayX = self.VMSwayX or 0
-	self.VMSwayY = self.VMSwayY or 0
+	
 
 	self.VMDeltaX = lerp(ft8, self.VMDeltaX, self.VMSwayX * elt)
 	self.VMDeltaY = lerp(ft8, self.VMDeltaY, self.VMSwayY * elt)
@@ -500,6 +504,11 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (ang:Up() * -(self.VMDeltaY / (pi * 1.7)))
 
 	-- Roll
+
+	-- Reduce roll when ironsights
+	if isIronsights then
+		rd = rd / 2
+	end
 	self.VMRoll = lerp(ft8, self.VMRoll, rd * movepercent)
 
 	local degRoll = deg(sin(self.VMRoll * pi))
@@ -507,7 +516,13 @@ function SWEP:GetViewModelPosition(pos, ang)
 	ang:RotateAroundAxis(ang:Forward(), degRoll * (pi / 10))
 	ang:RotateAroundAxis(ang:Up(), self.VMRoll * (pi / 5))
 	pos = pos + (ang:Right() * (degRoll / 80))
-	pos = pos + (ang:Up() * (degRoll / 80))
+	-- rolling to the left requires a different offset
+	if degRoll > 0 then
+		pos = pos + (ang:Up() * (degRoll / 60))
+	else
+		pos = pos + (ang:Up() * (degRoll / 40))
+	end
+	--pos = pos + (ang:Up() * (degRoll / 70))
 
 	-- [[ END SWAY ]] --
 
@@ -548,8 +563,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 		-- Horizontal
 
-		-- Special sprint case for rifles
-		if move >= 0.8 and self.LoweredPos then
+		-- Special sprint case for ~rifles~ (repurposed to all sweps, works fine)
+		if move >= 0.8 then
 			--pos = pos + ang:Up() * cycle2 * 0.3 * move
 			local cycle = sin(rt * 9.7 * 2)
 			local cycle2 = cos(rt * 19.4 * 2)
@@ -734,6 +749,9 @@ hook.Add(
 		if LocalPlayer():Alive() and LocalPlayer():GetActiveWeapon():IsValid() then
 			local wep = LocalPlayer():GetActiveWeapon()
 			if wep.IsLongsword then
+				if wep:GetAttachmentBehavior() != "holosight" then
+					return
+				end
 				if wep:GetIronsights() then
 					for i = 1, 4 do
 						bl:SetFloat("$blur", (i / 10) * 20)

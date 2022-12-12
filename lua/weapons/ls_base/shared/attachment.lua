@@ -37,5 +37,8 @@ function SWEP:RollbackModifiers(name)
 end
 
 function SWEP:GetAttachmentBehavior()
-	return self.Attachments[self:GetCurAttachment()].Behavior
+	if not self.Attachments then
+		return ""
+	end
+	return (self.Attachments[self:GetCurAttachment()] or {}).Behavior or ""
 end
