@@ -12,6 +12,8 @@ SWEP.SwayLevel = 0.3
 SWEP.SwayBob = 1.0
 SWEP.SwayIdle = 0.5
 
+LS2_DebugRoll = CreateClientConVar("ls2_debugroll", "0", true, false)
+
 -- quad bezier lerp from roblox ez dub
 local function rbxLerp(a, b, c)
 	return a + (b - a) * c
@@ -319,8 +321,6 @@ hook.Add(
 			if IsValid(wep) then
 				if wep.IsLongsword then
 					if wep:GetIronsights() then
-						--wep.VMDeltaY = wep.VMDeltaY + ucmd:GetMouseY() * 0.001
-						--wep.VMSwayY = wep.VMDeltaY
 						local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
 
 						if abs(x) > 0 or abs(y) > 0 then
@@ -329,20 +329,16 @@ hook.Add(
 							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.03
 
 							if wep.VMSwayX > 0 then
-								--wep.VMDeltaX = wep.VMSwayX
 								wep.VMSwayX = min(wep.VMSwayX, wep.VMDeltaX) + x * 0.03
 							else
-								--wep.VMDeltaX = wep.VMSwayX
 								wep.VMSwayX = max(wep.VMSwayX, wep.VMDeltaX) + x * 0.03
 							end
 
 							wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.03
 
 							if wep.VMSwayY > 0 then
-								--wep.VMDeltaX = wep.VMSwayX
 								wep.VMSwayY = min(wep.VMSwayY, wep.VMDeltaY) + y * 0.03
 							else
-								--wep.VMDeltaX = wep.VMSwayX
 								wep.VMSwayY = max(wep.VMSwayY, wep.VMDeltaY) + y * 0.03
 							end
 						end
@@ -355,20 +351,16 @@ hook.Add(
 							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.12
 
 							if wep.VMSwayX > 0 then
-								--wep.VMDeltaX = wep.VMSwayX
 								wep.VMSwayX = min(wep.VMSwayX, wep.VMDeltaX) + x * 0.12
 							else
-								--wep.VMDeltaX = wep.VMSwayX
 								wep.VMSwayX = max(wep.VMSwayX, wep.VMDeltaX) + x * 0.12
 							end
 
 							wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.12
 
 							if wep.VMSwayY > 0 then
-								--wep.VMDeltaX = wep.VMSwayX
 								wep.VMSwayY = min(wep.VMSwayY, wep.VMDeltaY) + y * 0.12
 							else
-								--wep.VMDeltaX = wep.VMSwayX
 								wep.VMSwayY = max(wep.VMSwayY, wep.VMDeltaY) + y * 0.12
 							end
 						end
@@ -398,8 +390,9 @@ SWEP.VMWalkBobInCyclePos = walk_pos_in[1]
 SWEP.VMWalkBobInCycleAng = walk_ang_in[1]
 SWEP.VMWalkBobOutCyclePos = walk_pos_out[1]
 SWEP.VMWalkBobOutCycleAng = walk_ang_out[1]
-
 SWEP.VMLastMoved = 0
+
+SWEP.Primary.FirePower = 1 -- This controls our VM recoil procedural animation
 
 sound.Add(
 	{
@@ -494,6 +487,9 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	self.VMDeltaX = lerp(ft8, self.VMDeltaX, self.VMSwayX * elt)
 	self.VMDeltaY = lerp(ft8, self.VMDeltaY, self.VMSwayY * elt)
+
+	self.VMDeltaX = clamp(self.VMDeltaX, -16, 16)
+	self.VMDeltaY = clamp(self.VMDeltaY, -16, 16)
 
 	-- Perform VM Rotations and shit
 	ang:RotateAroundAxis(ang:Up(), self.VMDeltaX)
@@ -637,6 +633,17 @@ function SWEP:GetViewModelPosition(pos, ang)
 	-- We lerp all positions to avoid jittering
 
 	--if self:GetIronsights() then
+
+	-- ** DEBUG CODE ** --
+	
+	-- ROLLING PERFECTLY
+
+	local dbg_roll = LS2_DebugRoll:GetFloat()
+	ang:RotateAroundAxis(ang:Forward(), LS2_DebugRoll:GetFloat())
+
+	pos = pos + (ang:Right() * -sin(dbg_roll/-8))
+	pos = pos + (ang:Up() * -sin(dbg_roll/-8))
+	--pos = pos + (ang:Up() * sin(dbg_roll/8))
 
 	-- Calculate offsets (real)
 
@@ -833,3 +840,30 @@ hook.Add(
 		end
 	end
 )
+
+function SWEP:LS_ProceduralRecoil(force)
+
+	if self:GetIronsights() then
+		force = force / 8
+	end
+
+	local rPos = self.BlowbackPos + Vector()
+	local rAng = self.BlowbackAngle + Angle()
+
+	local pitchKnock = math.Rand(1.1, 3.2) * force
+	rAng:RotateAroundAxis(rAng:Right(), -pitchKnock )
+	rPos = rPos - (rAng:Up() * (pitchKnock / 2))
+
+	local yawKnock = math.Rand(-0.6, 0.6) * force
+	rAng:RotateAroundAxis(rAng:Up(), yawKnock )
+	rPos = rPos + (rAng:Right() * (yawKnock / 2))
+
+	local rollKnock = math.Rand(-2, 2) * force
+	rAng:RotateAroundAxis(rAng:Forward(), rollKnock )
+	rPos = rPos + (rAng:Right() * (rollKnock / 2))
+
+	rPos = rPos - (rAng:Forward() * (math.Rand(4,6)) ) * force
+
+	self.VMRecoil = (self.VMRecoil or Vector()) + (rPos)
+	self.VMRecoilAng = (self.VMRecoilAng or Angle()) + (rAng)
+end

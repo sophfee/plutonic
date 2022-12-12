@@ -5,8 +5,27 @@ function SWEP:CanReload()
 		and not self:GetReloading() and self:GetNextPrimaryFire() < CurTime()
 	end
 
-	return self:Ammo1() > 0 and (self:Clip1() > 0 and self:Clip1() < self.Primary.ClipSize + 1 or self:Clip1() < self.Primary.ClipSize )
-		and not self:GetReloading() and self:GetNextPrimaryFire() < CurTime()
+	if self:GetReloading() then
+		return
+	end
+
+	if (self:GetNextPrimaryFire() > CurTime()) then
+		return
+	end
+
+	if self:Ammo1() == 0 then
+		return false
+	end
+
+	-- Chambering
+	if self.CannotChamber then
+		return self:Clip1() < self.Primary.ClipSize
+	else
+		if self:Clip1() == 0 then
+			return self:Clip1() < self.Primary.ClipSize + 1
+		end
+		return self:Clip1() < self.Primary.ClipSize	
+	end
 end
 
 function SWEP:Reload()
