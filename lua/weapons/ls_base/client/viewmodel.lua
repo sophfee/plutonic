@@ -1,5 +1,6 @@
 --      Copyright (c) 2022, Nick S. All rights reserved      --
 -- Longsword2 is a project built upon Longsword Weapon Base. --
+-- **IN DEVELOPMENT** --
 
 -- SWEP Customizable Values
 SWEP.CustomEvents = SWEP.CustomEvents or {}
@@ -198,23 +199,25 @@ function SWEP:ViewModelDrawn()
 	ang:RotateAroundAxis(ang:Forward(), c.Ang.r)
 	att:SetAngles(ang)
 	att:DrawModel()
-	PrintTable(att:GetMaterials())
 
-	self.VMRenderTarget:SetTexture("$basetexture", rtx)
-	if not self.VMInitRT3 then
-		self.VMInitRT3 = true
-		local m = mat:GetMatrix("$basetexturetransform")
-		m:SetScale(Vector(-1, 1, 0))
-		mat:SetMatrix("$basetexturetransform", m)
-		mat:SetVector("$envmaptint", Vector(0, 0, 0))
-		mat:Recompute()
-	end
+	if self:GetAttachmentBehavior() == "holosight" then
+
+		self.VMRenderTarget:SetTexture("$basetexture", rtx)
+		if not self.VMInitRT3 then
+			self.VMInitRT3 = true
+			local m = mat:GetMatrix("$basetexturetransform")
+			m:SetScale(Vector(-1, 1, 0))
+			mat:SetMatrix("$basetexturetransform", m)
+			mat:SetVector("$envmaptint", Vector(0, 0, 0))
+			mat:Recompute()
+		end
 
 	--att:SetSubMaterial(1, "models/weapons/tfa_ins2/optics/aimpoint_reticule_holo")
-	att:SetSubMaterial(1, "")
+		att:SetSubMaterial(1, "")
 	--att:GetSubMaterial()
 
-	self:DrawHoloSight(pos, ang, att)
+		self:DrawHoloSight(pos, ang, att)
+	end
 end
 
 local lastAng = Angle(0, 0, 0)
@@ -250,6 +253,7 @@ local abs,
 	lerpAngle,
 	lerpVector,
 	approach =
+
 	math.abs,
 	math.min,
 	math.max,
@@ -343,9 +347,6 @@ hook.Add(
 							end
 						end
 					else
-						--wep.VMSwayX = wep.VMDeltaX + ucmd:GetMouseX() * 0.04
-						--wep.VMDeltaX = wep.VMSwayX
-						--wep.VMDeltaY = wep.VMDeltaY + ucmd:GetMouseY() * 0.004
 						local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
 
 						if abs(x) > 0 or abs(y) > 0 then
@@ -480,6 +481,12 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local dt = clamp(abs((ct - self.LastInput) / 1.8), 0, 1)
 
 	local elt = (1 - easeOutElastic(dt))
+
+	self.VMDeltaX = self.VMDeltaX or 0
+	self.VMDeltaY = self.VMDeltaY or 0
+	self.VMRoll = self.VMRoll or 0
+	self.VMSwayX = self.VMSwayX or 0
+	self.VMSwayY = self.VMSwayY or 0
 
 	self.VMDeltaX = lerp(ft8, self.VMDeltaX, self.VMSwayX * elt)
 	self.VMDeltaY = lerp(ft8, self.VMDeltaY, self.VMSwayY * elt)

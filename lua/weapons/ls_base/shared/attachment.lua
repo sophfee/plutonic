@@ -35,3 +35,7 @@ end
 function SWEP:RollbackModifiers(name)
 	self.Attachments[name].ModCleanup(self)
 end
+
+function SWEP:GetAttachmentBehavior()
+	return self.Attachments[self:GetCurAttachment()].Behavior
+end
