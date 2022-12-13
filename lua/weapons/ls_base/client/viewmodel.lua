@@ -589,11 +589,11 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 		-- Horizontal
 		ang:RotateAroundAxis(ang:Up(), cycle * 2 * move)
-		pos = pos + ang:Right() * cycle * 0.5
+		--pos = pos + ang:Right() * cycle * 0.5
 
 		-- Vertical
 		ang:RotateAroundAxis(ang:Right(), cycle2 * -0.3 * move)
-		pos = pos + ang:Up() * cycle2 * 0.3 * movement
+		--pos = pos + ang:Up() * cycle2 * 0.3 * movement
 	end
 
 	if round(move, 4) == 0 then
@@ -846,6 +846,7 @@ function SWEP:LS_ProceduralRecoil(force)
 	if self:GetIronsights() then
 		force = force / 8
 	end
+	force = force / 2
 
 	local rPos = self.BlowbackPos + Vector()
 	local rAng = self.BlowbackAngle + Angle()
