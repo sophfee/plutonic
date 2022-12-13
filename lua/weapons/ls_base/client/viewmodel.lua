@@ -507,17 +507,20 @@ function SWEP:GetViewModelPosition(pos, ang)
 	end
 	self.VMRoll = lerp(ft8, self.VMRoll, rd * movepercent)
 
-	local degRoll = deg(sin(self.VMRoll * pi))
+	local degRoll = deg(sin(self.VMRoll * pi)) / 2
 
-	ang:RotateAroundAxis(ang:Forward(), degRoll * (pi / 10))
-	ang:RotateAroundAxis(ang:Up(), self.VMRoll * (pi / 5))
-	pos = pos + (ang:Right() * (degRoll / 80))
-	-- rolling to the left requires a different offset
+	ang:RotateAroundAxis(ang:Forward(), degRoll)
+
+	-- Offset the viewmodel
 	if degRoll > 0 then
-		pos = pos + (ang:Up() * (degRoll / 60))
+		pos = pos + (ang:Right() * (degRoll / 12))
 	else
-		pos = pos + (ang:Up() * (degRoll / 40))
+		ang:RotateAroundAxis(ang:Forward(), degRoll/2)
+		pos = pos + (ang:Right() * (degRoll / 14))
 	end
+	-- rolling to the left requires a different offset
+	
+	pos = pos + (ang:Up() * (degRoll / 40))
 	--pos = pos + (ang:Up() * (degRoll / 70))
 
 	-- [[ END SWAY ]] --
@@ -588,11 +591,11 @@ function SWEP:GetViewModelPosition(pos, ang)
 		local cycle2 = cos(rt * 16.8 * movement)
 
 		-- Horizontal
-		ang:RotateAroundAxis(ang:Up(), cycle * 2 * move)
+		--ang:RotateAroundAxis(ang:Up(), cycle * 2 * move)
 		--pos = pos + ang:Right() * cycle * 0.5
 
 		-- Vertical
-		ang:RotateAroundAxis(ang:Right(), cycle2 * -0.3 * move)
+		--ang:RotateAroundAxis(ang:Right(), cycle2 * -0.3 * move)
 		--pos = pos + ang:Up() * cycle2 * 0.3 * movement
 	end
 
@@ -641,8 +644,15 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local dbg_roll = LS2_DebugRoll:GetFloat()
 	ang:RotateAroundAxis(ang:Forward(), LS2_DebugRoll:GetFloat())
 
-	pos = pos + (ang:Right() * -sin(dbg_roll/-8))
-	pos = pos + (ang:Up() * -sin(dbg_roll/-8))
+	if dbg_roll > 0 then
+		pos = pos + (ang:Right() * (dbg_roll/14))
+		pos = pos + (ang:Up() * (dbg_roll/24))
+	else
+		pos = pos + (ang:Right() * (dbg_roll/12))
+		pos = pos + (ang:Up() * (dbg_roll/24))
+	end
+	--pos = pos + (ang:Right() * -sin(dbg_roll/-8))
+	--pos = pos + (ang:Up() * -sin(dbg_roll/-8))
 	--pos = pos + (ang:Up() * sin(dbg_roll/8))
 
 	-- Calculate offsets (real)
