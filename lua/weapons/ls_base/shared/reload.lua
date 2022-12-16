@@ -24,7 +24,7 @@ function SWEP:CanReload()
 		if self:Clip1() == 0 then
 			return self:Clip1() < self.Primary.ClipSize + 1
 		end
-		return self:Clip1() < self.Primary.ClipSize	
+		return self:Clip1() < self.Primary.ClipSize + 1	
 	end
 end
 
@@ -64,11 +64,15 @@ function SWEP:FinishReload()
     local amount
 
     -- one in the chamber
-    if self:Clip1() == 0 then
-        amount = math.min( self:GetMaxClip1() - self:Clip1(), self:Ammo1() )
-    else
-        amount = math.min( (self:GetMaxClip1() + 1) - self:Clip1(), self:Ammo1() )
-    end
+	if self.CannotChamber then
+		amount = math.min( self:GetMaxClip1() - self:Clip1(), self:Ammo1() )
+	else
+    	if self:Clip1() == 0 then
+        	amount = math.min( self:GetMaxClip1() - self:Clip1(), self:Ammo1() )
+    	else
+        	amount = math.min( (self:GetMaxClip1() + 1) - self:Clip1(), self:Ammo1() )
+    	end
+	end
 
 	self:SetClip1( self:Clip1() + amount )
 	self.Owner:RemoveAmmo( amount, self:GetPrimaryAmmoType() )

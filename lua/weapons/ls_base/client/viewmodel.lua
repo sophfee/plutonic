@@ -442,15 +442,18 @@ function SWEP:GetViewModelPosition(pos, ang)
 	-- This is the default position of the viewmodel, so we can use it as a reference point
 	-- to calculate the new position and angles
 
-	local start_pos, start_ang = pos + Vector(0,0,0), ang + Angle(0,0,0)
+	
 
 	local ironsightPos = self.IronsightsPos
 	local ironsightAng = self.IronsightsAng
 	ang:RotateAroundAxis(ang:Right(), ironsightAng.p)
 	ang:RotateAroundAxis(ang:Up(), ironsightAng.y)
 	ang:RotateAroundAxis(ang:Forward(), ironsightAng.r)
-	pos = pos + (ang:Forward() * ironsightPos.y) + (ang:Right() * (ironsightPos.x)) + (ang:Up() * ironsightPos.z)
-	
+	pos = pos + (ang:Forward() * ironsightPos.x) + (ang:Right() * (ironsightPos.y)) + (ang:Up() * ironsightPos.z)
+	pos = pos + (ang:Up() * -2)
+	pos = pos + (ang:Forward() * 5)
+
+	local start_pos, start_ang = pos + Vector(0,0,0), ang + Angle(0,0,0)
 
 
 	self.VMDeltaX = self.VMDeltaX or 0
@@ -512,16 +515,11 @@ function SWEP:GetViewModelPosition(pos, ang)
 	ang:RotateAroundAxis(ang:Forward(), degRoll)
 
 	-- Offset the viewmodel
-	if degRoll > 0 then
-		pos = pos + (ang:Right() * (degRoll / 12))
-	else
-		ang:RotateAroundAxis(ang:Forward(), degRoll/2)
-		pos = pos + (ang:Right() * (degRoll / 14))
-	end
+	pos = pos + (ang:Right() * (degRoll / 14))
 	-- rolling to the left requires a different offset
 	
+	--pos = pos + (ang:Up() * (degRoll / 40))
 	pos = pos + (ang:Up() * (degRoll / 40))
-	--pos = pos + (ang:Up() * (degRoll / 70))
 
 	-- [[ END SWAY ]] --
 
@@ -647,16 +645,23 @@ function SWEP:GetViewModelPosition(pos, ang)
 	-- Calculate offsets (real)
 
 	-- REVERSE THE RELATIVITY!
+	
+	ang:RotateAroundAxis(ang:Right(), -ironsightAng.p)
 	--start_ang:RotateAroundAxis(start_ang:Right(), -ironsightAng.p)
-	ang:RotateAroundAxis(start_ang:Right(), -ironsightAng.p)
 
+	--
+	ang:RotateAroundAxis(ang:Up(), -ironsightAng.y)
 	--start_ang:RotateAroundAxis(start_ang:Up(), -ironsightAng.y)
-	ang:RotateAroundAxis(start_ang:Up(), -ironsightAng.y)
 	
+	--
+	ang:RotateAroundAxis(ang:Forward(), -ironsightAng.r)
 	--start_ang:RotateAroundAxis(start_ang:Forward(), -ironsightAng.r)
-	ang:RotateAroundAxis(start_ang:Forward(), -ironsightAng.r)
 	
-	pos = pos + (start_ang:Forward() * -ironsightPos.y) + (start_ang:Right() * -ironsightPos.x) + (start_ang:Up() * -ironsightPos.z)
+	pos = pos + (start_ang:Forward() * -ironsightPos.x)
+	pos = pos + (start_ang:Right() * -ironsightPos.y)
+	pos = pos + (start_ang:Up() * -ironsightPos.z)
+	pos = pos + (ang:Up() *2)
+	pos = pos + (ang:Forward() * -5)
 
 	local toffset, toffsetang = self:GetOffset()
 
