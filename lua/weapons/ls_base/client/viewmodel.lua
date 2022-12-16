@@ -503,23 +503,42 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (ang:Up() * -(self.VMDeltaY / (pi * 1.7)))
 
 	-- Roll
+	--local move = clamp(len / self.Owner:GetRunSpeed(), 0, 1)
 
 	-- Reduce roll when ironsights
 	if isIronsights then
 		rd = rd / 2
 	end
-	self.VMRoll = lerp(ft8, self.VMRoll, rd * movepercent)
+	if isIronsights then
+		movement = movement * 0.2
+	end
 
-	local degRoll = deg(sin(self.VMRoll * pi)) / 2
+	local sRoll = 0
+	do
+		if movement> 0 then
+			local vel = self.Owner:GetVelocity()
+			local len = vel:Length()
+			local move = clamp(len / self.Owner:GetRunSpeed(), 0, 1)
+			--pos = pos - ang:Up() * move * 1.7
+			-- Compress our weapon slightly when we move
+			if not isIronsights then
+				--sRoll= sRoll - ( move * -8 )
+				--pos = pos - ang:Right() * 0.5 * move
+			end
+		end
+	end
+	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent + sRoll)
+
+	local degRoll = deg(sin(self.VMRoll * pi)) / 3
 
 	ang:RotateAroundAxis(ang:Forward(), degRoll)
 
 	-- Offset the viewmodel
-	pos = pos + (ang:Right() * (degRoll / 14))
+	--pos = pos + (ang:Right() * (degRoll / 14))
 	-- rolling to the left requires a different offset
 	
 	--pos = pos + (ang:Up() * (degRoll / 40))
-	pos = pos + (ang:Up() * (degRoll / 40))
+	--pos = pos + (ang:Up() * (degRoll / 40))
 
 	-- [[ END SWAY ]] --
 
@@ -533,21 +552,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local p = c_move * c_sight * 1
 	local move = clamp(len / self.Owner:GetRunSpeed(), 0, 1)
 
-	if isIronsights then
-		move = move * 0.2
-	end
-
-	if move > 0 then
-		pos = pos - ang:Up() * move * 1.7
-		-- Compress our weapon slightly when we move
-		if not isIronsights then
-			ang:RotateAroundAxis(ang:Forward(), move * -8)
-			pos = pos - ang:Right() * 0.5 * move
-		end
-	end
+	
 	if onGround then
 		local cycle = sin(rt * 8.4)
-		local cycle2 = cos(rt * 16.8)
+		local cycle2 = cos(rt * 12.8)
 
 		local stepcycle = cos(rt * 10.4)
 		pos = pos + ang:Right() * stepcycle * 1.1 * move
@@ -564,20 +572,27 @@ function SWEP:GetViewModelPosition(pos, ang)
 		if move >= 0.8 then
 			--pos = pos + ang:Up() * cycle2 * 0.3 * move
 			local cycle = sin(rt * 9.7 * 2)
-			local cycle2 = cos(rt * 19.4 * 2)
+			local cycle2 = cos(rt * 14.4 * 2)
+			local cycle3 = sin(rt * 7.6)
 
 			if (self.VMLastSprintSound or 0) < ct then
 				self.VMLastSprintSound = ct + 0.33
 				self:EmitSound("Longsword2.Sprint")
 			end
 			-- Horizontal
+			ang:RotateAroundAxis(ang:Up(), cycle3 * 5.8* move)
+			pos = pos + ang:Right() * cycle3 * 3.1 * move
 
 			-- Vertical
-			ang:RotateAroundAxis(ang:Forward(), cycle * 3 * move)
-			ang:RotateAroundAxis(ang:Up(), cycle * -0.3 * move)
-			ang:RotateAroundAxis(ang:Right(), cycle * -0.74 * move)
+			ang:RotateAroundAxis(ang:Forward(), cycle2 * 0.8* move)
+			ang:RotateAroundAxis(ang:Up(), cycle * -1.3 * move)
+			ang:RotateAroundAxis(ang:Right(), cycle * -1.2 * move)
 			pos = pos + ang:Right() * cycle * 0.1 * move
-			pos = pos + ang:Forward() * cycle * 0.4 * move
+			pos = pos + ang:Forward() * cycle2 * 0.04 * move
+			pos = pos + ang:Forward() * cycle * 0.0 * move
+
+			--pos = pos + ang:Up() * cycle2 * 0.3 * move
+			pos = pos + ang:Up() * cycle* 0.1 * move
 		elseif move >= 0.2 then
 			if (self.VMLastWalkSound or 0) < ct then
 				self.VMLastWalkSound = CurTime() + 0.33
