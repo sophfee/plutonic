@@ -436,6 +436,8 @@ sound.Add(
 	}
 )
 
+--perlin:load()
+
 function SWEP:GetViewModelPosition(pos, ang)
 
 	-- START BY VISUALIZING THE MODEL IN THE CENTER!
@@ -571,28 +573,29 @@ function SWEP:GetViewModelPosition(pos, ang)
 		-- Special sprint case for ~rifles~ (repurposed to all sweps, works fine)
 		if move >= 0.8 then
 			--pos = pos + ang:Up() * cycle2 * 0.3 * move
-			local cycle = sin(rt * 9.7 * 2)
-			local cycle2 = cos(rt * 14.4 * 2)
-			local cycle3 = sin(rt * 7.6)
+			local cycle = perlin:noise(rt * 4.4, sin(rt *4) * 1.2, cos(rt/ 10.8))
+			local cycle2 = perlin:noise(rt, sin(rt * 0.8), cos(rt * 0.8))
+			local cycle3 = perlin:noise(rt * 3, sin(rt * 3.8), cos(rt * 0.8))
+			local bounce = perlin:noise(rt * 5.8, 4, 8)
 
 			if (self.VMLastSprintSound or 0) < ct then
 				self.VMLastSprintSound = ct + 0.33
 				self:EmitSound("Longsword2.Sprint")
 			end
 			-- Horizontal
-			ang:RotateAroundAxis(ang:Up(), cycle3 * 5.8* move)
-			pos = pos + ang:Right() * cycle3 * 3.1 * move
+			ang:RotateAroundAxis(ang:Up(), cycle3 * 1.8* move)
+			pos = pos + ang:Right() * cycle3 * 0.1 * move
 
 			-- Vertical
-			ang:RotateAroundAxis(ang:Forward(), cycle2 * 0.8* move)
-			ang:RotateAroundAxis(ang:Up(), cycle * -1.3 * move)
-			ang:RotateAroundAxis(ang:Right(), cycle * -1.2 * move)
+			ang:RotateAroundAxis(ang:Forward(), cycle * 0.8* move)
+			ang:RotateAroundAxis(ang:Up(), cycle2 * -1.3 * move)
+			ang:RotateAroundAxis(ang:Right(), bounce * 7.2 * move)
 			pos = pos + ang:Right() * cycle * 0.1 * move
 			pos = pos + ang:Forward() * cycle2 * 0.04 * move
 			pos = pos + ang:Forward() * cycle * 0.0 * move
 
 			--pos = pos + ang:Up() * cycle2 * 0.3 * move
-			pos = pos + ang:Up() * cycle* 0.1 * move
+			pos = pos + ang:Up() * bounce* -1.4 * move
 		elseif move >= 0.2 then
 			if (self.VMLastWalkSound or 0) < ct then
 				self.VMLastWalkSound = CurTime() + 0.33
@@ -617,9 +620,9 @@ function SWEP:GetViewModelPosition(pos, ang)
 			local t = ct - (self.VMLastMoved or ct)
 			local lt = clamp(t, 0, 1)
 
-			local cycle = cos(t * 0.8) * lt
-			local vycle = sin(t * 0.8) * lt
-			local tycle = sin(t * 0.8) * lt
+			local cycle = perlin:noise(rt / 79, sin(t * 0.8), cos(t * 0.8))
+			local vycle = perlin:noise(rt / 88, sin(t * 1.3), cos(t * 2.8))
+			local tycle = perlin:noise(rt / 100, sin(t * 0.8), cos(t * 0.8))
 
 			-- Horizontal
 			ang:RotateAroundAxis(ang:Up(), cycle * 0.7)
@@ -714,7 +717,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	return self.VMPos, self.VMAng
 end
-
 local aimdot = Material("models/weapons/tfa_ins2/optics/po4x_reticule")
 local aimdot2 = Material("models/weapons/tfa_ins2/optics/aimpoint_reticule_sc")
 local bl = Material("pp/blurscreen")

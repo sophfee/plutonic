@@ -11,6 +11,7 @@ include("shared/spread.lua")
 include("shared/think.lua")
 include("shared/worldmodel.lua")
 include("shared/reload.lua")
+include("shared/perlin.lua")
 
 -- [ Now Load Client Specific Files ] --
 include("client/viewmodel.lua")
