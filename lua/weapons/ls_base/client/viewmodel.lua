@@ -447,10 +447,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local ironsightPos = self.IronsightsPos
 	local ironsightAng = self.IronsightsAng
 	ang:RotateAroundAxis(ang:Right(), ironsightAng.p)
-	ang:RotateAroundAxis(ang:Up(), ironsightAng.y)
+	ang:RotateAroundAxis(ang:Up(), -ironsightAng.y)
 	ang:RotateAroundAxis(ang:Forward(), ironsightAng.r)
 	pos = pos + (ang:Forward() * ironsightPos.x) + (ang:Right() * (ironsightPos.y)) + (ang:Up() * ironsightPos.z)
-	pos = pos + (ang:Up() * -2)
+	pos = pos + (ang:Up() * -3.5)
 	pos = pos + (ang:Forward() * 5)
 
 	local start_pos, start_ang = pos + Vector(0,0,0), ang + Angle(0,0,0)
@@ -650,7 +650,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	--start_ang:RotateAroundAxis(start_ang:Right(), -ironsightAng.p)
 
 	--
-	ang:RotateAroundAxis(ang:Up(), -ironsightAng.y)
+	ang:RotateAroundAxis(ang:Up(), ironsightAng.y)
 	--start_ang:RotateAroundAxis(start_ang:Up(), -ironsightAng.y)
 	
 	--
@@ -660,7 +660,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (start_ang:Forward() * -ironsightPos.x)
 	pos = pos + (start_ang:Right() * -ironsightPos.y)
 	pos = pos + (start_ang:Up() * -ironsightPos.z)
-	pos = pos + (ang:Up() *2)
+	pos = pos + (ang:Up() *3.5)
 	pos = pos + (ang:Forward() * -5)
 
 	local toffset, toffsetang = self:GetOffset()
