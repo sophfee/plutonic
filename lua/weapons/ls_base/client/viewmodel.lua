@@ -438,6 +438,21 @@ sound.Add(
 
 function SWEP:GetViewModelPosition(pos, ang)
 
+	-- START BY VISUALIZING THE MODEL IN THE CENTER!
+	-- This is the default position of the viewmodel, so we can use it as a reference point
+	-- to calculate the new position and angles
+
+	local start_pos, start_ang = pos + Vector(0,0,0), ang + Angle(0,0,0)
+
+	local ironsightPos = self.IronsightsPos
+	local ironsightAng = self.IronsightsAng
+	ang:RotateAroundAxis(ang:Right(), ironsightAng.p)
+	ang:RotateAroundAxis(ang:Up(), ironsightAng.y)
+	ang:RotateAroundAxis(ang:Forward(), ironsightAng.r)
+	pos = pos + (ang:Forward() * ironsightPos.y) + (ang:Right() * (ironsightPos.x)) + (ang:Up() * ironsightPos.z)
+	
+
+
 	self.VMDeltaX = self.VMDeltaX or 0
 	self.VMDeltaY = self.VMDeltaY or 0
 	self.VMRoll = self.VMRoll or 0
@@ -463,21 +478,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local isIronsights = self:GetIronsights()
 
 	-- [[ SWAY ]] --
-
-	local toffset, toffsetang = self:GetOffset()
-	if self.VMOffsetPos then
-		local offset = self.VMOffsetPos
-		pos = pos + (ang:Right() * offset.x)
-		pos = pos + (ang:Forward() * offset.y)
-		pos = pos + (ang:Up() * offset.z)
-	end
-
-	if self.VMOffsetAng then
-		local offsetang = self.VMOffsetAng
-		ang:RotateAroundAxis(ang:Right(), offsetang.p)
-		ang:RotateAroundAxis(ang:Up(), offsetang.y)
-		ang:RotateAroundAxis(ang:Forward(), offsetang.r)
-	end
 
 	local dt = clamp(abs((ct - self.LastInput) / 1.8), 0, 1)
 
@@ -588,7 +588,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		end
 	else
 		local cycle = sin(rt * 8.4 * movement)
-		local cycle2 = cos(rt * 16.8 * movement)
+		local cycle2 = sin(rt * 16.8 * movement)
 
 		-- Horizontal
 		--ang:RotateAroundAxis(ang:Up(), cycle * 2 * move)
@@ -640,22 +640,41 @@ function SWEP:GetViewModelPosition(pos, ang)
 	-- ** DEBUG CODE ** --
 	
 	-- ROLLING PERFECTLY
-
-	local dbg_roll = LS2_DebugRoll:GetFloat()
-	ang:RotateAroundAxis(ang:Forward(), LS2_DebugRoll:GetFloat())
-
-	if dbg_roll > 0 then
-		pos = pos + (ang:Right() * (dbg_roll/14))
-		pos = pos + (ang:Up() * (dbg_roll/24))
-	else
-		pos = pos + (ang:Right() * (dbg_roll/12))
-		pos = pos + (ang:Up() * (dbg_roll/24))
-	end
 	--pos = pos + (ang:Right() * -sin(dbg_roll/-8))
 	--pos = pos + (ang:Up() * -sin(dbg_roll/-8))
 	--pos = pos + (ang:Up() * sin(dbg_roll/8))
 
 	-- Calculate offsets (real)
+
+	-- REVERSE THE RELATIVITY!
+	--start_ang:RotateAroundAxis(start_ang:Right(), -ironsightAng.p)
+	ang:RotateAroundAxis(start_ang:Right(), -ironsightAng.p)
+
+	--start_ang:RotateAroundAxis(start_ang:Up(), -ironsightAng.y)
+	ang:RotateAroundAxis(start_ang:Up(), -ironsightAng.y)
+	
+	--start_ang:RotateAroundAxis(start_ang:Forward(), -ironsightAng.r)
+	ang:RotateAroundAxis(start_ang:Forward(), -ironsightAng.r)
+	
+	pos = pos + (start_ang:Forward() * -ironsightPos.y) + (start_ang:Right() * -ironsightPos.x) + (start_ang:Up() * -ironsightPos.z)
+
+	local toffset, toffsetang = self:GetOffset()
+
+	if self.VMOffsetAng then
+		local offsetang = self.VMOffsetAng
+		ang:RotateAroundAxis(ang:Right(), offsetang.p)
+		ang:RotateAroundAxis(ang:Up(), offsetang.y)
+		ang:RotateAroundAxis(ang:Forward(), offsetang.r)
+	end
+	if self.VMOffsetPos then
+		local offset = self.VMOffsetPos
+		pos = pos + (ang:Right() * offset.x)
+		pos = pos + (ang:Forward() * offset.y)
+		pos = pos + (ang:Up() * offset.z)
+	end
+
+	
+	
 
 	self.VMPos = pos
 	self.VMAng = ang
@@ -854,9 +873,9 @@ hook.Add(
 function SWEP:LS_ProceduralRecoil(force)
 
 	if self:GetIronsights() then
-		force = force / 8
+		force = force / 4
 	end
-	force = force / 2
+	force = force
 
 	local rPos = self.BlowbackPos + Vector()
 	local rAng = self.BlowbackAngle + Angle()
