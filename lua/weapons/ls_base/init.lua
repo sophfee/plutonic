@@ -14,7 +14,6 @@ include("shared/spread.lua")
 include("shared/think.lua")
 include("shared/worldmodel.lua")
 include("shared/reload.lua")
-include("shared/perlin.lua")
 
 -- ServerSide Files
 include("server/sound.lua")
@@ -29,7 +28,6 @@ AddCSLuaFile("shared/spread.lua")
 AddCSLuaFile("shared/think.lua")
 AddCSLuaFile("shared/worldmodel.lua")
 AddCSLuaFile("shared/reload.lua")
-AddCSLuaFile("shared/perlin.lua")
 
 -- ClientSide Files
 AddCSLuaFile("client/viewmodel.lua")
