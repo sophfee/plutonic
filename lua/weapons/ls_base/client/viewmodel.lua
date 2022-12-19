@@ -580,19 +580,18 @@ function SWEP:GetViewModelPosition(pos, ang)
 				self:EmitSound("Longsword2.Sprint")
 			end
 			-- Horizontal
-			ang:RotateAroundAxis(ang:Up(), cycle3 * 5.8* move)
-			pos = pos + ang:Right() * cycle3 * 3.1 * move
+			--ang:RotateAroundAxis(ang:Up(), cycle3 * 5.8* move)
+			--pos = pos + ang:Right() * cycle3 * -3.1 * move
 
 			-- Vertical
-			ang:RotateAroundAxis(ang:Forward(), cycle2 * 0.8* move)
-			ang:RotateAroundAxis(ang:Up(), cycle * -1.3 * move)
-			ang:RotateAroundAxis(ang:Right(), cycle * -1.2 * move)
+			ang:RotateAroundAxis(ang:Forward(), cycle * 3* move)
+			ang:RotateAroundAxis(ang:Up(), cycle * -0.3 * move)
+			ang:RotateAroundAxis(ang:Right(), cycle * -0.74 * move)
 			pos = pos + ang:Right() * cycle * 0.1 * move
 			pos = pos + ang:Forward() * cycle2 * 0.04 * move
-			pos = pos + ang:Forward() * cycle * 0.0 * move
 
 			--pos = pos + ang:Up() * cycle2 * 0.3 * move
-			pos = pos + ang:Up() * cycle* 0.1 * move
+		pos = pos + ang:Up() * cycle* 0.4 * move
 		elseif move >= 0.2 then
 			if (self.VMLastWalkSound or 0) < ct then
 				self.VMLastWalkSound = CurTime() + 0.33
