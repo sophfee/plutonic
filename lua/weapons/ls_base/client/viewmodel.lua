@@ -326,20 +326,20 @@ hook.Add(
 						if abs(x) > 0 or abs(y) > 0 then
 							wep.LastInput = CurTime()
 
-							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.03
+							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.01
 
 							if wep.VMSwayX > 0 then
-								wep.VMSwayX = min(wep.VMSwayX, wep.VMDeltaX) + x * 0.03
+								wep.VMSwayX = min(wep.VMSwayX, wep.VMDeltaX) + x * 0.01
 							else
-								wep.VMSwayX = max(wep.VMSwayX, wep.VMDeltaX) + x * 0.03
+								wep.VMSwayX = max(wep.VMSwayX, wep.VMDeltaX) + x * 0.01
 							end
 
-							wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.03
+							wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.01
 
 							if wep.VMSwayY > 0 then
-								wep.VMSwayY = min(wep.VMSwayY, wep.VMDeltaY) + y * 0.03
+								wep.VMSwayY = min(wep.VMSwayY, wep.VMDeltaY) + y * 0.01
 							else
-								wep.VMSwayY = max(wep.VMSwayY, wep.VMDeltaY) + y * 0.03
+								wep.VMSwayY = max(wep.VMSwayY, wep.VMDeltaY) + y * 0.01
 							end
 						end
 					else
@@ -348,20 +348,20 @@ hook.Add(
 						if abs(x) > 0 or abs(y) > 0 then
 							wep.LastInput = CurTime()
 
-							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.12
+							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.04
 
 							if wep.VMSwayX > 0 then
-								wep.VMSwayX = min(wep.VMSwayX, wep.VMDeltaX) + x * 0.12
+								wep.VMSwayX = min(wep.VMSwayX, wep.VMDeltaX) + x * 0.04
 							else
-								wep.VMSwayX = max(wep.VMSwayX, wep.VMDeltaX) + x * 0.12
+								wep.VMSwayX = max(wep.VMSwayX, wep.VMDeltaX) + x * 0.04
 							end
 
-							wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.12
+							wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.04
 
 							if wep.VMSwayY > 0 then
-								wep.VMSwayY = min(wep.VMSwayY, wep.VMDeltaY) + y * 0.12
+								wep.VMSwayY = min(wep.VMSwayY, wep.VMDeltaY) + y * 0.04
 							else
-								wep.VMSwayY = max(wep.VMSwayY, wep.VMDeltaY) + y * 0.12
+								wep.VMSwayY = max(wep.VMSwayY, wep.VMDeltaY) + y * 0.04
 							end
 						end
 					end
@@ -555,9 +555,9 @@ function SWEP:GetViewModelPosition(pos, ang)
 	
 	if onGround then
 		local cycle = sin(rt * 8.4)
-		local cycle2 = cos(rt * 12.8)
+		local cycle2 = cos(rt * 8.8) ^ 2
 
-		local stepcycle = cos(rt * 10.4)
+		local stepcycle = (cos(rt * 10.4) ^ 4) / 4
 		pos = pos + ang:Right() * stepcycle * 1.1 * move
 		ang:RotateAroundAxis(ang:Up(), stepcycle * 1.2 * move)
 
@@ -572,7 +572,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		if move >= 0.8 then
 			--pos = pos + ang:Up() * cycle2 * 0.3 * move
 			local cycle = sin(rt * 9.7 * 2)
-			local cycle2 = cos(rt * 14.4 * 2)
+			local cycle2 = cos(rt * 14.4 * 2) ^ 3 	
 			local cycle3 = sin(rt * 7.6)
 
 			if (self.VMLastSprintSound or 0) < ct then
