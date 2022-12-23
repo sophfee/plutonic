@@ -555,13 +555,14 @@ function SWEP:GetViewModelPosition(pos, ang)
 	
 	if onGround then
 		local cycle = sin(rt * 8.4)
+		local sycle = cos(rt * 8.4)
 		local cycle2 = cos(rt * 8.8) ^ 2
 
-		local stepcycle = (cos(rt * 10.4) ^ 4) / 4
+		local stepcycle = (cos(rt * 10.4) ^ 2) / 3
 		pos = pos + ang:Right() * stepcycle * 1.1 * move
 		ang:RotateAroundAxis(ang:Up(), stepcycle * 1.2 * move)
 
-		pos = pos + ang:Up() * cycle2 * 0.7 * move
+		pos = pos + ang:Up() * sycle * 0.2 * move
 		ang:RotateAroundAxis(ang:Right(), cycle2 * -1.95 * move)
 
 		ang:RotateAroundAxis(ang:Forward(), cycle * 1.97 * move)
@@ -572,7 +573,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		if move >= 0.8 then
 			--pos = pos + ang:Up() * cycle2 * 0.3 * move
 			local cycle = sin(rt * 9.7 * 2)
-			local cycle2 = cos(rt * 14.4 * 2) ^ 3 	
+			local cycle2 = cos(rt * 14.4 * 2) ^ 2
 			local cycle3 = sin(rt * 7.6)
 
 			if (self.VMLastSprintSound or 0) < ct then
@@ -587,7 +588,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 			ang:RotateAroundAxis(ang:Forward(), cycle * 3* move)
 			ang:RotateAroundAxis(ang:Up(), cycle * -0.3 * move)
 			ang:RotateAroundAxis(ang:Right(), cycle * -0.74 * move)
-			pos = pos + ang:Right() * cycle * 0.1 * move
+			pos = pos + ang:Right() * cycle * 0.4 * move
+			pos = pos + ang:Forward() * cycle * 0.4 * move
 			pos = pos + ang:Forward() * cycle2 * 0.04 * move
 
 			--pos = pos + ang:Up() * cycle2 * 0.3 * move
