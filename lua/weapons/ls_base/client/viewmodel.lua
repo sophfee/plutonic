@@ -442,18 +442,21 @@ function SWEP:GetViewModelPosition(pos, ang)
 	-- This is the default position of the viewmodel, so we can use it as a reference point
 	-- to calculate the new position and angles
 
-	
+	local start_pos, start_ang = pos + Vector(0,0,0), ang + Angle(0,0,0)
 
 	local ironsightPos = self.IronsightsPos
 	local ironsightAng = self.IronsightsAng
 	ang:RotateAroundAxis(ang:Right(), ironsightAng.p)
 	ang:RotateAroundAxis(ang:Up(), -ironsightAng.y)
 	ang:RotateAroundAxis(ang:Forward(), ironsightAng.r)
-	pos = pos + (ang:Forward() * ironsightPos.x) + (ang:Right() * (ironsightPos.y)) + (ang:Up() * ironsightPos.z)
-	pos = pos + (ang:Up() * -3.5)
-	pos = pos + (ang:Forward() * 5)
+	
+	pos = pos + (start_ang:Forward() * ironsightPos.y)
+	pos = pos + (start_ang:Right() * (ironsightPos.x))
+	pos = pos + (start_ang:Up() * ironsightPos.z)
+	pos = pos + (start_ang:Up() * -1.5)
+	pos = pos + (start_ang:Forward() * 5)
 
-	local start_pos, start_ang = pos + Vector(0,0,0), ang + Angle(0,0,0)
+	
 
 
 	self.VMDeltaX = self.VMDeltaX or 0
@@ -529,7 +532,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	end
 	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent + sRoll)
 
-	local degRoll = deg(sin(self.VMRoll * pi)) / 3
+	local degRoll = deg(sin(self.VMRoll * pi)) / 4
 
 	ang:RotateAroundAxis(ang:Forward(), degRoll)
 
@@ -552,17 +555,22 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local p = c_move * c_sight * 1
 	local move = clamp(len / self.Owner:GetRunSpeed(), 0, 1)
 
+	if isIronsights then
+		move = move * 0.2
+	end
+
 	
 	if onGround then
 		local cycle = sin(rt * 8.4)
-		local sycle = cos(rt * 8.4)
+		local sycle = cos(rt * 16.8)
 		local cycle2 = cos(rt * 8.8) ^ 2
 
 		local stepcycle = (cos(rt * 10.4) ^ 2) / 3
-		pos = pos + ang:Right() * stepcycle * 1.1 * move
+		pos = pos + ang:Right() * stepcycle * 0.5 * move
+		ang:RotateAroundAxis(ang:Forward(), stepcycle * -0.1 * move)
 		ang:RotateAroundAxis(ang:Up(), stepcycle * 1.2 * move)
 
-		pos = pos + ang:Up() * sycle * 0.2 * move
+		pos = pos + ang:Up() * sycle * 0.3 * move
 		ang:RotateAroundAxis(ang:Right(), cycle2 * -1.95 * move)
 
 		ang:RotateAroundAxis(ang:Forward(), cycle * 1.97 * move)
@@ -592,8 +600,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 			pos = pos + ang:Forward() * cycle * 0.4 * move
 			pos = pos + ang:Forward() * cycle2 * 0.04 * move
 
-			--pos = pos + ang:Up() * cycle2 * 0.3 * move
-		pos = pos + ang:Up() * cycle* 0.4 * move
+			pos = pos + ang:Up() * cycle3 * 0.3 * move
+			pos = pos + ang:Up() * cycle* 0.4 * move
 		elseif move >= 0.2 then
 			if (self.VMLastWalkSound or 0) < ct then
 				self.VMLastWalkSound = CurTime() + 0.33
@@ -663,21 +671,15 @@ function SWEP:GetViewModelPosition(pos, ang)
 	-- REVERSE THE RELATIVITY!
 	
 	ang:RotateAroundAxis(ang:Right(), -ironsightAng.p)
-	--start_ang:RotateAroundAxis(start_ang:Right(), -ironsightAng.p)
-
-	--
 	ang:RotateAroundAxis(ang:Up(), ironsightAng.y)
-	--start_ang:RotateAroundAxis(start_ang:Up(), -ironsightAng.y)
-	
-	--
 	ang:RotateAroundAxis(ang:Forward(), -ironsightAng.r)
-	--start_ang:RotateAroundAxis(start_ang:Forward(), -ironsightAng.r)
 	
-	pos = pos + (start_ang:Forward() * -ironsightPos.x)
-	pos = pos + (start_ang:Right() * -ironsightPos.y)
+	pos = pos + (start_ang:Forward() * -ironsightPos.y)
+	pos = pos + (start_ang:Right() * -ironsightPos.x)
 	pos = pos + (start_ang:Up() * -ironsightPos.z)
-	pos = pos + (ang:Up() *3.5)
-	pos = pos + (ang:Forward() * -5)
+	pos = pos + (start_ang:Up() *1.5)
+	pos = pos + (start_ang:Forward() * -5)
+	
 
 	local toffset, toffsetang = self:GetOffset()
 
