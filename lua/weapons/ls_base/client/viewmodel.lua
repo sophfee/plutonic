@@ -715,18 +715,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	pos, ang = Longsword.VMIronsights(self, pos, ang)
 
-	-- REVERSE THE RELATIVITY!
-	
-	ang:RotateAroundAxis(ang:Right(), -ironsightAng.p)
-	ang:RotateAroundAxis(ang:Up(), ironsightAng.y)
-	ang:RotateAroundAxis(ang:Forward(), -ironsightAng.r)
-	
-	pos = pos + (start_ang:Forward() * -ironsightPos.y)
-	pos = pos + (start_ang:Right() * -ironsightPos.x)
-	pos = pos + (start_ang:Up() * -ironsightPos.z)
-	pos = pos + (start_ang:Up() *1.5)
-	pos = pos + (start_ang:Forward() * -5)
-	
+
 	if self.VMOffsetAng then
 		local offsetang = self.VMOffsetAng
 		ang:RotateAroundAxis(ang:Right(), offsetang.p)
@@ -739,6 +728,19 @@ function SWEP:GetViewModelPosition(pos, ang)
 		pos = pos + (ang:Forward() * offset.y)
 		pos = pos + (ang:Up() * offset.z)
 	end
+	-- REVERSE THE RELATIVITY!
+	
+	ang:RotateAroundAxis(ang:Right(), -ironsightAng.p)
+	ang:RotateAroundAxis(ang:Up(), ironsightAng.y)
+	ang:RotateAroundAxis(ang:Forward(), -ironsightAng.r)
+	
+	pos = pos + (start_ang:Forward() * -ironsightPos.y)
+	pos = pos + (start_ang:Right() * -ironsightPos.x)
+	pos = pos + (start_ang:Up() * -ironsightPos.z)
+	pos = pos + (start_ang:Up() *1.5)
+	pos = pos + (start_ang:Forward() * -5)
+	
+	
 
 	self.VMPos = pos
 	self.VMAng = ang

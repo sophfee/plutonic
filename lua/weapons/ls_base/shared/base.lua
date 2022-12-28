@@ -178,6 +178,19 @@ local PIERCING_MATS = {
 }
 
 function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_dir)
+
+	if self.UseBallistics then
+		if CLIENT then return end
+		local bulllet = ents.Create("ls_ballistic")
+		bulllet:SetPos(self.Owner:GetShootPos())
+		bulllet:SetAngles(self.Owner:GetAimVector():Angle())
+		bulllet:SetOwner(self.Owner)
+		
+		bulllet:Spawn()
+		bulllet:Launch()
+		return
+	end
+
 	local bullet = {}
 
 	bullet.Num 	= num_bullets
