@@ -477,13 +477,13 @@ function Longsword.Bob(self, pos, ang)
 		abob = abob * (1 -self.VMIronsights)
 	end
 
-	pos = pos + ang:Right() * bob.x
-	pos = pos + ang:Forward() * bob.y
-	pos = pos + ang:Up() * bob.z
+	pos = pos + ang:Right() * bob.x * self.VMBobCycle
+	pos = pos + ang:Forward() * bob.y * self.VMBobCycle
+	pos = pos + ang:Up() * bob.z * self.VMBobCycle
 
-	ang:RotateAroundAxis(ang:Right(), abob.p)
-	ang:RotateAroundAxis(ang:Forward(), abob.r)
-	ang:RotateAroundAxis(ang:Up(), abob.y)
+	ang:RotateAroundAxis(ang:Right(), abob.p * self.VMBobCycle)
+	ang:RotateAroundAxis(ang:Forward(), abob.r * self.VMBobCycle)
+	ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
 
 	return pos, ang
 
@@ -527,20 +527,14 @@ function Longsword.VMBlocked(self, pos, ang)
 	self.VMBlocked = self.VMBlocked or 0
 
 	if tr.Hit then
-		self.VMBlocked = lerp(Frametime() * 0.7, self.VMBlocked, 1)
+		self.VMBlocked = lerp(Frametime() * 2, self.VMBlocked, tr.Fraction)
 	else
-		self.VMBlocked = lerp(Frametime() * 0.7, self.VMBlocked, 0)
+		self.VMBlocked = lerp(Frametime() * 1.5, self.VMBlocked, 1)
 	end
 
-	if self.VMBlocked > 0 then
-		local alpha = math.ease.InOutElastic(self.VMBlocked)
-
-		pos = pos + ang:Up() * -12.4 * alpha
-		pos = pos + ang:Right() * 0.2 * alpha
-		pos = pos + ang:Forward() * -1.5 * alpha
-
-		ang:RotateAroundAxis(ang:Right(), 64 * alpha)
-	end
+	pos = pos + ang:Forward() * (1 - self.VMBlocked) * -12
+	ang:RotateAroundAxis(ang:Forward(), (1 - self.VMBlocked) * -11)
+	pos = pos + ang:Right() * (1 - self.VMBlocked) * -2
 
 
 	return pos, ang
