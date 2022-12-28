@@ -15,20 +15,25 @@ SWEP.SwayIdle = 0.5
 LS2_DebugRoll = CreateClientConVar("ls2_debugroll", "0", true, false)
 
 -- quad bezier lerp from roblox ez dub
-local function rbxLerp(a, b, c)
+function Longsword.Lerp(a, b, c)
 	return a + (b - a) * c
 end
 
-local function quadBezier(t, p0, p1, p2)
-	local l1 = rbxLerp(p0, p1, t)
-	local l2 = rbxLerp(p1, p2, t)
-	local quad = rbxLerp(l1, l2, t)
+function Longsword.BezierCurve(t, p0, p1, p2)
+	local l1 = Longsword.Lerp(p0, p1, t)
+	local l2 = Longsword.Lerp(p1, p2, t)
+	local quad = Longsword.Lerp(l1, l2, t)
 	return quad
 end
 
-local function vecBezier(t, v0, v1, v2)
-	return Vector(quadBezier(t, v0.x, v1.x, v2.x), quadBezier(t, v0.y, v1.y, v2.y), quadBezier(t, v0.z, v1.z, v2.z))
+function Longsword.VectorBezierCurve(t, v0, v1, v2)
+	return Vector(Longsword.BezierCurve(t, v0.x, v1.x, v2.x), Longsword.BezierCurve(t, v0.y, v1.y, v2.y), Longsword.BezierCurve(t, v0.z, v1.z, v2.z))
 end
+
+function Longsword.AngleBezierCurve(t, a0, a1, a2)
+	return Angle(Longsword.BezierCurve(t, a0.p, a1.p, a2.p), Longsword.BezierCurve(t, a0.y, a1.y, a2.y), Longsword.BezierCurve(t, a0.r, a1.r, a2.r))
+end
+
 
 SWEP.IronsightsLerp = 0
 
@@ -68,25 +73,6 @@ function SWEP:GetOffset()
 
 	if self.LoweredPos and self:IsSprinting() then
 		return self.LoweredPos, self.LoweredAng
-	end
-
-	local centered = GetConVar("longsword_centered")
-	local isCentered = centered:GetBool()
-	local is_pos = self.IronsightsPos
-	local v1 = isCentered and Vector(is_pos.x, 0, -2) or Vector(0, 0, 0)
-	local v2 = Vector(is_pos.x * 1.2, is_pos.y * 0.8, is_pos.x * 0.8)
-	--local v3 = Vector(is_pos.x*1.2,is_pos.y/1.125,is_pos.z/1.125)
-	local ironsights_pos = vecBezier(quadBezier(self.IronsightsLerp, 0, 0.4, 1), v1, v2, is_pos)
-
-	if self:GetIronsights() then
-		local offset_pos = LerpVector(self:GetIronsightsRecoil(), Vector(), VectorRand(-0.06, 0.06))
-		self.IronsightsLerp = math.Approach(self.IronsightsLerp, 1, FrameTime() * self.IronsightsSpeed)
-		return ironsights_pos + (offset_pos or Vector()), self.IronsightsAng
-	else
-		self.IronsightsLerp = math.Approach(self.IronsightsLerp, 0, FrameTime() * self.IronsightsSpeed)
-	end
-	if self.IronsightsLerp > 0 then
-		return ironsights_pos, Angle(0, 0, self.IronsightsLerp * self.IronsightsRocking)
 	end
 end
 
@@ -436,6 +422,176 @@ sound.Add(
 	}
 )
 
+local vBobIn = Vector(1.26, -0.267, -2.5)
+local vBobMid = Vector(-0.3, -.4, 0.94)
+local vBobOut = Vector(-1.2126, -0.2, -2.5 )
+
+local aBobIn = Angle(2, 2, -4)
+local aBobMid = Angle(-1.2, -2, 1)
+local aBobOut = Angle(3, -3.4, 4)
+
+function Longsword.IsMoving()
+	return LocalPlayer():GetVelocity():Length2DSqr() > 40^2
+end
+
+LS_BOB_STATE_IN = 0
+LS_BOB_STATE_MID = 1
+LS_BOB_STATE_OUT = 2
+
+local lerpSpeed = 1
+
+function Longsword.Bob(self, pos, ang)
+
+	local rt = Realtime()
+
+	self.VMBobCycle = self.VMBobCycle or 0
+	self.VMBobState = self.VMBobState or LS_BOB_STATE_IN
+	self.VMBobInCyclePos = self.VMBobInCyclePos or vBobIn
+	self.VMBobOutCyclePos = self.VMBobOutCyclePos or vBobOut
+
+	if Longsword.IsMoving() then
+		self.VMBobCycle = lerp(Frametime() * 3, self.VMBobCycle, 1)
+	else
+		self.VMBobCycle = lerp(Frametime() * 3, self.VMBobCycle, 0)
+	end
+
+	local mul = self:IsSprinting() and 1.7 or 1
+	local l = self:IsSprinting() and 1 or 0
+	lerpSpeed = lerp(Frametime() * 3, lerpSpeed, l)
+
+	local alpha2 = sin(rt * 8.4 * 1.7 ) * self.VMBobCycle
+	local alpha = sin(rt * 8.4 * 1 ) * self.VMBobCycle
+
+	alpha = lerp(lerpSpeed, alpha, alpha2)
+	alpha = (alpha / 3) + 0.5
+
+	local bob = Longsword.VectorBezierCurve(alpha, vBobIn, vBobMid, vBobOut)
+	local abob = Longsword.AngleBezierCurve(alpha, aBobIn, aBobMid, aBobOut)
+
+	-- add a slight roll to the weapon
+	--ang:RotateAroundAxis(ang:Forward(), alpha * -3)
+	
+
+	if self:GetIronsights() then
+		bob = bob * (1 -self.VMIronsights)
+		abob = abob * (1 -self.VMIronsights)
+	end
+
+	pos = pos + ang:Right() * bob.x
+	pos = pos + ang:Forward() * bob.y
+	pos = pos + ang:Up() * bob.z
+
+	ang:RotateAroundAxis(ang:Right(), abob.p)
+	ang:RotateAroundAxis(ang:Forward(), abob.r)
+	ang:RotateAroundAxis(ang:Up(), abob.y)
+
+	return pos, ang
+
+end
+
+function Longsword.VMCrouch(self, pos, ang)
+
+	self.VMCrouch = self.VMCrouch or 0
+
+	local isIronsights = self:GetIronsights()
+
+	if self.Owner:KeyDown(IN_DUCK) and not isIronsights then
+		self.VMCrouch = lerp(Frametime() * 0.8, self.VMCrouch, 1)
+	else
+		self.VMCrouch = lerp(Frametime() * 0.8, self.VMCrouch, 0)
+	end
+
+	local alpha = math.ease.InOutElastic(self.VMCrouch)
+
+	pos = pos + ang:Up() * -1.4 * alpha
+	pos = pos + ang:Right() * -2.7 * alpha
+	pos = pos + ang:Forward() * -1.5 * alpha
+
+	ang:RotateAroundAxis(ang:Forward(), -12 * alpha)
+
+	return pos, ang
+
+end
+
+-- For when you look right at the wall
+function Longsword.VMBlocked(self, pos, ang)
+
+	if self.Owner != LocalPlayer() then return pos, ang end
+
+	local tr = util.TraceLine({
+		start = self.Owner:GetShootPos(),
+		endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * 32,
+		filter = self.Owner
+	})
+
+	self.VMBlocked = self.VMBlocked or 0
+
+	if tr.Hit then
+		self.VMBlocked = lerp(Frametime() * 0.7, self.VMBlocked, 1)
+	else
+		self.VMBlocked = lerp(Frametime() * 0.7, self.VMBlocked, 0)
+	end
+
+	if self.VMBlocked > 0 then
+		local alpha = math.ease.InOutElastic(self.VMBlocked)
+
+		pos = pos + ang:Up() * -12.4 * alpha
+		pos = pos + ang:Right() * 0.2 * alpha
+		pos = pos + ang:Forward() * -1.5 * alpha
+
+		ang:RotateAroundAxis(ang:Right(), 64 * alpha)
+	end
+
+
+	return pos, ang
+end
+
+function Longsword.VMIronsights(self, pos, ang)
+
+	self.VMIronsights = self.VMIronsights or 0
+	self.VMRattle = self.VMRattle or 0
+	
+	local dir = false
+	
+	if self:GetIronsights() then
+		dir = true
+		self.VMIronsights = lerp(Frametime() * 3.5, self.VMIronsights, 1)
+		self.VMRattle = lerp(Frametime() * 0.75, self.VMRattle, 0)
+	else
+		self.VMIronsights = lerp(Frametime() * .5, self.VMIronsights, 0)
+		self.VMRattle =  1
+	end
+
+	local alpha = math.ease.InBack(self.VMIronsights)
+
+	local ironsightPos = self.IronsightsPos
+	local ironsightAng = self.IronsightsAng
+
+	pos = pos + ang:Up() * ironsightPos.z * alpha
+	pos = pos + ang:Right() * ironsightPos.x * alpha
+	pos = pos + ang:Forward() * ironsightPos.y * alpha
+
+	ang:RotateAroundAxis(ang:Right(), ironsightAng.p * alpha)
+	ang:RotateAroundAxis(ang:Up(), ironsightAng.y * alpha)
+	ang:RotateAroundAxis(ang:Forward(), ironsightAng.r * alpha)
+
+	-- a little lift in the middle of the animation
+	local rt = Realtime()
+	ang:RotateAroundAxis(ang:Right(), abs(sin( (alpha) * (math.pi) )) * 4 )
+	pos = pos + ang:Up() * abs(sin( (alpha) * (math.pi) )) * -.7
+	
+
+	if dir then
+		local rattle = math.ease.InOutElastic(self.VMRattle)
+		
+		--ang:RotateAroundAxis(ang:Right(), sin(rt*8)* rattle)
+		--ang:RotateAroundAxis(ang:Up(), cos(rt*8) * rattle)
+		--ang:RotateAroundAxis(ang:Forward(), cos(rt*16) * rattle)
+
+	end
+	return pos, ang
+end
+
 function SWEP:GetViewModelPosition(pos, ang)
 
 	-- START BY VISUALIZING THE MODEL IN THE CENTER!
@@ -456,8 +612,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (start_ang:Up() * -1.5)
 	pos = pos + (start_ang:Forward() * 5)
 
-	
-
+	--offset`
 
 	self.VMDeltaX = self.VMDeltaX or 0
 	self.VMDeltaY = self.VMDeltaY or 0
@@ -517,19 +672,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 	end
 
 	local sRoll = 0
-	do
-		if movement> 0 then
-			local vel = self.Owner:GetVelocity()
-			local len = vel:Length()
-			local move = clamp(len / self.Owner:GetRunSpeed(), 0, 1)
-			--pos = pos - ang:Up() * move * 1.7
-			-- Compress our weapon slightly when we move
-			if not isIronsights then
-				--sRoll= sRoll - ( move * -8 )
-				--pos = pos - ang:Right() * 0.5 * move
-			end
-		end
-	end
 	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent + sRoll)
 
 	local degRoll = deg(sin(self.VMRoll * pi)) / 4
@@ -547,6 +689,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	-- [[ BOBBING ]] --
 
+	pos, ang = Longsword.Bob(self, pos, ang)
+
 	local vel = self.Owner:GetVelocity()
 	local len = vel:Length()
 
@@ -559,102 +703,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		move = move * 0.2
 	end
 
-	
-	if onGround then
-		local cycle = sin(rt * 8.4)
-		local sycle = cos(rt * 16.8)
-		local cycle2 = cos(rt * 8.8) ^ 2
-
-		local stepcycle = (cos(rt * 10.4) ^ 2) / 3
-		pos = pos + ang:Right() * stepcycle * 0.5 * move
-		ang:RotateAroundAxis(ang:Forward(), stepcycle * -0.1 * move)
-		ang:RotateAroundAxis(ang:Up(), stepcycle * 1.2 * move)
-
-		pos = pos + ang:Up() * sycle * 0.3 * move
-		ang:RotateAroundAxis(ang:Right(), cycle2 * -1.95 * move)
-
-		ang:RotateAroundAxis(ang:Forward(), cycle * 1.97 * move)
-
-		-- Horizontal
-
-		-- Special sprint case for ~rifles~ (repurposed to all sweps, works fine)
-		if move >= 0.8 then
-			--pos = pos + ang:Up() * cycle2 * 0.3 * move
-			local cycle = sin(rt * 9.7 * 2)
-			local cycle2 = cos(rt * 14.4 * 2) ^ 2
-			local cycle3 = sin(rt * 7.6)
-
-			if (self.VMLastSprintSound or 0) < ct then
-				self.VMLastSprintSound = ct + 0.33
-				self:EmitSound("Longsword2.Sprint")
-			end
-			-- Horizontal
-			--ang:RotateAroundAxis(ang:Up(), cycle3 * 5.8* move)
-			--pos = pos + ang:Right() * cycle3 * -3.1 * move
-
-			-- Vertical
-			ang:RotateAroundAxis(ang:Forward(), cycle * 3* move)
-			ang:RotateAroundAxis(ang:Up(), cycle * -0.3 * move)
-			ang:RotateAroundAxis(ang:Right(), cycle * -0.74 * move)
-			pos = pos + ang:Right() * cycle * 0.4 * move
-			pos = pos + ang:Forward() * cycle * 0.4 * move
-			pos = pos + ang:Forward() * cycle2 * 0.04 * move
-
-			pos = pos + ang:Up() * cycle3 * 0.3 * move
-			pos = pos + ang:Up() * cycle* 0.4 * move
-		elseif move >= 0.2 then
-			if (self.VMLastWalkSound or 0) < ct then
-				self.VMLastWalkSound = CurTime() + 0.33
-				self:EmitSound("Longsword2.Walk")
-			end
-		end
-	else
-		local cycle = sin(rt * 8.4 * movement)
-		local cycle2 = sin(rt * 16.8 * movement)
-
-		-- Horizontal
-		--ang:RotateAroundAxis(ang:Up(), cycle * 2 * move)
-		--pos = pos + ang:Right() * cycle * 0.5
-
-		-- Vertical
-		--ang:RotateAroundAxis(ang:Right(), cycle2 * -0.3 * move)
-		--pos = pos + ang:Up() * cycle2 * 0.3 * movement
-	end
-
-	if round(move, 4) == 0 then
-		if not isIronsights then
-			local t = ct - (self.VMLastMoved or ct)
-			local lt = clamp(t, 0, 1)
-
-			local cycle = cos(t * 0.8) * lt
-			local vycle = sin(t * 0.8) * lt
-			local tycle = sin(t * 0.8) * lt
-
-			-- Horizontal
-			ang:RotateAroundAxis(ang:Up(), cycle * 0.7)
-			pos = pos + ang:Right() * cycle * 0.1
-
-			-- Vertical
-			ang:RotateAroundAxis(ang:Right(), vycle * -0.4)
-			pos = pos + ang:Up() * vycle * 0.1
-
-			pos = pos + ang:Forward() * tycle * 0.5
-			ang:RotateAroundAxis(ang:Forward(), tycle * 1.5)
-		end
-	else
-		self.VMLastMoved = ct
-	end
-
-	if self.Owner:KeyDown(IN_DUCK) and not isIronsights then
-		self.VMCrouchDelta = approach(self.VMCrouchDelta, 1, ft)
-	else
-		self.VMCrouchDelta = approach(self.VMCrouchDelta, 0, ft)
-	end
-
-	if self.VMCrouchDelta > 0 then
-		pos = pos + ang:Up() * -0.4 * easeInOutQuint(self.VMCrouchDelta)
-		ang:RotateAroundAxis(ang:Forward(), easeInOutQuint(self.VMCrouchDelta) * -4)
-	end
+	pos, ang = Longsword.VMCrouch(self, pos, ang)
 	-- We lerp all positions to avoid jittering
 
 	--if self:GetIronsights() then
@@ -668,6 +717,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	-- Calculate offsets (real)
 
+	pos, ang = Longsword.VMBlocked(self, pos, ang)
+
+	pos, ang = Longsword.VMIronsights(self, pos, ang)
+
 	-- REVERSE THE RELATIVITY!
 	
 	ang:RotateAroundAxis(ang:Right(), -ironsightAng.p)
@@ -680,9 +733,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (start_ang:Up() *1.5)
 	pos = pos + (start_ang:Forward() * -5)
 	
-
-	local toffset, toffsetang = self:GetOffset()
-
 	if self.VMOffsetAng then
 		local offsetang = self.VMOffsetAng
 		ang:RotateAroundAxis(ang:Right(), offsetang.p)
@@ -695,9 +745,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 		pos = pos + (ang:Forward() * offset.y)
 		pos = pos + (ang:Up() * offset.z)
 	end
-
-	
-	
 
 	self.VMPos = pos
 	self.VMAng = ang
