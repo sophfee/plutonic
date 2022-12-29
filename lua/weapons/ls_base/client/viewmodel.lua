@@ -586,6 +586,29 @@ function Longsword.VMIronsights(self, pos, ang)
 	return pos, ang
 end
 
+function Longsword.VMIdle(self, pos, ang)
+
+	self.VMIdle = self.VMIdle or 0
+
+	local rt = Realtime()
+
+	local alpha = math.ease.InBack(abs(sin(rt * .4)))
+
+	ang:RotateAroundAxis(ang:Right(), alpha * .5)
+	ang:RotateAroundAxis(ang:Up(), sin(alpha * math.pi * 2) * -.2)
+
+	pos = pos + ang:Up() * alpha * -.175
+	pos = pos + ang:Right() * alpha * .07
+
+	if not self:GetIronsights() then
+		pos = pos + ang:Forward() * alpha * -1.5
+
+		pos = pos + ang:Up() * alpha * -.5
+	end
+
+	return pos, ang
+end
+
 function SWEP:GetViewModelPosition(pos, ang)
 
 	-- START BY VISUALIZING THE MODEL IN THE CENTER!
@@ -684,6 +707,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	-- [[ BOBBING ]] --
 
 	pos, ang = Longsword.Bob(self, pos, ang)
+	pos, ang = Longsword.VMIdle(self, pos, ang)
 
 	local vel = self.Owner:GetVelocity()
 	local len = vel:Length()
