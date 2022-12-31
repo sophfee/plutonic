@@ -14,7 +14,7 @@ function SWEP:ShouldDrawCrosshair()
 		return false
 	end
 
-	if (self:GetIronsights() and not self.IronsightsCrosshair and self.IronsightsLerp > 0.5) then
+	if (self:GetIronsights() and not self.IronsightsCrosshair and self.VMIronsights > 0.1) then
 		return false
 	end
 

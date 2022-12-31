@@ -358,7 +358,9 @@ function SWEP:ShootEffects()
 		self:LS_ProceduralRecoil(1)
 	end
 
+	self.VMRecoilFOV = 1
 	if not self:GetIronsights() or not self.UseIronsightsRecoil then
+		
 		if self.PrimaryFireSequence then
 			local vm = self.Owner:GetViewModel()
 			vm.ResetSequenceInfo( vm )

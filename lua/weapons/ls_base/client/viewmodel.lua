@@ -43,8 +43,8 @@ local rtx =
 	512,
 	512,
 	RT_SIZE_NO_CHANGE,
-	MATERIAL_RT_DEPTH_NONE,
-	0,
+	MATERIAL_RT_DEPTH_SHARED,
+	65536,
 	CREATERENDERTARGETFLAGS_HDR,
 	IMAGE_FORMAT_DEFAULT
 )
@@ -57,11 +57,12 @@ SWEP.VMRenderTarget =
 		["$model"] = 1,
 		["$basetexture"] = rtx:GetName(),
 		["$phong"] = 1,
-		["$phongexponent"] = 100,
+		["$phongexponent"] = 2,
 		["$phongboost"] = 1,
 		["$phongfresnelranges"] = "[0 0.5 1]",
 		["$phongalbedotint"] = "[1 1 1]",
-		["$phongtint"] = "[1 1 1]"
+		["$phongtint"] = "[1 1 1]",
+		["$ignorez"] = 1
 	}
 )
 
@@ -163,6 +164,7 @@ function SWEP:ViewModelDrawn()
 		self.AttachedCosmetic = ClientsideModel(attData.Cosmetic.Model, RENDER_GROUP_VIEW_MODEL_OPAQUE)
 		self.AttachedCosmetic:SetParent(vm)
 		self.AttachedCosmetic:SetNoDraw(true)
+		self.AttachedCosmetic:AddEffects(EF_BONEMERGE)
 
 		if attData.Cosmetic.Scale then
 			self.AttachedCosmetic:SetModelScale(attData.Cosmetic.Scale)
@@ -189,6 +191,7 @@ function SWEP:ViewModelDrawn()
 	att:DrawModel()
 
 	if self:GetAttachmentBehavior() == "holosight" then
+		print("it does")
 
 		self.VMRenderTarget:SetTexture("$basetexture", rtx)
 		if not self.VMInitRT3 then
@@ -200,8 +203,8 @@ function SWEP:ViewModelDrawn()
 			mat:Recompute()
 		end
 
-	--att:SetSubMaterial(1, "models/weapons/tfa_ins2/optics/aimpoint_reticule_holo")
-		att:SetSubMaterial(1, "")
+		att:SetSubMaterial(2, "!ls2_sight_rt")
+		--att:SetSubMaterial(1, "")
 	--att:GetSubMaterial()
 
 		self:DrawHoloSight(pos, ang, att)
@@ -215,6 +218,8 @@ local c_jump = 0
 local c_look = 0
 local c_move = 0
 local c_sight = 0
+
+SWEP.BarrelLength = 6
 
 local function LerpC(t, a, b, powa)
 	return a + (b - a) * math.pow(t, powa)
@@ -422,13 +427,13 @@ sound.Add(
 	}
 )
 
-local vBobIn = Vector(1.26, -0.267, -2.5)
-local vBobMid = Vector(-0.3, -.4, 0.94)
-local vBobOut = Vector(-1.2126, -0.2, -2.5 )
+SWEP.vBobIn = Vector(1.26, -0.267, -2.5)
+SWEP.vBobMid = Vector(-0.3, -.4, 0.94)
+SWEP.vBobOut = Vector(-1.2126, -0.2, -2.5 )
 
-local aBobIn = Angle(2, 2, -4)
-local aBobMid = Angle(-1.2, -2, 1)
-local aBobOut = Angle(3, -3.4, 4)
+SWEP.aBobIn = Angle(2, 1, -4)
+SWEP.aBobMid = Angle(-1.2, -0.7, 1)
+SWEP.aBobOut = Angle(3, -1.4, 4)
 
 function Longsword.IsMoving()
 	return LocalPlayer():GetVelocity():Length2DSqr() > 40^2
@@ -442,12 +447,19 @@ local lerpSpeed = 1
 
 function Longsword.Bob(self, pos, ang)
 
+	if self.CustomBob then
+		return self:CustomBob(pos, ang)
+	end
+
 	local rt = Realtime()
 
 	self.VMBobCycle = self.VMBobCycle or 0
 	self.VMBobState = self.VMBobState or LS_BOB_STATE_IN
 	self.VMBobInCyclePos = self.VMBobInCyclePos or vBobIn
 	self.VMBobOutCyclePos = self.VMBobOutCyclePos or vBobOut
+
+	local ovel = self.Owner:GetVelocity()
+	local move = vec(ovel.x, ovel.y, 0)
 
 	if Longsword.IsMoving() then
 		self.VMBobCycle = lerp(Frametime() * 3, self.VMBobCycle, 1)
@@ -459,35 +471,55 @@ function Longsword.Bob(self, pos, ang)
 	local l = self:IsSprinting() and 1 or 0
 	lerpSpeed = lerp(Frametime() * 3, lerpSpeed, l)
 
-	local alpha2 = sin(rt * 8.4 * 1.7 ) * self.VMBobCycle
+	local alpha2 = sin(rt * 8.4 * 1.7 ) * (self.VMBobCycle)
 	local alpha = sin(rt * 8.4 * 1 ) * self.VMBobCycle
 
 	alpha = lerp(lerpSpeed, alpha, alpha2)
 	alpha = (alpha / 3) + 0.5
 
-	local bob = Longsword.VectorBezierCurve(alpha, vBobIn, vBobMid, vBobOut)
-	local abob = Longsword.AngleBezierCurve(alpha, aBobIn, aBobMid, aBobOut)
+	local bob = Longsword.VectorBezierCurve(alpha, self.vBobIn, self.vBobMid, self.vBobOut)
+	local abob = Longsword.AngleBezierCurve(alpha, self.aBobIn, self.aBobMid, self.aBobOut)
 
 	-- add a slight roll to the weapon
 	--ang:RotateAroundAxis(ang:Forward(), alpha * -3)
 	
 
 	if self:GetIronsights() then
-		bob = bob * (1 -self.VMIronsights)
-		abob = abob * (1 -self.VMIronsights)
+		bob = bob * (1.021 - self.VMIronsights)
+		abob = abob * (1.04 -self.VMIronsights)
 	end
+
+	bob = bob / lerp(lerpSpeed, 1, 1.7)
+	abob = abob / lerp(lerpSpeed, 1, 1.7)
 
 	pos = pos + ang:Right() * bob.x * self.VMBobCycle
 	pos = pos + ang:Forward() * bob.y * self.VMBobCycle
 	pos = pos + ang:Up() * bob.z * self.VMBobCycle
 
+	local vel = move:GetNormalized()
+	local rd = self.Owner:GetRight():Dot(vel)
+	local fd = (self.Owner:GetForward():Dot(vel) + 1) / 2
+
+	self.VMRDBEF = self.VMRDBEF or 0 -- VM Right Direction Better Effect
+
+	-- Additional effect on sidestepping
+	self.VMRDBEF = lerp(Frametime() * 3, self.VMRDBEF, vel:Length2DSqr())
+
 	ang:RotateAroundAxis(ang:Right(), abob.p * self.VMBobCycle)
 	ang:RotateAroundAxis(ang:Forward(), abob.r * self.VMBobCycle)
 	ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
 
+	ang:RotateAroundAxis(ang:Forward(), self.VMRDBEF * cos(rt * 8.4 * 1.7))
+	ang:RotateAroundAxis(ang:Right(), (self.VMRDBEF / -8) * sin(rt * 8.4 * 1.7))
+
+	pos = pos + ang:Up() * (self.VMRDBEF / 60) * sin(rt * 8.4 * 1.7) * self.VMBobCycle
+
 	return pos, ang
 
 end
+
+SWEP.CrouchPos = Vector(-1.5, -2.7, -1.4)
+SWEP.CrouchAng = Angle(0, 0, -12)
 
 function Longsword.VMCrouch(self, pos, ang)
 
@@ -503,11 +535,13 @@ function Longsword.VMCrouch(self, pos, ang)
 
 	local alpha = math.ease.InOutElastic(self.VMCrouch)
 
-	pos = pos + ang:Up() * -1.4 * alpha
-	pos = pos + ang:Right() * -2.7 * alpha
-	pos = pos + ang:Forward() * -1.5 * alpha
+	pos = pos + ang:Right() * self.CrouchPos.x * alpha
+	pos = pos + ang:Forward() * self.CrouchPos.y * alpha
+	pos = pos + ang:Up() * self.CrouchPos.z * alpha
 
-	ang:RotateAroundAxis(ang:Forward(), -12 * alpha)
+	ang:RotateAroundAxis(ang:Right(), self.CrouchAng.p * alpha)
+	ang:RotateAroundAxis(ang:Forward(), self.CrouchAng.r * alpha)
+	ang:RotateAroundAxis(ang:Up(), self.CrouchAng.y * alpha)
 
 	return pos, ang
 
@@ -549,17 +583,17 @@ function Longsword.VMIronsights(self, pos, ang)
 	
 	if self:GetIronsights() then
 		dir = true
-		self.VMIronsights = lerp(Frametime() * 3.5, self.VMIronsights, 1)
-		self.VMRattle = lerp(Frametime() * 0.75, self.VMRattle, 0)
+		self.VMIronsights = lerp(Frametime() * (1.75 * (self.IronsightsSpeed or 1)), self.VMIronsights, 1)
+		self.VMRattle = lerp(Frametime() * (0.75 * (self.IronsightsSpeed or 1)), self.VMRattle, 0)
 	else
-		self.VMIronsights = lerp(Frametime() * .5, self.VMIronsights, 0)
+		self.VMIronsights = lerp(Frametime() * 3, self.VMIronsights, 0)
 		self.VMRattle =  1
 	end
 
-	local alpha = math.ease.InBack(self.VMIronsights)
+	local alpha = self.VMIronsights
 
-	local ironsightPos = self.IronsightsPos
-	local ironsightAng = self.IronsightsAng
+	local ironsightPos = Longsword.VectorBezierCurve( alpha, Vector(), Vector(-(self.BarrelLength*.5),4,-2), self.IronsightsPos)
+	local ironsightAng = Longsword.AngleBezierCurve( alpha, Angle(), Angle(-5, -(self.BarrelLength*1.8),23), self.IronsightsAng)
 
 	pos = pos + ang:Up() * ironsightPos.z * alpha
 	pos = pos + ang:Right() * ironsightPos.x * alpha
@@ -590,6 +624,10 @@ function Longsword.VMIdle(self, pos, ang)
 
 	self.VMIdle = self.VMIdle or 0
 
+	if self:GetIronsights() then
+		return pos, ang
+	end
+
 	local rt = Realtime()
 
 	local alpha = math.ease.InBack(abs(sin(rt * .4)))
@@ -599,12 +637,6 @@ function Longsword.VMIdle(self, pos, ang)
 
 	pos = pos + ang:Up() * alpha * -.175
 	pos = pos + ang:Right() * alpha * .07
-
-	if not self:GetIronsights() then
-		pos = pos + ang:Forward() * alpha * -1.5
-
-		pos = pos + ang:Up() * alpha * -.5
-	end
 
 	return pos, ang
 end
@@ -627,7 +659,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (start_ang:Right() * (ironsightPos.x))
 	pos = pos + (start_ang:Up() * ironsightPos.z)
 	pos = pos + (start_ang:Up() * -1.5)
-	pos = pos + (start_ang:Forward() * 5)
+	pos = pos + (start_ang:Forward() * self.BarrelLength/2)
 
 	--offset`
 
@@ -659,7 +691,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	local dt = clamp(abs((ct - self.LastInput) / 1.8), 0, 1)
 
-	local elt = (1 - easeOutElastic(dt))
+	local elt = (1 - easeOutElastic(dt)) * (self.BarrelLength / 6)
 
 	
 
@@ -762,7 +794,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (start_ang:Right() * -ironsightPos.x)
 	pos = pos + (start_ang:Up() * -ironsightPos.z)
 	pos = pos + (start_ang:Up() *1.5)
-	pos = pos + (start_ang:Forward() * -5)
+	pos = pos + (start_ang:Forward() * -self.BarrelLength/2)
 	
 	
 
@@ -890,7 +922,7 @@ hook.Add(
 				local att = wep.AttachedCosmetic
 				local pos = att:GetPos()
 				pos = pos + (att:GetAngles():Forward() * 1)
-				pos = pos + (att:GetAngles():Up() * 1.4)
+				pos = pos + (att:GetAngles():Up() * -10)
 
 				local fpos = pos + (att:GetAngles():Forward() * 36)
 
@@ -927,10 +959,10 @@ hook.Add(
 				render.SetMaterial(aimdot)
 				render.UpdatePowerOfTwoTexture()
 
-				render.DrawQuadEasy(fpos, pang:Forward(), 14, 14, Color(255, 255, 255, 255), 180)
+				render.DrawQuadEasy(fpos, pang:Forward(), 12, 12, Color(255, 255, 255, 255), 180)
 
-				render.SetMaterial(aimdot2)
-				render.DrawQuadEasy(fpos, pang:Forward(), 16 * 3.4, 9 * 3.4, Color(255, 255, 255, 255), 180)
+				--render.SetMaterial(aimdot2)
+				--render.DrawQuadEasy(fpos, pang:Forward(), 16 * 3.4, 9 * 3.4, Color(255, 255, 255, 255), 180)
 				cam.End3D()
 
 				--render.SetMaterial(aimdot)
