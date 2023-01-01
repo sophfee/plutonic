@@ -72,9 +72,9 @@ function SWEP:GetOffset()
 		return
 	end
 
-	if self.LoweredPos and self:IsSprinting() then
-		return self.LoweredPos, self.LoweredAng
-	end
+	--if self.LoweredPos and self:IsSprinting() then
+	--	return self.LoweredPos, self.LoweredAng
+	--end
 end
 
 SWEP.VMOffsetPos = Vector(0, 0, 0)
@@ -462,9 +462,9 @@ function Longsword.Bob(self, pos, ang)
 	local move = vec(ovel.x, ovel.y, 0)
 
 	if Longsword.IsMoving() then
-		self.VMBobCycle = lerp(Frametime() * 3, self.VMBobCycle, 1)
+		self.VMBobCycle = approach(self.VMBobCycle, 1, Frametime() * 1)
 	else
-		self.VMBobCycle = lerp(Frametime() * 3, self.VMBobCycle, 0)
+		self.VMBobCycle = approach(self.VMBobCycle, 0, Frametime() * 1)
 	end
 
 	local mul = self:IsSprinting() and 1.7 or 1
@@ -527,13 +527,13 @@ function Longsword.VMCrouch(self, pos, ang)
 
 	local isIronsights = self:GetIronsights()
 
-	if self.Owner:KeyDown(IN_DUCK) and not isIronsights then
-		self.VMCrouch = lerp(Frametime() * 0.8, self.VMCrouch, 1)
+	if (self.Owner:KeyDown(IN_DUCK) or self.Owner:Crouching()) and not isIronsights then
+		self.VMCrouch = approach( self.VMCrouch, 1, Frametime() * 1.5 )
 	else
-		self.VMCrouch = lerp(Frametime() * 0.8, self.VMCrouch, 0)
+		self.VMCrouch = approach( self.VMCrouch, 0, Frametime() * 1.5 )
 	end
 
-	local alpha = math.ease.InOutElastic(self.VMCrouch)
+	local alpha = math.ease.InOutCubic(self.VMCrouch)
 
 	pos = pos + ang:Right() * self.CrouchPos.x * alpha
 	pos = pos + ang:Forward() * self.CrouchPos.y * alpha
@@ -583,14 +583,16 @@ function Longsword.VMIronsights(self, pos, ang)
 	
 	if self:GetIronsights() then
 		dir = true
-		self.VMIronsights = lerp(Frametime() * (1.75 * (self.IronsightsSpeed or 1)), self.VMIronsights, 1)
-		self.VMRattle = lerp(Frametime() * (0.75 * (self.IronsightsSpeed or 1)), self.VMRattle, 0)
+		self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or CurTime() + .5
+		self.VMIronsights = approach(self.VMIronsights, 1, Frametime() * (.4 * (self.IronsightsSpeed or 1)))
+		self.VMRattle = lerp(Frametime() * 1.7,self.VMRattle, 0)
 	else
-		self.VMIronsights = lerp(Frametime() * 3, self.VMIronsights, 0)
-		self.VMRattle =  1
+		self.VMIronsightsFinishRattle = nil
+		self.VMIronsights = approach(self.VMIronsights, 0, Frametime() * (.4 * (self.IronsightsSpeed or 1)))
+		self.VMRattle = approach(self.VMRattle, 1, Frametime() * 8)
 	end
 
-	local alpha = self.VMIronsights
+	local alpha = math.ease.InOutCubic( self.VMIronsights ) 
 
 	local ironsightPos = Longsword.VectorBezierCurve( alpha, Vector(), Vector(-(self.BarrelLength*.5),4,-2), self.IronsightsPos)
 	local ironsightAng = Longsword.AngleBezierCurve( alpha, Angle(), Angle(-5, -(self.BarrelLength*1.8),23), self.IronsightsAng)
@@ -604,13 +606,20 @@ function Longsword.VMIronsights(self, pos, ang)
 	ang:RotateAroundAxis(ang:Forward(), ironsightAng.r * alpha)
 
 	-- a little lift in the middle of the animation
-	local rt = Realtime()
-	ang:RotateAroundAxis(ang:Right(), abs(sin( (alpha) * (math.pi) )) * 4 )
-	pos = pos + ang:Up() * abs(sin( (alpha) * (math.pi) )) * -.7
 	
+	if self.VMIronsightsFinishRattle then
+		local a = max(0, (self.VMIronsightsFinishRattle - CurTime())) /2
+		local rt = Realtime()
+		ang:RotateAroundAxis(ang:Right(), sin(rt * pi2 * 2.7) * a * 1)
+		ang:RotateAroundAxis(ang:Forward(), cos(rt * pi2 * 2.7) * a * 1 )
+		ang:RotateAroundAxis(ang:Up(), cos(rt * pi2 * 2.7) * a * 2 )
+
+		pos = pos + ang:Up() * sin(rt * pi2 * 2.7) * a *-1
+		pos = pos + ang:Right() * cos(rt * pi2 * 2.7) * a * 1
+	end
 
 	if dir then
-		local rattle = math.ease.InOutElastic(self.VMRattle)
+		
 		
 		--ang:RotateAroundAxis(ang:Right(), sin(rt*8)* rattle)
 		--ang:RotateAroundAxis(ang:Up(), cos(rt*8) * rattle)
@@ -641,6 +650,47 @@ function Longsword.VMIdle(self, pos, ang)
 	return pos, ang
 end
 
+SWEP.LoweredMidPos = Vector(-1,-3,-3)
+SWEP.LoweredMidAng = Angle(8,6,-16)
+
+function Longsword.VMSprint(self, pos, ang)
+	if self.CustomSprint then
+		return self:CustomSprint(pos, ang)
+	end
+
+	if not self.LoweredPos then
+		return pos, ang
+	end
+
+	self.VMSprint = self.VMSprint or 0
+
+	self.LoweredMidPos = self.LoweredMidPos or Vector(-1,-3,-3)
+	self.LoweredMidAng = self.LoweredMidAng or Angle(24,7,5)
+
+	if self:IsSprinting() then
+		
+		self.VMSprint = approach(self.VMSprint, 1, Frametime() * 1.1  )
+	else
+		self.VMSprint = approach(self.VMSprint, 0, Frametime() * 1.1 )
+	end
+
+	local t = math.ease.InOutCubic(self.VMSprint)
+
+	local loweredPos = Longsword.VectorBezierCurve( t, Vector(), self.LoweredMidPos, self.LoweredPos)
+	local loweredAng = Longsword.AngleBezierCurve( t, Angle(), self.LoweredMidAng, self.LoweredAng)
+
+	ang:RotateAroundAxis(ang:Right(), loweredAng.p)
+	ang:RotateAroundAxis(ang:Up(), loweredAng.y)
+	ang:RotateAroundAxis(ang:Forward(), loweredAng.r)
+
+	pos = pos + ang:Up() * loweredPos.z
+	pos = pos + ang:Right() * loweredPos.x
+	pos = pos + ang:Forward() * loweredPos.y
+
+	return pos, ang
+
+end
+
 function SWEP:GetViewModelPosition(pos, ang)
 
 	-- START BY VISUALIZING THE MODEL IN THE CENTER!
@@ -659,7 +709,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (start_ang:Right() * (ironsightPos.x))
 	pos = pos + (start_ang:Up() * ironsightPos.z)
 	pos = pos + (start_ang:Up() * -1.5)
-	pos = pos + (start_ang:Forward() * self.BarrelLength/2)
+	pos = pos + (start_ang:Forward() * self.BarrelLength)
 
 	--offset`
 
@@ -691,7 +741,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	local dt = clamp(abs((ct - self.LastInput) / 1.8), 0, 1)
 
-	local elt = (1 - easeOutElastic(dt)) * (self.BarrelLength / 6)
+	local elt = (1 - easeOutElastic(dt))
 
 	
 
@@ -771,6 +821,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	pos, ang = Longsword.VMIronsights(self, pos, ang)
 
+	pos, ang = Longsword.VMSprint(self, pos, ang)
+
 
 	if self.VMOffsetAng then
 		local offsetang = self.VMOffsetAng
@@ -794,7 +846,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (start_ang:Right() * -ironsightPos.x)
 	pos = pos + (start_ang:Up() * -ironsightPos.z)
 	pos = pos + (start_ang:Up() *1.5)
-	pos = pos + (start_ang:Forward() * -self.BarrelLength/2)
+	pos = pos + (start_ang:Forward() * -self.BarrelLength)
 	
 	
 
@@ -995,7 +1047,7 @@ hook.Add(
 function SWEP:LS_ProceduralRecoil(force)
 
 	if self:GetIronsights() then
-		force = force / 4
+		force = force * 0.08
 	end
 	force = force
 

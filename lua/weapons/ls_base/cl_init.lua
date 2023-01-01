@@ -11,6 +11,7 @@ include("shared/spread.lua")
 include("shared/think.lua")
 include("shared/worldmodel.lua")
 include("shared/reload.lua")
+include("shared/sound.lua")
 
 -- [ Now Load Client Specific Files ] --
 include("client/viewmodel.lua")
@@ -19,6 +20,6 @@ include("client/fov.lua")
 include("client/replacement.lua")
 include("client/debug.lua")
 include("client/crosshair.lua")
-
+include("client/ammoindicator.lua")
 
 print("[Longsword²] Longsword² weapon base loaded. Version 2.0 Copyright 2019-2022 Jake Green (vin) and Nick S. (urnotnick)")

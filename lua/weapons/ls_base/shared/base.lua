@@ -412,10 +412,11 @@ function SWEP:ShootEffects()
 	end
 
 	
-	-- self.Owner:MuzzleFlash()
+	self.Owner:MuzzleFlash()
 	self:PlayAnimWorld(ACT_VM_PRIMARYATTACK)
 
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
+	if CLIENT then self:PlayAmmoIndicator() end
 
 	if self.CustomShootEffects then
 		self.CustomShootEffects(self)

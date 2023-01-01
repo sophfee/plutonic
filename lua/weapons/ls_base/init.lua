@@ -14,6 +14,7 @@ include("shared/spread.lua")
 include("shared/think.lua")
 include("shared/worldmodel.lua")
 include("shared/reload.lua")
+include("shared/sound.lua")
 
 -- ServerSide Files
 include("server/sound.lua")
@@ -28,6 +29,7 @@ AddCSLuaFile("shared/spread.lua")
 AddCSLuaFile("shared/think.lua")
 AddCSLuaFile("shared/worldmodel.lua")
 AddCSLuaFile("shared/reload.lua")
+AddCSLuaFile("shared/sound.lua")
 
 -- ClientSide Files
 AddCSLuaFile("client/viewmodel.lua")
@@ -37,4 +39,5 @@ AddCSLuaFile("client/replacement.lua")
 AddCSLuaFile("client/debug.lua")
 AddCSLuaFile("client/crosshair.lua")
 AddCSLuaFile("client/echo.lua")
+AddCSLuaFile("client/ammoindicator.lua")
 print("[Longsword²] Longsword² weapon base loaded. Version 2.0 Copyright 2019-2022 Jake Green (vin) and Nick S. (urnotnick)")
