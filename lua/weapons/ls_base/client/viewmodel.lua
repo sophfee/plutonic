@@ -62,7 +62,8 @@ SWEP.VMRenderTarget =
 		["$phongfresnelranges"] = "[0 0.5 1]",
 		["$phongalbedotint"] = "[1 1 1]",
 		["$phongtint"] = "[1 1 1]",
-		["$ignorez"] = 1
+		["$ignorez"] = 1,
+		["$transparent"] = 1
 	}
 )
 
@@ -135,10 +136,9 @@ function SWEP:PreDrawViewModel(vm)
 	end
 end
 
-local mat = Material("models/weapons/tfa_ins2/optics/aimpoint_lense")
+local mat = Material("!ls2_sight_rt")
 mat:SetTexture("$basetexture", rtx:GetName())
 mat:SetInt("$translucent", 1)
-mat:SetInt("$additive", 1)
 mat:Recompute()
 
 function SWEP:ViewModelDrawn()
@@ -194,8 +194,8 @@ function SWEP:ViewModelDrawn()
 		print("it does")
 
 		self.VMRenderTarget:SetTexture("$basetexture", rtx)
-		if not self.VMInitRT3 then
-			self.VMInitRT3 = true
+		if not self.VMInitRT then
+			self.VMInitRT = true
 			local m = mat:GetMatrix("$basetexturetransform")
 			m:SetScale(Vector(-1, 1, 0))
 			mat:SetMatrix("$basetexturetransform", m)
@@ -911,7 +911,7 @@ function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
 	render.SetStencilPassOperation(STENCIL_REPLACE)
 	render.SetStencilCompareFunction(STENCIL_EQUAL)
 	render.SetColorModulation(1, 1, 1, 255)
-	render.SetMaterial(aimdot)
+	--render.SetMaterial(aimdot)
 	local pos = att:GetPos()
 	pos = pos + (att:GetAngles():Forward() * 1)
 	pos = pos + (att:GetAngles():Up() * 1.4)
@@ -937,7 +937,7 @@ function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
 	render.SetBlend(1)
 
 	render.SetStencilReferenceValue(32)
-	--render.DrawScreenQuad()
+	--=render.DrawScreenQuad()
 	render.SetStencilPassOperation(STENCIL_REPLACE)
 	render.SetStencilZFailOperation(STENCIL_KEEP)
 	render.SetStencilCompareFunction(STENCIL_GREATER)
@@ -980,13 +980,13 @@ hook.Add(
 
 				render.PushRenderTarget(rtx, 0, 0, 512, 512)
 
-				render.ClearRenderTarget(rtx, Color(0, 0, 0, 255))
+				render.ClearRenderTarget(rtx, Color(0, 0, 0, 0))
 				--if self:GetIronsights() then
 				--render.PushRenderTarget(rtx)
 				--render.BlurRenderTarget(rtx, ScrW(), ScrH(), 3)
 				local pang = att:GetAngles()
 				-- render.PopRenderTarget()
-				render.RenderView(
+				--[[render.RenderView(
 					{
 						origin = pos,
 						angles = pang,
@@ -998,7 +998,7 @@ hook.Add(
 						fov = 14.6
 					}
 				)
-
+]]
 				--cam.Start2D()
 				--render.SetStencilReferenceValue(32)
 				pang:RotateAroundAxis(pang:Up(), 180)
@@ -1008,10 +1008,10 @@ hook.Add(
 
 				cam.Start3D()
 
-				render.SetMaterial(aimdot)
+				-- render.SetMaterial(aimdot)
 				render.UpdatePowerOfTwoTexture()
 
-				render.DrawQuadEasy(fpos, pang:Forward(), 12, 12, Color(255, 255, 255, 255), 180)
+				--render.DrawQuadEasy(fpos, pang:Forward(), 12, 12, Color(255, 255, 255, 255), 180)
 
 				--render.SetMaterial(aimdot2)
 				--render.DrawQuadEasy(fpos, pang:Forward(), 16 * 3.4, 9 * 3.4, Color(255, 255, 255, 255), 180)

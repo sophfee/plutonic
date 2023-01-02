@@ -14,7 +14,7 @@ local indicatorIO = {}
 indicatorIO[LONGSWORD_SUBMACHINE_GUN] = {
 	[1] = function(self)
 		local cp = self:ClipPercent()
-		return cp <= 0.4, cp * 2
+		return cp <= 0.4, (1-(cp/0.4))
 	end,
 	[2] = "Longsword.SMG_LowAmmo",
 	[3] = "Longsword.SMG_Dry"
@@ -23,7 +23,7 @@ indicatorIO[LONGSWORD_SUBMACHINE_GUN] = {
 indicatorIO[LONGSWORD_PISTOL] = {
 	[1] = function(self)
 		local cp = self:ClipPercent()
-		return cp <= 0.6, cp * 3
+		return cp <= 0.6, (1 - (cp/0.6))
 	end,
 	[2] = "Longsword.Pistol_LowAmmo",
 	[3] = "Longsword.Pistol_Dry"
@@ -32,7 +32,7 @@ indicatorIO[LONGSWORD_PISTOL] = {
 indicatorIO[LONGSWORD_AUTOMATIC_RIFLE] = {
 	[1] = function(self)
 		local cp = self:ClipPercent()
-		return cp <= 0.4, cp * 2
+		return cp <= 0.4, (1 - (cp / 0.4))
 	end,
 	[2] = "Longsword.Rifle_LowAmmo",
 	[3] = "Longsword.Rifle_Dry"
@@ -55,6 +55,7 @@ function SWEP:PlayAmmoIndicator()
 			snd = indicatorIO[self.WeaponType][3]
 			fVolume = 1
 		end
-		self:EmitSound(snd, nil, nil, fVolume )
+		chat.AddText(fVolume)
+		self:EmitSound(snd, nil, nil, fVolume, SND_CHANGE_VOL )
 	end
 end
