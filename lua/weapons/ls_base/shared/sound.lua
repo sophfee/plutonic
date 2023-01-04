@@ -69,3 +69,31 @@ sound.Add({
 	sound = "weapons/tfa/lowammo_dry_ar.wav"
 })
 
+-- based off of TFA base
+hook.Add("EntityEmitSound", "Longsword2Sounddata", function(soundData)
+	local ent = soundData.Entity
+	local modified
+	local weapon
+
+	if ent:IsWeapon() then
+		weapon = ent
+	elseif ent:IsNPC() or ent:IsPlayer() then
+		weapon = ent:GetActiveWeapon()
+	end
+
+	if IsValid(weapon) and weapon.IsLongsword then
+		if weapon.GonnaAdjuctPitch then
+			soundData.Pitch = soundData.Pitch * weapon.RequiredPitch
+			weapon.GonnaAdjuctPitch = false
+			modified = true
+		end
+
+		if weapon.GonnaAdjustVol then
+			soundData.Volume = soundData.Volume * weapon.RequiredVolume
+			weapon.GonnaAdjustVol = false
+			modified = true
+		end
+	end
+
+	return modified
+end)

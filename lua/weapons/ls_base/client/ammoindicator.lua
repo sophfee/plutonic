@@ -56,6 +56,8 @@ function SWEP:PlayAmmoIndicator()
 			fVolume = 1
 		end
 		chat.AddText(fVolume)
+		self.GonnaAdjustVol = true 
+		self.RequiredVolume = fVolume
 		self:EmitSound(snd, nil, nil, fVolume, SND_CHANGE_VOL )
 	end
 end
