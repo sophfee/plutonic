@@ -259,7 +259,7 @@ local abs,
 	math.pi * 2,
 	math.Round,
 	CurTime,
-	FrameTime,
+	RealFrameTime,
 	RealTime,
 	Vector,
 	Angle,
@@ -315,7 +315,7 @@ hook.Add(
 						local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
 
 						if abs(x) > 0 or abs(y) > 0 then
-							wep.LastInput = CurTime()
+							wep.LastInput = UnPredictedCurTime()
 
 							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.01
 
@@ -337,7 +337,7 @@ hook.Add(
 						local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
 
 						if abs(x) > 0 or abs(y) > 0 then
-							wep.LastInput = CurTime()
+							wep.LastInput = UnPredictedCurTime() 
 
 							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.04
 
@@ -458,18 +458,7 @@ function Longsword.Bob(self, pos, ang)
 	self.VMBobInCyclePos = self.VMBobInCyclePos or vBobIn
 	self.VMBobOutCyclePos = self.VMBobOutCyclePos or vBobOut
 
-	local ovel = self.Owner:GetVelocity()
-	local move = vec(ovel.x, ovel.y, 0)
-
-	if Longsword.IsMoving() then
-		self.VMBobCycle = approach(self.VMBobCycle, 1, Frametime() * 1)
-	else
-		self.VMBobCycle = approach(self.VMBobCycle, 0, Frametime() * 1)
-	end
-
-	local mul = self:IsSprinting() and 1.7 or 1
-	local l = self:IsSprinting() and 1 or 0
-	lerpSpeed = lerp(Frametime() * 3, lerpSpeed, l)
+	
 
 	local alpha2 = sin(rt * 8.4 * 1.7 ) * (self.VMBobCycle)
 	local alpha = sin(rt * 8.4 * 1 ) * self.VMBobCycle
@@ -495,7 +484,8 @@ function Longsword.Bob(self, pos, ang)
 	pos = pos + ang:Right() * bob.x * self.VMBobCycle
 	pos = pos + ang:Forward() * bob.y * self.VMBobCycle
 	pos = pos + ang:Up() * bob.z * self.VMBobCycle
-
+	local ovel = self.Owner:GetVelocity()
+	local move = vec(ovel.x, ovel.y, 0)
 	local vel = move:GetNormalized()
 	local rd = self.Owner:GetRight():Dot(vel)
 	local fd = (self.Owner:GetForward():Dot(vel) + 1) / 2
@@ -525,14 +515,6 @@ function Longsword.VMCrouch(self, pos, ang)
 
 	self.VMCrouch = self.VMCrouch or 0
 
-	local isIronsights = self:GetIronsights()
-
-	if (self.Owner:KeyDown(IN_DUCK) or self.Owner:Crouching()) and not isIronsights then
-		self.VMCrouch = approach( self.VMCrouch, 1, Frametime() * 1.5 )
-	else
-		self.VMCrouch = approach( self.VMCrouch, 0, Frametime() * 1.5 )
-	end
-
 	local alpha = math.ease.InOutCubic(self.VMCrouch)
 
 	pos = pos + ang:Right() * self.CrouchPos.x * alpha
@@ -552,19 +534,7 @@ function Longsword.VMBlocked(self, pos, ang)
 
 	if self.Owner != LocalPlayer() then return pos, ang end
 
-	local tr = util.TraceLine({
-		start = self.Owner:GetShootPos(),
-		endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * 32,
-		filter = self.Owner
-	})
-
-	self.VMBlocked = self.VMBlocked or 0
-
-	if tr.Hit then
-		self.VMBlocked = lerp(Frametime() * 2, self.VMBlocked, tr.Fraction)
-	else
-		self.VMBlocked = lerp(Frametime() * 1.5, self.VMBlocked, 1)
-	end
+	
 
 	pos = pos + ang:Forward() * (1 - self.VMBlocked) * -12
 	ang:RotateAroundAxis(ang:Forward(), (1 - self.VMBlocked) * -11)
@@ -583,13 +553,6 @@ function Longsword.VMIronsights(self, pos, ang)
 	
 	if self:GetIronsights() then
 		dir = true
-		self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or CurTime() + .5
-		self.VMIronsights = approach(self.VMIronsights, 1, Frametime() * (.4 * (self.IronsightsSpeed or 1)))
-		self.VMRattle = lerp(Frametime() * 1.7,self.VMRattle, 0)
-	else
-		self.VMIronsightsFinishRattle = nil
-		self.VMIronsights = approach(self.VMIronsights, 0, Frametime() * (.4 * (self.IronsightsSpeed or 1)))
-		self.VMRattle = approach(self.VMRattle, 1, Frametime() * 8)
 	end
 
 	local alpha = math.ease.InOutCubic( self.VMIronsights ) 
@@ -608,7 +571,7 @@ function Longsword.VMIronsights(self, pos, ang)
 	-- a little lift in the middle of the animation
 	
 	if self.VMIronsightsFinishRattle then
-		local a = max(0, (self.VMIronsightsFinishRattle - CurTime())) /2
+		local a = max(0, (self.VMIronsightsFinishRattle - Curtime())) /2
 		local rt = Realtime()
 		ang:RotateAroundAxis(ang:Right(), sin(rt * pi2 * 2.7) * a * 1)
 		ang:RotateAroundAxis(ang:Forward(), cos(rt * pi2 * 2.7) * a * 1 )
@@ -667,12 +630,7 @@ function Longsword.VMSprint(self, pos, ang)
 	self.LoweredMidPos = self.LoweredMidPos or Vector(-1,-3,-3)
 	self.LoweredMidAng = self.LoweredMidAng or Angle(24,7,5)
 
-	if self:IsSprinting() then
-		
-		self.VMSprint = approach(self.VMSprint, 1, Frametime() * 1.1  )
-	else
-		self.VMSprint = approach(self.VMSprint, 0, Frametime() * 1.1 )
-	end
+	
 
 	local t = math.ease.InOutCubic(self.VMSprint)
 
@@ -691,7 +649,70 @@ function Longsword.VMSprint(self, pos, ang)
 
 end
 
+function SWEP:ViewmodelThink()
+	self.VMSprint = self.VMSprint or 0
+
+	if self:IsSprinting() then
+		self.VMSprint = approach(self.VMSprint, 1, Frametime() * 3.1  )
+	else
+		self.VMSprint = approach(self.VMSprint, 0, Frametime() * 3.1 )
+	end
+
+	self.VMIronsights = self.VMIronsights or 0
+	self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or 0
+
+	if self:GetIronsights() then
+		dir = true
+		self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or Curtime() + .5
+		self.VMIronsights = approach(self.VMIronsights, 1, Frametime() * (1.3 * (self.IronsightsSpeed or 1)))
+		--self.VMRattle = lerp(Frametime() * 1.7,self.VMRattle, 0)
+	else
+		self.VMIronsightsFinishRattle = nil
+		self.VMIronsights = approach(self.VMIronsights, 0, Frametime() * (1.3 * (self.IronsightsSpeed or 1)))
+		--self.VMRattle = approach(self.VMRattle, 1, Frametime() * 8)
+	end
+
+	local tr = util.TraceLine({
+		start = self.Owner:GetShootPos(),
+		endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * 32,
+		filter = self.Owner
+	})
+
+	self.VMBlocked = self.VMBlocked or 0
+
+	if tr.Hit then
+		self.VMBlocked = lerp(Frametime() * 13, self.VMBlocked, tr.Fraction)
+	else
+		self.VMBlocked = lerp(Frametime() * 14, self.VMBlocked, 1)
+	end
+
+	local isIronsights = self:GetIronsights()
+
+	if (self.Owner:KeyDown(IN_DUCK) or self.Owner:Crouching()) and not isIronsights then
+		self.VMCrouch = approach( self.VMCrouch, 1, Frametime() * 4.5 )
+	else
+		self.VMCrouch = approach( self.VMCrouch, 0, Frametime() * 4.5 )
+	end
+
+	local ovel = self.Owner:GetVelocity()
+	local move = vec(ovel.x, ovel.y, 0)
+
+	if Longsword.IsMoving() then
+		self.VMBobCycle = approach(self.VMBobCycle, 1, Frametime() * 8)
+	else
+		self.VMBobCycle = approach(self.VMBobCycle, 0, Frametime() * 8)
+	end
+
+	local mul = self:IsSprinting() and 1.7 or 1
+	local l = self:IsSprinting() and 1 or 0
+	lerpSpeed = lerp(Frametime() * 8, lerpSpeed, l)
+end
+
 function SWEP:GetViewModelPosition(pos, ang)
+
+	if IsFirstTimePredicted() then
+		return pos, ang 
+	end
 
 	-- START BY VISUALIZING THE MODEL IN THE CENTER!
 	-- This is the default position of the viewmodel, so we can use it as a reference point
@@ -739,9 +760,9 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	-- [[ SWAY ]] --
 
-	local dt = clamp(abs((ct - self.LastInput) / 1.8), 0, 1)
+	local dt = clamp(abs((CurTime() - self.LastInput) * 0.6), 0, 1)
 
-	local elt = (1 - easeOutElastic(dt))
+	local elt = (1 - math.ease.OutElastic(dt))
 
 	
 

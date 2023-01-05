@@ -8,6 +8,13 @@ function SWEP:IdleThink()
 end
 
 function SWEP:Think()
+
+	if CLIENT then
+		if IsFirstTimePredicted() then
+			self:ViewmodelThink()
+		end
+	end
+
 	self:IronsightsThink()
 	self:RecoilThink()
 	self:IdleThink()
