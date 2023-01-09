@@ -772,13 +772,15 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.VMDeltaX = clamp(self.VMDeltaX, -16, 16)
 	self.VMDeltaY = clamp(self.VMDeltaY, -16, 16)
 
+	
+
 	-- Perform VM Rotations and shit
 	ang:RotateAroundAxis(ang:Up(), self.VMDeltaX)
 	ang:RotateAroundAxis(ang:Right(), self.VMDeltaY)
 
+	pos = pos + ( ang:Right() * math.rad(self.BarrelLength * self.VMDeltaX) )
+
 	-- Offset the viewmodel
-	pos = pos + (ang:Right() * (self.VMDeltaX / (pi * (1.3 * (self.BarrelLength/6)))))
-	pos = pos + (ang:Up() * -(self.VMDeltaY / (pi * (1.3 * (self.BarrelLength/6)))))
 
 	-- Roll
 	--local move = clamp(len / self.Owner:GetRunSpeed(), 0, 1)
@@ -797,6 +799,12 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local degRoll = deg(sin(self.VMRoll * pi)) / 4
 
 	ang:RotateAroundAxis(ang:Forward(), degRoll)
+
+	self.VMJump = self.VMJump or 0
+
+	if not onGround then
+		
+	end
 
 	-- Offset the viewmodel
 	--pos = pos + (ang:Right() * (degRoll / 14))
