@@ -534,7 +534,7 @@ function Longsword.VMBlocked(self, pos, ang)
 
 	if self.Owner != LocalPlayer() then return pos, ang end
 
-	
+	self.VMBlocked = self.VMBlocked or 0
 
 	pos = pos + ang:Forward() * (1 - self.VMBlocked) * -12
 	ang:RotateAroundAxis(ang:Forward(), (1 - self.VMBlocked) * -11)
@@ -664,11 +664,11 @@ function SWEP:ViewmodelThink()
 	if self:GetIronsights() then
 		dir = true
 		self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or Curtime() + .5
-		self.VMIronsights = approach(self.VMIronsights, 1, Frametime() * (1.3 * (self.IronsightsSpeed or 1)))
+		self.VMIronsights = approach(self.VMIronsights, 1, Frametime() * (1.6 * (self.IronsightsSpeed or 1)))
 		--self.VMRattle = lerp(Frametime() * 1.7,self.VMRattle, 0)
 	else
 		self.VMIronsightsFinishRattle = nil
-		self.VMIronsights = approach(self.VMIronsights, 0, Frametime() * (1.3 * (self.IronsightsSpeed or 1)))
+		self.VMIronsights = approach(self.VMIronsights, 0, Frametime() * (1.6 * (self.IronsightsSpeed or 1)))
 		--self.VMRattle = approach(self.VMRattle, 1, Frametime() * 8)
 	end
 
@@ -777,8 +777,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 	ang:RotateAroundAxis(ang:Right(), self.VMDeltaY)
 
 	-- Offset the viewmodel
-	pos = pos + (ang:Right() * (self.VMDeltaX / (pi * 1.7)))
-	pos = pos + (ang:Up() * -(self.VMDeltaY / (pi * 1.7)))
+	pos = pos + (ang:Right() * (self.VMDeltaX / (pi * (1.3 * (self.BarrelLength/6)))))
+	pos = pos + (ang:Up() * -(self.VMDeltaY / (pi * (1.3 * (self.BarrelLength/6)))))
 
 	-- Roll
 	--local move = clamp(len / self.Owner:GetRunSpeed(), 0, 1)
