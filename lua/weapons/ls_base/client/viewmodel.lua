@@ -317,21 +317,8 @@ hook.Add(
 						if abs(x) > 0 or abs(y) > 0 then
 							wep.LastInput = UnPredictedCurTime()
 
-							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.01
-
-							if wep.VMSwayX > 0 then
-								wep.VMSwayX = min(wep.VMSwayX, wep.VMDeltaX) + x * 0.01
-							else
-								wep.VMSwayX = max(wep.VMSwayX, wep.VMDeltaX) + x * 0.01
-							end
-
-							wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.01
-
-							if wep.VMSwayY > 0 then
-								wep.VMSwayY = min(wep.VMSwayY, wep.VMDeltaY) + y * 0.01
-							else
-								wep.VMSwayY = max(wep.VMSwayY, wep.VMDeltaY) + y * 0.01
-							end
+							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.001
+							wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.001
 						end
 					else
 						local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
@@ -339,21 +326,21 @@ hook.Add(
 						if abs(x) > 0 or abs(y) > 0 then
 							wep.LastInput = UnPredictedCurTime() 
 
-							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.04
+							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.004
 
-							if wep.VMSwayX > 0 then
+							--[[if wep.VMSwayX > 0 then
 								wep.VMSwayX = min(wep.VMSwayX, wep.VMDeltaX) + x * 0.04
 							else
 								wep.VMSwayX = max(wep.VMSwayX, wep.VMDeltaX) + x * 0.04
-							end
+							end]]
 
-							wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.04
+							wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.004
 
-							if wep.VMSwayY > 0 then
+							--[[if wep.VMSwayY > 0 then
 								wep.VMSwayY = min(wep.VMSwayY, wep.VMDeltaY) + y * 0.04
 							else
 								wep.VMSwayY = max(wep.VMSwayY, wep.VMDeltaY) + y * 0.04
-							end
+							end]]
 						end
 					end
 				end
@@ -571,7 +558,7 @@ function Longsword.VMIronsights(self, pos, ang)
 	-- a little lift in the middle of the animation
 	
 	if self.VMIronsightsFinishRattle then
-		local a = max(0, (self.VMIronsightsFinishRattle - Curtime())) /2
+		local a = max(0, (self.VMIronsightsFinishRattle - Curtime())) 
 		local rt = Realtime()
 		ang:RotateAroundAxis(ang:Right(), sin(rt * pi2 * 2.7) * a * 1)
 		ang:RotateAroundAxis(ang:Forward(), cos(rt * pi2 * 2.7) * a * 1 )
@@ -650,6 +637,8 @@ function Longsword.VMSprint(self, pos, ang)
 end
 
 function SWEP:ViewmodelThink()
+	if not IsFirstTimePredicted() then return end
+
 	self.VMSprint = self.VMSprint or 0
 
 	if self:IsSprinting() then
@@ -664,11 +653,11 @@ function SWEP:ViewmodelThink()
 	if self:GetIronsights() then
 		dir = true
 		self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or Curtime() + .5
-		self.VMIronsights = approach(self.VMIronsights, 1, Frametime() * (1.6 * (self.IronsightsSpeed or 1)))
+		self.VMIronsights = approach(self.VMIronsights, 1, FrameTime() * (1.4 * (self.IronsightsSpeed or 1)))
 		--self.VMRattle = lerp(Frametime() * 1.7,self.VMRattle, 0)
 	else
 		self.VMIronsightsFinishRattle = nil
-		self.VMIronsights = approach(self.VMIronsights, 0, Frametime() * (1.6 * (self.IronsightsSpeed or 1)))
+		self.VMIronsights = approach(self.VMIronsights, 0, FrameTime() * (1.2 * (self.IronsightsSpeed or 1)))
 		--self.VMRattle = approach(self.VMRattle, 1, Frametime() * 8)
 	end
 
@@ -764,10 +753,11 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	local elt = (1 - math.ease.OutElastic(dt))
 
-	
+	self.VMSwayX = lerp(ft8, self.VMSwayX, 0)
+	self.VMSwayY = lerp(ft8, self.VMSwayY, 0)
 
-	self.VMDeltaX = lerp(ft8, self.VMDeltaX, self.VMSwayX * elt)
-	self.VMDeltaY = lerp(ft8, self.VMDeltaY, self.VMSwayY * elt)
+	self.VMDeltaX = lerp(ft8, self.VMDeltaX, self.VMSwayX)
+	self.VMDeltaY = lerp(ft8, self.VMDeltaY, self.VMSwayY)
 
 	self.VMDeltaX = clamp(self.VMDeltaX, -16, 16)
 	self.VMDeltaY = clamp(self.VMDeltaY, -16, 16)
@@ -777,8 +767,11 @@ function SWEP:GetViewModelPosition(pos, ang)
 	-- Perform VM Rotations and shit
 	ang:RotateAroundAxis(ang:Up(), self.VMDeltaX)
 	ang:RotateAroundAxis(ang:Right(), self.VMDeltaY)
+	ang:RotateAroundAxis(ang:Forward(), self.VMDeltaY / 2)
+	ang:RotateAroundAxis(ang:Forward(), self.VMDeltaX )
 
-	pos = pos + ( ang:Right() * math.rad(self.BarrelLength * self.VMDeltaX) )
+	pos = pos + ( ang:Right() * math.rad(self.BarrelLength * self.VMDeltaX * 2) )
+	pos = pos + ( ang:Up() * math.rad(self.BarrelLength * -self.VMDeltaY) )
 
 	-- Offset the viewmodel
 
