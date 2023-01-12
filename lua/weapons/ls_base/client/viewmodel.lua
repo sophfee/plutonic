@@ -142,36 +142,6 @@ function SWEP:PreDrawViewModel(vm)
 		return
 	end
 
-	if self:GetIronsights() then
-
-	Longsword.Overdraw = true
-    vm:DrawModel()
-    Longsword.Overdraw = false
-
-	local vm = self:GetOwner():GetViewModel()
-    render.UpdateScreenEffectTexture()
-    render.ClearStencil()
-    render.SetStencilEnable(true)
-    render.SetStencilCompareFunction(STENCIL_ALWAYS)
-    render.SetStencilPassOperation(STENCIL_REPLACE)
-    render.SetStencilFailOperation(STENCIL_KEEP)
-    render.SetStencilZFailOperation(STENCIL_REPLACE)
-    render.SetStencilWriteMask(0xFF)
-    render.SetStencilTestMask(0xFF)
-    render.SetBlend(1)
-    render.SetStencilReferenceValue(55)
-    Longsword.Overdraw = true
-    vm:DrawModel()
-    Longsword.Overdraw = false
-    render.SetBlend(0)
-    render.SetStencilPassOperation(STENCIL_REPLACE)
-    render.SetStencilCompareFunction(STENCIL_EQUAL)
-    -- render.SetColorMaterial()
-		DrawBokehDOF(31, 0.7, 1224)
-    	render.SetStencilEnable(false)
-		
-	end	
-
 	if self.scopedIn then
 		return self.scopedIn
 	end
