@@ -122,14 +122,55 @@ function SWEP:PlayAnim(act)
 
 	vmodel:SendViewModelMatchingSequence(seq)
 end
-
+local dofmat = Material("pp/dof")
+local grad = Material("vgui/gradient-d")
 function SWEP:PreDrawViewModel(vm)
+	if Longsword.Overdraw then
+		return false
+	end
+
 	if CLIENT and self.CustomMaterial and not self.CustomMatSetup then
 		self.Owner:GetViewModel():SetMaterial(self.CustomMaterial)
 		self.CustomMatSetup = true
 	end
 
 	self:OffsetThink()
+
+	local vm = self.Owner:GetViewModel()
+
+	if not IsValid(vm) then
+		return
+	end
+
+	if self:GetIronsights() then
+
+	Longsword.Overdraw = true
+    vm:DrawModel()
+    Longsword.Overdraw = false
+
+	local vm = self:GetOwner():GetViewModel()
+    render.UpdateScreenEffectTexture()
+    render.ClearStencil()
+    render.SetStencilEnable(true)
+    render.SetStencilCompareFunction(STENCIL_ALWAYS)
+    render.SetStencilPassOperation(STENCIL_REPLACE)
+    render.SetStencilFailOperation(STENCIL_KEEP)
+    render.SetStencilZFailOperation(STENCIL_REPLACE)
+    render.SetStencilWriteMask(0xFF)
+    render.SetStencilTestMask(0xFF)
+    render.SetBlend(1)
+    render.SetStencilReferenceValue(55)
+    Longsword.Overdraw = true
+    vm:DrawModel()
+    Longsword.Overdraw = false
+    render.SetBlend(0)
+    render.SetStencilPassOperation(STENCIL_REPLACE)
+    render.SetStencilCompareFunction(STENCIL_EQUAL)
+    -- render.SetColorMaterial()
+		DrawBokehDOF(31, 0.7, 1224)
+    	render.SetStencilEnable(false)
+		
+	end	
 
 	if self.scopedIn then
 		return self.scopedIn
@@ -142,6 +183,8 @@ mat:SetInt("$translucent", 1)
 mat:Recompute()
 
 function SWEP:ViewModelDrawn()
+	if Longsword.Overdraw then return end
+
 	local vm = self.Owner:GetViewModel()
 
 	if not IsValid(vm) then
@@ -209,6 +252,10 @@ function SWEP:ViewModelDrawn()
 
 		self:DrawHoloSight(pos, ang, att)
 	end
+end
+
+function SWEP:PostDrawViewModel(vm, ply, wep)
+	if Longsword.Overdraw then return end
 end
 
 local lastAng = Angle(0, 0, 0)
