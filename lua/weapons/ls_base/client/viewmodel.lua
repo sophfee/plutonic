@@ -497,7 +497,7 @@ function Longsword.Bob(self, pos, ang)
 	self.VMRDBEF = self.VMRDBEF or 0 -- VM Right Direction Better Effect
 
 	-- Additional effect on sidestepping
-	self.VMRDBEF = lerp(Frametime() * 3, self.VMRDBEF, vel:Length2DSqr())
+	self.VMRDBEF = lerp(Frametime() * 2.9, self.VMRDBEF, vel:Length2DSqr())
 
 	ang:RotateAroundAxis(ang:Right(), abob.p * self.VMBobCycle)
 	ang:RotateAroundAxis(ang:Forward(), abob.r * self.VMBobCycle)
@@ -506,7 +506,15 @@ function Longsword.Bob(self, pos, ang)
 	ang:RotateAroundAxis(ang:Forward(), self.VMRDBEF * cos(rt * 8.4 * 1.7))
 	ang:RotateAroundAxis(ang:Right(), (self.VMRDBEF / -8) * sin(rt * 8.4 * 1.7))
 
-	pos = pos + ang:Up() * (self.VMRDBEF / 60) * sin(rt * 8.4 * 1.7) * self.VMBobCycle
+	pos = pos + ang:Up() * (self.VMRDBEF / 40) * cos(rt * 8.4 * 1.7) * self.VMBobCycle
+
+	-- added sin/cos effects, they add a nice effect to the weapon bobbing
+	pos = pos + ang:Right() * (self.VMRDBEF / 11) * sin(rt * 8.4 * 1.7) * self.VMBobCycle
+	pos = pos + ang:Forward() * (self.VMRDBEF * .59) * sin(rt * 8.4 * 1.7) * self.VMBobCycle
+
+	ang:RotateAroundAxis(ang:Right(), (self.VMRDBEF / 3) * cos(rt * 8.4 * 1.7) * self.VMBobCycle)
+	ang:RotateAroundAxis(ang:Forward(), (-self.VMRDBEF ) * cos(rt * 8.4 * 1.7 + 94.3) * self.VMBobCycle)
+	ang:RotateAroundAxis(ang:Up(), (self.VMRDBEF / -2) * sin(rt * 8.4 * 1.7 + 94.3) * self.VMBobCycle)
 
 	return pos, ang
 
@@ -614,6 +622,9 @@ function Longsword.VMIdle(self, pos, ang)
 	pos = pos + ang:Up() * alpha * -.175
 	pos = pos + ang:Right() * alpha * .07
 
+	local onvel = self.Owner:GetVelocity()
+	local uvel = 
+
 	return pos, ang
 end
 
@@ -704,14 +715,14 @@ function SWEP:ViewmodelThink()
 	local move = vec(ovel.x, ovel.y, 0)
 
 	if Longsword.IsMoving() then
-		self.VMBobCycle = approach(self.VMBobCycle, 1, Frametime() * 8)
+		self.VMBobCycle = approach(self.VMBobCycle, 1, Frametime() * 5)
 	else
-		self.VMBobCycle = approach(self.VMBobCycle, 0, Frametime() * 8)
+		self.VMBobCycle = approach(self.VMBobCycle, 0, Frametime() * 5)
 	end
 
 	local mul = self:IsSprinting() and 1.7 or 1
 	local l = self:IsSprinting() and 1 or 0
-	lerpSpeed = lerp(Frametime() * 8, lerpSpeed, l)
+	lerpSpeed = lerp(Frametime() * 5, lerpSpeed, l)
 end
 
 function SWEP:GetViewModelPosition(pos, ang)
