@@ -622,8 +622,24 @@ function Longsword.VMIdle(self, pos, ang)
 	pos = pos + ang:Up() * alpha * -.175
 	pos = pos + ang:Right() * alpha * .07
 
-	local onvel = self.Owner:GetVelocity()
-	local uvel = 
+	pos = pos + ang:Forward() * sin(rt*.3) * -.4
+
+	pos = pos + ang:Right() * sin(rt * -.9) * -.3
+	pos = pos + ang:Up() * cos(rt * 1.17) * .2^2
+
+
+	ang:RotateAroundAxis(ang:Right(), sin(rt * 2.67) * .23)
+	ang:RotateAroundAxis(ang:Up(), cos(rt * .87) * .23)
+	ang:RotateAroundAxis(ang:Forward(), cos(rt * .97) * 3.23)
+
+	self.VMVel = self.VMVel or 0
+
+	ang:RotateAroundAxis(ang:Forward(), self.VMVel * 1.5)
+	pos = pos + ang:Right() * self.VMVel * .125
+
+	local uvel = min(self.VMVel / pi, 12)
+	ang:RotateAroundAxis(ang:Right(), uvel * 2.5)
+	pos = pos + ang:Up() * uvel * -1.25
 
 	return pos, ang
 end
@@ -723,6 +739,13 @@ function SWEP:ViewmodelThink()
 	local mul = self:IsSprinting() and 1.7 or 1
 	local l = self:IsSprinting() and 1 or 0
 	lerpSpeed = lerp(Frametime() * 5, lerpSpeed, l)
+
+	local onvel = self.Owner:GetVelocity()
+	local uvel = onvel.z
+
+	local vel = clamp((uvel) / 80, -34, 34)
+	self.VMVel =self.VMVel or 0
+	self.VMVel = Lerp(Frametime() * 5, self.VMVel, vel)
 end
 
 function SWEP:GetViewModelPosition(pos, ang)
