@@ -184,6 +184,12 @@ local PIERCING_MATS = {
 	[MAT_COMPUTER] = true
 }
 
+local ALWAYS_PIERCE = {
+	[MAT_GLASS] = true,
+	[MAT_VENT] = true,
+	[MAT_GRATE] = true
+}
+
 function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_dir)
 
 	if self.UseBallistics then
@@ -224,7 +230,7 @@ function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_d
 	if CLIENT then
 		bullet.Callback = function(attacker, tr)
 
-			if self.Primary.Piercing and not pierce_shot then
+			if (self.Primary.Piercing or ALWAYS_PIERCE[tr.MatType]) and not pierce_shot then
 				if true then
 					-- Find the exit point
 
@@ -264,7 +270,7 @@ function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_d
 	else
 		bullet.Callback = function(attacker, tr)
 
-			if self.Primary.Piercing and not pierce_shot then
+			if (self.Primary.Piercing or ALWAYS_PIERCE[tr.MatType]) and not pierce_shot then
 				if true then
 					-- Find the exit point
 
