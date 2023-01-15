@@ -143,13 +143,20 @@ end
 
 
 function SWEP:Deploy()
+
+	if CLIENT then
+		self.VMPos = Vector()
+		self.VMAng = Angle()
+		
+	end
+
 	if self.CustomMaterial then
 		if CLIENT then
 			self.Owner:GetViewModel():SetMaterial(self.CustomMaterial)
 			self.CustomMatSetup = true
 		end
 	end
-
+	self.DrawTime = UnPredictedCurTime()
 	self:PlayAnim(ACT_VM_DRAW)
 	if self.Owner:IsPlayer() then
 		self.Owner:GetViewModel():SetPlaybackRate(1)

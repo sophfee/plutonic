@@ -509,13 +509,15 @@ function Longsword.Bob(self, pos, ang)
 	pos = pos + ang:Up() * (self.VMRDBEF / 40) * cos(rt * 8.4 * 1.7) * self.VMBobCycle
 
 	-- added sin/cos effects, they add a nice effect to the weapon bobbing
-	pos = pos + ang:Right() * (self.VMRDBEF / 11) * sin(rt * 8.4 * 1.7) * self.VMBobCycle
-	pos = pos + ang:Forward() * (self.VMRDBEF * .59) * sin(rt * 8.4 * 1.7) * self.VMBobCycle
+	local alper = self:GetIronsights() and self.VMRDBEF / 8 or  self.VMRDBEF
 
-	ang:RotateAroundAxis(ang:Right(), (self.VMRDBEF / 3) * cos(rt * 8.4 * 1.7) * self.VMBobCycle)
-	ang:RotateAroundAxis(ang:Forward(), (-self.VMRDBEF ) * cos(rt * 8.4 * 1.7 + 94.3) * self.VMBobCycle)
-	ang:RotateAroundAxis(ang:Up(), (self.VMRDBEF / -2) * sin(rt * 8.4 * 1.7 + 94.3) * self.VMBobCycle)
+	--[[pos = pos + ang:Right() * (alper / 11) * sin(rt * 8.4 * 1.7) * self.VMBobCycle
+	pos = pos + ang:Forward() * (-alper * .59) * cos(rt * 8.4 * 1.7) * self.VMBobCycle
 
+	ang:RotateAroundAxis(ang:Right(), (alper / 3) * sin(rt * 8.4 * 1.7) * self.VMBobCycle)
+	ang:RotateAroundAxis(ang:Forward(), (-alper ) * cos(rt * 8.4 * 1.7 + 94.3) * self.VMBobCycle)
+	ang:RotateAroundAxis(ang:Up(), (alper / -2) * sin(rt * 8.4 * 1.7 + 94.3) * self.VMBobCycle)
+]]
 	return pos, ang
 
 end
@@ -569,8 +571,8 @@ function Longsword.VMIronsights(self, pos, ang)
 
 	local alpha = math.ease.InOutCubic( self.VMIronsights ) 
 
-	local ironsightPos = Longsword.VectorBezierCurve( alpha, Vector(), Vector(-(self.BarrelLength*.5),4,-2), self.IronsightsPos)
-	local ironsightAng = Longsword.AngleBezierCurve( alpha, Angle(), Angle(-5, -(self.BarrelLength*1.8),23), self.IronsightsAng)
+	local ironsightPos = Longsword.VectorBezierCurve( alpha, Vector(), Vector(-(self.BarrelLength*1.2),-7,-7), self.IronsightsPos)
+	local ironsightAng = Longsword.AngleBezierCurve( alpha, Angle(), Angle(12, -18,12), self.IronsightsAng)
 
 	pos = pos + ang:Up() * ironsightPos.z * alpha
 	pos = pos + ang:Right() * ironsightPos.x * alpha
@@ -658,8 +660,8 @@ function Longsword.VMSprint(self, pos, ang)
 
 	self.VMSprint = self.VMSprint or 0
 
-	self.LoweredMidPos = self.LoweredMidPos or Vector(-1,-3,-3)
-	self.LoweredMidAng = self.LoweredMidAng or Angle(24,7,5)
+	self.LoweredMidPos = Vector(4,-3,-3)
+	self.LoweredMidAng = Angle(-6,7,5)
 
 	
 
@@ -681,7 +683,7 @@ function Longsword.VMSprint(self, pos, ang)
 end
 
 function SWEP:ViewmodelThink()
-	if not IsFirstTimePredicted() then return end
+	--if not IsFirstTimePredicted() then return end
 
 	self.VMSprint = self.VMSprint or 0
 
@@ -697,11 +699,11 @@ function SWEP:ViewmodelThink()
 	if self:GetIronsights() then
 		dir = true
 		self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or Curtime() + .5
-		self.VMIronsights = approach(self.VMIronsights, 1, FrameTime() * (1.4 * (self.IronsightsSpeed or 1)))
+		self.VMIronsights = approach(self.VMIronsights, 1, FrameTime() * (.6 * (self.IronsightsSpeed or 1)))
 		--self.VMRattle = lerp(Frametime() * 1.7,self.VMRattle, 0)
 	else
 		self.VMIronsightsFinishRattle = nil
-		self.VMIronsights = approach(self.VMIronsights, 0, FrameTime() * (1.2 * (self.IronsightsSpeed or 1)))
+		self.VMIronsights = approach(self.VMIronsights, 0, FrameTime() * (.6 * (self.IronsightsSpeed or 1)))
 		--self.VMRattle = approach(self.VMRattle, 1, Frametime() * 8)
 	end
 
@@ -751,7 +753,7 @@ end
 function SWEP:GetViewModelPosition(pos, ang)
 
 	if IsFirstTimePredicted() then
-		return pos, ang 
+		--return pos, ang 
 	end
 
 	-- START BY VISUALIZING THE MODEL IN THE CENTER!
@@ -821,8 +823,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 	ang:RotateAroundAxis(ang:Forward(), self.VMDeltaY / 2)
 	ang:RotateAroundAxis(ang:Forward(), self.VMDeltaX )
 
-	pos = pos + ( ang:Right() * math.rad(self.BarrelLength * self.VMDeltaX * 2) )
-	pos = pos + ( ang:Up() * math.rad(self.BarrelLength * -self.VMDeltaY) )
+	pos = pos + ( ang:Right() * math.rad(self.BarrelLength * self.VMDeltaX * .7) )
+	pos = pos + ( ang:Forward() * math.rad(self.BarrelLength * -abs(self.VMDeltaX) * .7) )
+	pos = pos + ( ang:Up() * math.rad(self.BarrelLength * self.VMDeltaY) )
+	
 
 	-- Offset the viewmodel
 
@@ -926,18 +930,23 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.VMPos = pos
 	self.VMAng = ang
 
-	self.VMPos = self.VMPos + (self.VMAng:Right() * self.VMRecoilPos.x)
-	self.VMPos = self.VMPos + (self.VMAng:Forward() * self.VMRecoilPos.y)
-	self.VMPos = self.VMPos + (self.VMAng:Up() * self.VMRecoilPos.z)
+	
 
 	self.VMAng:RotateAroundAxis(self.VMAng:Right(), self.VMRecoilAng.p)
 	self.VMAng:RotateAroundAxis(self.VMAng:Up(), self.VMRecoilAng.y)
 	self.VMAng:RotateAroundAxis(self.VMAng:Forward(), self.VMRecoilAng.r)
 
+	self.VMPos = self.VMPos + (self.VMAng:Right() * self.VMRecoilPos.x)
+	self.VMPos = self.VMPos + (self.VMAng:Forward() * self.VMRecoilPos.y)
+	self.VMPos = self.VMPos + (self.VMAng:Up() * self.VMRecoilPos.z)
+
 	self.VMRecoilPos = lerpVector(ft * 6, self.VMRecoilPos, Vector(0, 0, 0))
 	self.VMRecoilAng = lerpAngle(ft * 6, self.VMRecoilAng, Angle(0, 0, 0))
 
 	-- Recoil is last so it's overriding all
+	self.VMParticlePos = pos
+	self.VMParticlePos = ang
+	
 
 	return self.VMPos, self.VMAng
 end

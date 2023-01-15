@@ -10,9 +10,7 @@ end
 function SWEP:Think()
 
 	if CLIENT then
-		if IsFirstTimePredicted() then
-			self:ViewmodelThink()
-		end
+		self:ViewmodelThink()
 	end
 
 	self:IronsightsThink()
