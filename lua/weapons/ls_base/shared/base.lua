@@ -103,22 +103,28 @@ function SWEP:OnLowered()
 end
 
 function SWEP:Initialize()
-	self:SetIronsights(false)
 
-	self:SetReloading(false)
-	self:SetReloadTime(0)
-
-	self:SetRecoil(0)
-	self:SetNextIdle(0)
-
-	self:SetHoldType(self.HoldType)
-
-	if SERVER and self.CustomMaterial then
-		self.Weapon:SetMaterial(self.CustomMaterial)
+	if CLIENT then
+		self.VMPos = Vector()
+		self.VMAng = Angle()
+		self.VMIronsights = 0
+		self.VMCrouch = 0
+		self.VMBlocked = 1
+		self.VMRDBEF = 0
+		self.VMBobCycle = 0
+		self.VMSwayX = 0
+		self.VMDeltaX = 0
+		self.VMRoll = 0
+		self.VMSwayY = 0
+		self.VMDeltaX = 0
+		self.VMRattle = 0
+		self.VMSprint = 0
+		self.VMVel = 0
+		self.VMIdle = 0
+		self.VMRecoil = Vector()
+		self.VMRecoilAng = Angle()
 	end
-end
 
-function SWEP:Initialize()
 	self:SetIronsights(false)
 
 	self:SetReloading(false)
@@ -147,7 +153,22 @@ function SWEP:Deploy()
 	if CLIENT then
 		self.VMPos = Vector()
 		self.VMAng = Angle()
-		
+		self.VMIronsights = 0
+		self.VMCrouch = 0
+		self.VMBlocked = 1 -- The oddball, due to the way it works needs to be set to 1
+		self.VMRDBEF = 0
+		self.VMBobCycle = 0
+		self.VMSwayX = 0
+		self.VMDeltaX = 0
+		self.VMRoll = 0
+		self.VMSwayY = 0
+		self.VMDeltaX = 0
+		self.VMRattle = 0
+		self.VMSprint = 0
+		self.VMVel = 0
+		self.VMIdle = 0
+		self.VMRecoil = Vector()
+		self.VMRecoilAng = Angle()
 	end
 
 	if self.CustomMaterial then
@@ -212,10 +233,10 @@ function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_d
 	bullet.Spread 	= Vector(aimcone, aimcone, 0)	-- Aim Cone
 
 	if self.Primary.Tracer then
-		bullet.TracerName = "Tracer"
+		bullet.TracerName = "tracer"
 		--bullet.TracerName = self.Primary.Tracer
 	else
-		bullet.TracerName = "Tracer"
+		bullet.TracerName = "tracer"
 	end
 
 	if self.Primary.Range then
@@ -229,7 +250,7 @@ function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_d
 
 	if CLIENT then
 		bullet.Callback = function(attacker, tr)
-
+			--ParticleEffect("muzzleflash_1", tr.StartPos, tr.HitNormal:Angle(), nil)
 			if (self.Primary.Piercing or ALWAYS_PIERCE[tr.MatType]) and not pierce_shot then
 				if true then
 					-- Find the exit point
@@ -269,6 +290,8 @@ function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_d
 		end
 	else
 		bullet.Callback = function(attacker, tr)
+
+			--ParticleEffect("muzzleflash_1", tr.StartPos, tr.HitNormal:Angle(), nil)
 
 			if (self.Primary.Piercing or ALWAYS_PIERCE[tr.MatType]) and not pierce_shot then
 				if true then
@@ -363,6 +386,26 @@ function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_d
 	self:ShootEffects()
 end
 
+function SWEP:GetShootSrc()
+    local owner = self:GetOwner()
+
+    if !IsValid(owner) then return self:GetPos() end
+    if owner:IsNPC() then return owner:GetShootPos() end
+
+    local dir    = owner:EyeAngles()
+    local offset = Vector(0, 0, 0)
+
+    local src = owner:EyePos()
+
+
+    src = src + dir:Right()   * offset[1]
+    src = src + dir:Forward() * offset[2]
+    src = src + dir:Up()      * offset[3]
+
+    return src
+end
+
+
 function SWEP:ShootEffects()
 	if CLIENT then
 		self.CrosshairGapBoost = 16
@@ -393,7 +436,7 @@ function SWEP:ShootEffects()
 
 	if CLIENT then
 		self.CrosshairGapBoost = 24
-		if true then
+		if !LocalPlayer():ShouldDrawLocalPlayer() and self.Owner == LocalPlayer() then
 			local vm = self.Owner:GetViewModel()
 			--PrintTable(vm:GetAttachments())
 			local attachment = vm:LookupAttachment( self.IronsightsMuzzleFlashAttachment or "muzzle")
@@ -424,8 +467,15 @@ function SWEP:ShootEffects()
 		end
 	end
 
-	
-	self.Owner:MuzzleFlash()
+
+	local ed = EffectData()
+    ed:SetStart(self:GetShootSrc())
+    ed:SetOrigin(self:GetShootSrc())
+    ed:SetScale(1)
+    ed:SetEntity(self.OverrideWMEntity or self)
+	ed:SetAttachment(self.WMFlashAttachment or 1)
+	util.Effect("longsword_muzzleflash", ed)
+
 	self:PlayAnimWorld(ACT_VM_PRIMARYATTACK)
 
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
