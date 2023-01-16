@@ -125,10 +125,6 @@ end
 local dofmat = Material("pp/dof")
 local grad = Material("vgui/gradient-d")
 function SWEP:PreDrawViewModel(vm)
-	if Longsword.Overdraw then
-		return false
-	end
-
 	if CLIENT and self.CustomMaterial and not self.CustomMatSetup then
 		self.Owner:GetViewModel():SetMaterial(self.CustomMaterial)
 		self.CustomMatSetup = true
@@ -136,11 +132,7 @@ function SWEP:PreDrawViewModel(vm)
 
 	self:OffsetThink()
 
-	local vm = self.Owner:GetViewModel()
-
-	if not IsValid(vm) then
-		return
-	end
+	
 
 	if self.scopedIn then
 		return self.scopedIn
@@ -225,7 +217,7 @@ function SWEP:ViewModelDrawn()
 end
 
 function SWEP:PostDrawViewModel(vm, ply, wep)
-	if Longsword.Overdraw then return end
+	--0if Longsword.Overdraw then return end
 end
 
 local lastAng = Angle(0, 0, 0)
@@ -431,13 +423,13 @@ sound.Add(
 	}
 )
 
-SWEP.vBobIn = Vector(1.26, -0.267, -2.5)
-SWEP.vBobMid = Vector(-0.3, -.4, 0.94)
-SWEP.vBobOut = Vector(-1.2126, -0.2, -2.5 )
+SWEP.vBobIn = Vector(1.26, -0.267, -2.5) * .5
+SWEP.vBobMid = Vector(-0.3, -.4, 0.94) * .5
+SWEP.vBobOut = Vector(-1.2126, -0.2, -2.5 ) * .5
 
-SWEP.aBobIn = Angle(2, 1, -4)
-SWEP.aBobMid = Angle(-1.2, -0.7, 1)
-SWEP.aBobOut = Angle(3, -1.4, 4)
+SWEP.aBobIn = Angle(2, 1, -4) * .5
+SWEP.aBobMid = Angle(-1.2, -0.7, 1) * .5
+SWEP.aBobOut = Angle(3, -1.4, 4) * .5
 
 function Longsword.IsMoving()
 	return LocalPlayer():GetVelocity():Length2DSqr() > 40^2
@@ -458,9 +450,6 @@ function Longsword.Bob(self, pos, ang)
 	local rt = Realtime()
 
 	self.VMBobCycle = self.VMBobCycle or 0
-	self.VMBobState = self.VMBobState or LS_BOB_STATE_IN
-	self.VMBobInCyclePos = self.VMBobInCyclePos or vBobIn
-	self.VMBobOutCyclePos = self.VMBobOutCyclePos or vBobOut
 
 	
 
@@ -548,7 +537,7 @@ function Longsword.VMBlocked(self, pos, ang)
 
 	if self.Owner != LocalPlayer() then return pos, ang end
 
-	self.VMBlocked = self.VMBlocked or 0
+	self.VMBlocked = self.VMBlocked or 1
 
 	pos = pos + ang:Forward() * (1 - self.VMBlocked) * -12
 	ang:RotateAroundAxis(ang:Forward(), (1 - self.VMBlocked) * -11)
@@ -733,9 +722,9 @@ function SWEP:ViewmodelThink()
 	local move = vec(ovel.x, ovel.y, 0)
 
 	if Longsword.IsMoving() then
-		self.VMBobCycle = approach(self.VMBobCycle, 1, Frametime() * 5)
+		self.VMBobCycle = approach(self.VMBobCycle, 1, Frametime() * 9)
 	else
-		self.VMBobCycle = approach(self.VMBobCycle, 0, Frametime() * 5)
+		self.VMBobCycle = approach(self.VMBobCycle, 0, Frametime() * 9)
 	end
 
 	local mul = self:IsSprinting() and 1.7 or 1
@@ -820,10 +809,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 	-- Perform VM Rotations and shit
 	ang:RotateAroundAxis(ang:Up(), self.VMDeltaX)
 	ang:RotateAroundAxis(ang:Right(), self.VMDeltaY)
-	ang:RotateAroundAxis(ang:Forward(), self.VMDeltaY / 2)
-	ang:RotateAroundAxis(ang:Forward(), self.VMDeltaX )
+	ang:RotateAroundAxis(ang:Forward(), -self.VMDeltaY / 2)
+	ang:RotateAroundAxis(ang:Forward(), -self.VMDeltaX )
 
-	pos = pos + ( ang:Right() * math.rad(self.BarrelLength * self.VMDeltaX * .7) )
+	pos = pos + ( ang:Right() * math.rad(self.BarrelLength * self.VMDeltaX * .2) )
 	pos = pos + ( ang:Forward() * math.rad(self.BarrelLength * -abs(self.VMDeltaX) * .7) )
 	pos = pos + ( ang:Up() * math.rad(self.BarrelLength * self.VMDeltaY) )
 	
