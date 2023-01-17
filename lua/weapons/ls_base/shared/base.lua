@@ -439,30 +439,13 @@ function SWEP:ShootEffects()
 		if !LocalPlayer():ShouldDrawLocalPlayer() and self.Owner == LocalPlayer() then
 			local vm = self.Owner:GetViewModel()
 			--PrintTable(vm:GetAttachments())
-			local attachment = vm:LookupAttachment( self.IronsightsMuzzleFlashAttachment or "muzzle")
+			local attachment = vm:LookupAttachment( self.MuzzleFlashAttachment or self.IronsightsMuzzleFlashAttachment or "muzzle")
 			local posang = vm:GetAttachment(attachment)
 
 			if posang then
 				
 
-				if (self.IronsightsMuzzleParticle) then
-					--posang.Ang:RotateAroundAxis(Vector(0,1,0),-90)
-					--posang.Ang:RotateAroundAxis(Vector(0,0,1),180)
-					local mzFlash = DynamicLight( self:EntIndex() + 1 )
-					if ( mzFlash ) then
-						mzFlash.Pos = posang.Pos
-						mzFlash.r = 200
-						mzFlash.g = 60
-						mzFlash.b = 0
-						mzFlash.Brightness = 5
-						mzFlash.Size = 90
-						mzFlash.Decay = 1024
-						mzFlash.DieTime = CurTime() + 0.1
-					end
-					ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, vm, attachment)
-				else
-					--ParticleEffectAttach(self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, vm, attachment)
-				end
+				ParticleEffectAttach(self.MuzzleEffect or self.IronsightsMuzzleFlash, PATTACH_POINT_FOLLOW, vm, attachment)
 			end
 		end
 	end
@@ -473,7 +456,7 @@ function SWEP:ShootEffects()
     ed:SetOrigin(self:GetShootSrc())
     ed:SetScale(1)
     ed:SetEntity(self.OverrideWMEntity or self)
-	ed:SetAttachment(self.WMFlashAttachment or 1)
+	ed:SetAttachment(self.MuzzleFlashAttachment or 1)
 	util.Effect("longsword_muzzleflash", ed)
 
 	self:PlayAnimWorld(ACT_VM_PRIMARYATTACK)

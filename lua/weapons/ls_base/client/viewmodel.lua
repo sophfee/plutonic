@@ -268,7 +268,7 @@ local abs,
 	math.pi * 2,
 	math.Round,
 	CurTime,
-	RealFrameTime,
+	FrameTime,
 	RealTime,
 	Vector,
 	Angle,
@@ -647,14 +647,10 @@ function Longsword.VMSprint(self, pos, ang)
 		return pos, ang
 	end
 
-	self.VMSprint = self.VMSprint or 0
-
 	self.LoweredMidPos = Vector(4,-3,-3)
 	self.LoweredMidAng = Angle(-6,7,5)
 
-	
-
-	local t = math.ease.InOutCubic(self.VMSprint)
+	local t = math.ease.InOutCirc(self.VMSprint or 0)
 
 	local loweredPos = Longsword.VectorBezierCurve( t, Vector(), self.LoweredMidPos, self.LoweredPos)
 	local loweredAng = Longsword.AngleBezierCurve( t, Angle(), self.LoweredMidAng, self.LoweredAng)
@@ -672,14 +668,14 @@ function Longsword.VMSprint(self, pos, ang)
 end
 
 function SWEP:ViewmodelThink()
-	--if not IsFirstTimePredicted() then return end
+	if not IsFirstTimePredicted() then return end
 
 	self.VMSprint = self.VMSprint or 0
 
 	if self:IsSprinting() then
-		self.VMSprint = approach(self.VMSprint, 1, Frametime() * 3.1  )
+		self.VMSprint = approach(self.VMSprint, 1, FrameTime() * 2.6  )
 	else
-		self.VMSprint = approach(self.VMSprint, 0, Frametime() * 3.1 )
+		self.VMSprint = approach(self.VMSprint, 0, FrameTime() * 2.6 )
 	end
 
 	self.VMIronsights = self.VMIronsights or 0
@@ -688,11 +684,11 @@ function SWEP:ViewmodelThink()
 	if self:GetIronsights() then
 		dir = true
 		self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or Curtime() + .5
-		self.VMIronsights = approach(self.VMIronsights, 1, FrameTime() * (.6 * (self.IronsightsSpeed or 1)))
+		self.VMIronsights = approach(self.VMIronsights, 1, FrameTime() * 2.4 )
 		--self.VMRattle = lerp(Frametime() * 1.7,self.VMRattle, 0)
 	else
 		self.VMIronsightsFinishRattle = nil
-		self.VMIronsights = approach(self.VMIronsights, 0, FrameTime() * (.6 * (self.IronsightsSpeed or 1)))
+		self.VMIronsights = approach(self.VMIronsights, 0, FrameTime() * 2.4 )
 		--self.VMRattle = approach(self.VMRattle, 1, Frametime() * 8)
 	end
 
