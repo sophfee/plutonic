@@ -518,7 +518,7 @@ function Longsword.VMCrouch(self, pos, ang)
 
 	self.VMCrouch = self.VMCrouch or 0
 
-	local alpha = math.ease.InOutCubic(self.VMCrouch)
+	local alpha = math.ease.InOutQuad(self.VMCrouch)
 
 	pos = pos + ang:Right() * self.CrouchPos.x * alpha
 	pos = pos + ang:Forward() * self.CrouchPos.y * alpha
@@ -558,7 +558,7 @@ function Longsword.VMIronsights(self, pos, ang)
 		dir = true
 	end
 
-	local alpha = math.ease.InOutCubic( self.VMIronsights ) 
+	local alpha = math.ease.InOutQuint( self.VMIronsights ) 
 
 	local ironsightPos = Longsword.VectorBezierCurve( alpha, Vector(), Vector(-(self.BarrelLength*1.2),-7,-7), self.IronsightsPos)
 	local ironsightAng = Longsword.AngleBezierCurve( alpha, Angle(), Angle(12, -18,12), self.IronsightsAng)
@@ -650,7 +650,7 @@ function Longsword.VMSprint(self, pos, ang)
 	self.LoweredMidPos = Vector(4,-3,-3)
 	self.LoweredMidAng = Angle(-6,7,5)
 
-	local t = math.ease.InOutCirc(self.VMSprint or 0)
+	local t = math.ease.InOutQuad(self.VMSprint or 0)
 
 	local loweredPos = Longsword.VectorBezierCurve( t, Vector(), self.LoweredMidPos, self.LoweredPos)
 	local loweredAng = Longsword.AngleBezierCurve( t, Angle(), self.LoweredMidAng, self.LoweredAng)
@@ -673,9 +673,9 @@ function SWEP:ViewmodelThink()
 	self.VMSprint = self.VMSprint or 0
 
 	if self:IsSprinting() then
-		self.VMSprint = approach(self.VMSprint, 1, FrameTime() * 2.6  )
+		self.VMSprint = approach(self.VMSprint, 1, FrameTime() * 1.6  )
 	else
-		self.VMSprint = approach(self.VMSprint, 0, FrameTime() * 2.6 )
+		self.VMSprint = approach(self.VMSprint, 0, FrameTime() * 1.6 )
 	end
 
 	self.VMIronsights = self.VMIronsights or 0
@@ -709,9 +709,9 @@ function SWEP:ViewmodelThink()
 	local isIronsights = self:GetIronsights()
 
 	if (self.Owner:KeyDown(IN_DUCK) or self.Owner:Crouching()) and not isIronsights then
-		self.VMCrouch = approach( self.VMCrouch, 1, Frametime() * 4.5 )
+		self.VMCrouch = approach( self.VMCrouch, 1, Frametime() * 2.5 )
 	else
-		self.VMCrouch = approach( self.VMCrouch, 0, Frametime() * 4.5 )
+		self.VMCrouch = approach( self.VMCrouch, 0, Frametime() * 2.5 )
 	end
 
 	local ovel = self.Owner:GetVelocity()
