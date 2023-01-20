@@ -1019,6 +1019,16 @@ function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
 	--render.DrawTextureToScreen(bl:GetTexture("$basetexture"))
 end
 
+hook.Add("PostRender", "Longsword2.Blur", function()
+	if LocalPlayer():Alive() and LocalPlayer():GetActiveWeapon():IsValid() then
+		local wep = LocalPlayer():GetActiveWeapon()
+		if wep.IsLongsword then
+			render.UpdateRefractTexture()
+    		DrawToyTown(4 * wep.VMIronsights, ScrH()*.45)
+		end
+	end
+end)
+
 hook.Add(
 	"RenderScene",
 	"Longsword2.RenderScene",
@@ -1026,6 +1036,9 @@ hook.Add(
 		if LocalPlayer():Alive() and LocalPlayer():GetActiveWeapon():IsValid() then
 			local wep = LocalPlayer():GetActiveWeapon()
 			if wep.IsLongsword then
+
+				
+
 				if wep:GetAttachmentBehavior() != "holosight" then
 					return
 				end
