@@ -558,7 +558,7 @@ function Longsword.VMIronsights(self, pos, ang)
 		dir = true
 	end
 
-	local alpha = dir and math.ease.OutQuart( self.VMIronsights ) or math.ease.InSine( self.VMIronsights )
+	local alpha = dir and math.ease.OutExpo( self.VMIronsights ) or math.ease.InSine( self.VMIronsights )
 
 	local ironsightPos = Longsword.VectorBezierCurve( alpha, Vector(), Vector(-(self.BarrelLength*1.2),-7,-7), self.IronsightsPos)
 	local ironsightAng = Longsword.AngleBezierCurve( alpha, Angle(), Angle(12, -18,12), self.IronsightsAng)
