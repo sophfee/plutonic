@@ -41,6 +41,9 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:Think()
+	if CLIENT then
+		self:ViewmodelThink()
+	end
 	self:IdleThink()
 	if self.CustomThink then
 		self.CustomThink(self)
