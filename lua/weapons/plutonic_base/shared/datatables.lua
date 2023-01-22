@@ -1,5 +1,5 @@
---      Copyright (c) 2022, Nick S. All rights reserved      --
--- Longsword2 is a project built upon Longsword Weapon Base. --
+--      Copyright (c) 2022-2023, Nick S. All rights reserved      --
+-- Plutonic is a project built for Landis Games. --
 
 -- [ File Details ] --
 -- Purpose: Datatables setup, misc.

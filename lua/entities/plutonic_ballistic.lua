@@ -25,8 +25,8 @@ function ENT:Initialize()
 end
 
 function ENT:Launch()
-	self.LS_StartAng = self:GetAngles()
-	self.LS_StartPos = self:GetPos() + self:GetAngles():Forward() * 10
+	self.plutonic_StartAng = self:GetAngles()
+	self.plutonic_StartPos = self:GetPos() + self:GetAngles():Forward() * 10
 	
 
 	local phys = self:GetPhysicsObject()

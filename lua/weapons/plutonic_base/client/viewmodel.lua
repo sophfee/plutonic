@@ -1,5 +1,5 @@
---      Copyright (c) 2022, Nick S. All rights reserved      --
--- Longsword2 is a project built upon Longsword Weapon Base. --
+--      Copyright (c) 2022-2023, Nick S. All rights reserved      --
+-- Plutonic is a project built for Landis Games. --
 -- **IN DEVELOPMENT** --
 
 -- SWEP Customizable Values
@@ -15,23 +15,23 @@ SWEP.SwayIdle = 0.5
 LS2_DebugRoll = CreateClientConVar("ls2_debugroll", "0", true, false)
 
 -- quad bezier lerp from roblox ez dub
-function Longsword.Lerp(a, b, c)
+function Plutonic.Interpolation.Lerp(a, b, c)
 	return a + (b - a) * c
 end
 
-function Longsword.BezierCurve(t, p0, p1, p2)
-	local l1 = Longsword.Lerp(p0, p1, t)
-	local l2 = Longsword.Lerp(p1, p2, t)
-	local quad = Longsword.Lerp(l1, l2, t)
+function Plutonic.Interpolation.BezierCurve(t, p0, p1, p2)
+	local l1 = Plutonic.Interpolation.Lerp(p0, p1, t)
+	local l2 = Plutonic.Interpolation.Lerp(p1, p2, t)
+	local quad = Plutonic.Interpolation.Lerp(l1, l2, t)
 	return quad
 end
 
-function Longsword.VectorBezierCurve(t, v0, v1, v2)
-	return Vector(Longsword.BezierCurve(t, v0.x, v1.x, v2.x), Longsword.BezierCurve(t, v0.y, v1.y, v2.y), Longsword.BezierCurve(t, v0.z, v1.z, v2.z))
+function Plutonic.Interpolation.VectorBezierCurve(t, v0, v1, v2)
+	return Vector(Plutonic.Interpolation.BezierCurve(t, v0.x, v1.x, v2.x), Plutonic.Interpolation.BezierCurve(t, v0.y, v1.y, v2.y), Plutonic.Interpolation.BezierCurve(t, v0.z, v1.z, v2.z))
 end
 
-function Longsword.AngleBezierCurve(t, a0, a1, a2)
-	return Angle(Longsword.BezierCurve(t, a0.p, a1.p, a2.p), Longsword.BezierCurve(t, a0.y, a1.y, a2.y), Longsword.BezierCurve(t, a0.r, a1.r, a2.r))
+function Plutonic.Interpolation.AngleBezierCurve(t, a0, a1, a2)
+	return Angle(Plutonic.Interpolation.BezierCurve(t, a0.p, a1.p, a2.p), Plutonic.Interpolation.BezierCurve(t, a0.y, a1.y, a2.y), Plutonic.Interpolation.BezierCurve(t, a0.r, a1.r, a2.r))
 end
 
 
@@ -89,13 +89,13 @@ function SWEP:OffsetThink()
 		offset_pos = vector_origin - Vector(0,0,0.5)
 	end ]]
 	if not offset_pos then
-		local centered = GetConVar("longsword_centered")
+		local centered = GetConVar("plutonic_centered")
 		local isCentered = centered:GetBool()
 		local x = self.IronsightsPos.x
 		offset_pos = isCentered and Vector(x, vector_origin.y, vector_origin.z - 2) or vector_origin
 	end
 	if not offset_ang then
-		local centered = GetConVar("longsword_centered")
+		local centered = GetConVar("plutonic_centered")
 		local isCentered = centered:GetBool()
 		offset_ang = isCentered and self.IronsightsAng or angle_zero
 	end
@@ -145,7 +145,7 @@ mat:SetInt("$translucent", 1)
 mat:Recompute()
 
 function SWEP:ViewModelDrawn()
-	if Longsword.Overdraw then return end
+	if Plutonic.Interpolation.Overdraw then return end
 
 	local vm = self.Owner:GetViewModel()
 
@@ -217,7 +217,7 @@ function SWEP:ViewModelDrawn()
 end
 
 function SWEP:PostDrawViewModel(vm, ply, wep)
-	--0if Longsword.Overdraw then return end
+	--0if Plutonic.Interpolation.Overdraw then return end
 end
 
 local lastAng = Angle(0, 0, 0)
@@ -311,15 +311,14 @@ SWEP.VMLastWalkSound = 0
 
 SWEP.VMCrouchDelta = 0
 
-hook.Add(
+Plutonic.Hooks.Add(
 	"StartCommand",
-	"Longsword2.StartCommand",
 	function(ply, ucmd)
 		if ply.GetActiveWeapon then
 			local wep = ply:GetActiveWeapon()
 
 			if IsValid(wep) then
-				if wep.IsLongsword then
+				if wep.IsPlutonic then
 					if wep:GetIronsights() then
 						local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
 
@@ -383,7 +382,7 @@ SWEP.Primary.FirePower = 1 -- This controls our VM recoil procedural animation
 
 sound.Add(
 	{
-		name = "Longsword2.Sprint",
+		name = "Plutonic.Sprint",
 		channel = CHAN_AUTO,
 		volume = 0.7,
 		level = 45,
@@ -404,7 +403,7 @@ sound.Add(
 
 sound.Add(
 	{
-		name = "Longsword2.Walk",
+		name = "Plutonic.Walk",
 		channel = CHAN_AUTO,
 		volume = 0.2,
 		level = 45,
@@ -431,7 +430,7 @@ SWEP.aBobIn = Angle(2, 1, -4) * .5
 SWEP.aBobMid = Angle(-1.2, -0.7, 1) * .5
 SWEP.aBobOut = Angle(3, -1.4, 4) * .5
 
-function Longsword.IsMoving()
+function Plutonic.Framework.IsMoving()
 	return LocalPlayer():GetVelocity():Length2DSqr() > 40^2
 end
 
@@ -441,7 +440,7 @@ LS_BOB_STATE_OUT = 2
 
 local lerpSpeed = 1
 
-function Longsword.Bob(self, pos, ang)
+function Plutonic.Framework.ViewModelBob(self, pos, ang)
 
 	if self.CustomBob then
 		return self:CustomBob(pos, ang)
@@ -459,8 +458,8 @@ function Longsword.Bob(self, pos, ang)
 	alpha = lerp(lerpSpeed, alpha, alpha2)
 	alpha = (alpha / 3) + 0.5
 
-	local bob = Longsword.VectorBezierCurve(alpha, self.vBobIn, self.vBobMid, self.vBobOut)
-	local abob = Longsword.AngleBezierCurve(alpha, self.aBobIn, self.aBobMid, self.aBobOut)
+	local bob = Plutonic.Interpolation.VectorBezierCurve(alpha, self.vBobIn, self.vBobMid, self.vBobOut)
+	local abob = Plutonic.Interpolation.AngleBezierCurve(alpha, self.aBobIn, self.aBobMid, self.aBobOut)
 
 	-- add a slight roll to the weapon
 	--ang:RotateAroundAxis(ang:Forward(), alpha * -3)
@@ -495,7 +494,7 @@ function Longsword.Bob(self, pos, ang)
 	ang:RotateAroundAxis(ang:Forward(), self.VMRDBEF * cos(rt * 8.4 * 1.7))
 	ang:RotateAroundAxis(ang:Right(), (self.VMRDBEF / -8) * sin(rt * 8.4 * 1.7))
 
-	pos = pos + ang:Up() * (self.VMRDBEF / 40) * cos(rt * 8.4 * 1.7) * self.VMBobCycle
+	pos = pos + ang:Up() * (self.VMRDBEF / 18) * cos(rt * 8.4 * 1.7) * self.VMBobCycle
 
 	-- added sin/cos effects, they add a nice effect to the weapon bobbing
 	local alper = self:GetIronsights() and self.VMRDBEF / 8 or  self.VMRDBEF
@@ -514,7 +513,7 @@ end
 SWEP.CrouchPos = Vector(-1.5, -2.7, -1.4)
 SWEP.CrouchAng = Angle(0, 0, -12)
 
-function Longsword.VMCrouch(self, pos, ang)
+function Plutonic.Framework.ViewModelCrouch(self, pos, ang)
 
 	self.VMCrouch = self.VMCrouch or 0
 
@@ -533,7 +532,7 @@ function Longsword.VMCrouch(self, pos, ang)
 end
 
 -- For when you look right at the wall
-function Longsword.VMBlocked(self, pos, ang)
+function Plutonic.Framework.ViewModelBlocked(self, pos, ang)
 
 	if self.Owner != LocalPlayer() then return pos, ang end
 
@@ -547,7 +546,7 @@ function Longsword.VMBlocked(self, pos, ang)
 	return pos, ang
 end
 
-function Longsword.VMIronsights(self, pos, ang)
+function Plutonic.Framework.ViewModelIronsights(self, pos, ang)
 
 	self.VMIronsights = self.VMIronsights or 0
 	self.VMRattle = self.VMRattle or 0
@@ -560,8 +559,8 @@ function Longsword.VMIronsights(self, pos, ang)
 
 	local alpha = dir and math.ease.OutExpo( self.VMIronsights ) or math.ease.InSine( self.VMIronsights )
 
-	local ironsightPos = Longsword.VectorBezierCurve( alpha, Vector(), Vector(-(self.BarrelLength*1.2),-7,-7), self.IronsightsPos)
-	local ironsightAng = Longsword.AngleBezierCurve( alpha, Angle(), Angle(12, -18,12), self.IronsightsAng)
+	local ironsightPos = Plutonic.Interpolation.VectorBezierCurve( alpha, Vector(), Vector(-(self.BarrelLength*1.2),-7,-7), self.IronsightsPos)
+	local ironsightAng = Plutonic.Interpolation.AngleBezierCurve( alpha, Angle(), Angle(12, -18,12), self.IronsightsAng)
 
 	pos = pos + ang:Up() * ironsightPos.z * alpha
 	pos = pos + ang:Right() * ironsightPos.x * alpha
@@ -584,18 +583,10 @@ function Longsword.VMIronsights(self, pos, ang)
 		pos = pos + ang:Right() * cos(rt * pi2 * 2.7) * a * 1
 	end
 
-	if dir then
-		
-		
-		--ang:RotateAroundAxis(ang:Right(), sin(rt*8)* rattle)
-		--ang:RotateAroundAxis(ang:Up(), cos(rt*8) * rattle)
-		--ang:RotateAroundAxis(ang:Forward(), cos(rt*16) * rattle)
-
-	end
 	return pos, ang
 end
 
-function Longsword.VMIdle(self, pos, ang)
+function Plutonic.Framework.ViewModelIdle(self, pos, ang)
 
 	self.VMIdle = self.VMIdle or 0
 
@@ -638,7 +629,7 @@ end
 SWEP.LoweredMidPos = Vector(-1,-3,-3)
 SWEP.LoweredMidAng = Angle(8,6,-16)
 
-function Longsword.VMSprint(self, pos, ang)
+function Plutonic.Framework.ViewModelSprint(self, pos, ang)
 	if self.CustomSprint then
 		return self:CustomSprint(pos, ang)
 	end
@@ -652,8 +643,8 @@ function Longsword.VMSprint(self, pos, ang)
 
 	local t = math.ease.InOutQuad(self.VMSprint or 0)
 
-	local loweredPos = Longsword.VectorBezierCurve( t, Vector(), self.LoweredMidPos, self.LoweredPos)
-	local loweredAng = Longsword.AngleBezierCurve( t, Angle(), self.LoweredMidAng, self.LoweredAng)
+	local loweredPos = Plutonic.Interpolation.VectorBezierCurve( t, Vector(), self.LoweredMidPos, self.LoweredPos)
+	local loweredAng = Plutonic.Interpolation.AngleBezierCurve( t, Angle(), self.LoweredMidAng, self.LoweredAng)
 
 	ang:RotateAroundAxis(ang:Right(), loweredAng.p)
 	ang:RotateAroundAxis(ang:Up(), loweredAng.y)
@@ -717,7 +708,7 @@ function SWEP:ViewmodelThink()
 	local ovel = self.Owner:GetVelocity()
 	local move = vec(ovel.x, ovel.y, 0)
 
-	if Longsword.IsMoving() then
+	if Plutonic.Framework.IsMoving() then
 		self.VMBobCycle = approach(self.VMBobCycle, 1, Frametime() * 9)
 	else
 		self.VMBobCycle = approach(self.VMBobCycle, 0, Frametime() * 9)
@@ -850,8 +841,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	-- [[ BOBBING ]] --
 
-	pos, ang = Longsword.Bob(self, pos, ang)
-	pos, ang = Longsword.VMIdle(self, pos, ang)
+	pos, ang = Plutonic.Framework.ViewModelBob(self, pos, ang)
+	pos, ang = Plutonic.Framework.ViewModelIdle(self, pos, ang)
 
 	local vel = self.Owner:GetVelocity()
 	local len = vel:Length()
@@ -865,7 +856,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		move = move * 0.2
 	end
 
-	pos, ang = Longsword.VMCrouch(self, pos, ang)
+	pos, ang = Plutonic.Framework.ViewModelCrouch(self, pos, ang)
 	-- We lerp all positions to avoid jittering
 
 	--if self:GetIronsights() then
@@ -879,11 +870,11 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	-- Calculate offsets (real)
 
-	pos, ang = Longsword.VMBlocked(self, pos, ang)
+	pos, ang = Plutonic.Framework.ViewModelBlocked(self, pos, ang)
 
-	pos, ang = Longsword.VMIronsights(self, pos, ang)
+	pos, ang = Plutonic.Framework.ViewModelIronsights(self, pos, ang)
 
-	pos, ang = Longsword.VMSprint(self, pos, ang)
+	pos, ang = Plutonic.Framework.ViewModelSprint(self, pos, ang)
 
 
 	if self.VMOffsetAng then
@@ -941,186 +932,26 @@ local aimdot2 = Material("models/weapons/tfa_ins2/optics/aimpoint_reticule_sc")
 local bl = Material("pp/blurscreen")
 
 function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
-	local pos = vm_pos
-	local ang = vm_ang
-
-	ang:RotateAroundAxis(ang:Right(), 90)
-	ang:RotateAroundAxis(ang:Up(), 90)
-	ang:RotateAroundAxis(ang:Forward(), 0)
-
-	pos = pos + ang:Right() * 0.5
-	pos = pos + ang:Up() * 0.5
-	pos = pos + ang:Forward() * 0.5
-
-	render.UpdateScreenEffectTexture()
-	render.ClearStencil()
-	render.SetStencilEnable(true)
-	render.SetStencilCompareFunction(STENCIL_ALWAYS)
-	render.SetStencilPassOperation(STENCIL_REPLACE)
-	render.SetStencilFailOperation(STENCIL_KEEP)
-	render.SetStencilZFailOperation(STENCIL_REPLACE)
-	render.SetStencilWriteMask(255)
-	render.SetStencilTestMask(255)
-
-	render.SetBlend(0)
-	render.OverrideDepthEnable(true, true)
-
-	render.SetStencilReferenceValue(32)
-
-	att:DrawModel()
-
-	--render.SetStencilReferenceValue(0)
-
-	render.OverrideDepthEnable(false)
-
-	render.SetBlend(1)
-
-	render.SetStencilPassOperation(STENCIL_REPLACE)
-	render.SetStencilCompareFunction(STENCIL_EQUAL)
-	render.SetColorModulation(1, 1, 1, 255)
-	--render.SetMaterial(aimdot)
-	local pos = att:GetPos()
-	pos = pos + (att:GetAngles():Forward() * 1)
-	pos = pos + (att:GetAngles():Up() * 1.4)
-
-	local fpos = pos + (att:GetAngles():Forward() * 36)
-
-	local sc = pos:ToScreen()
-
-	--render.SetStencilReferenceValue(54)
-
-	--render.SetStencilCompareFunction(STENCIL_ALWAYS)
-
-	--render.SetBlend(0)
-
-	render.SetMaterial(aimdot)
-	local rangle = att:GetAngles()
-	rangle:RotateAroundAxis(rangle:Up(), 180)
-	render.DrawQuadEasy(pos + rangle:Up() * 24, rangle:Right(), 4, 1, color_white, 0)
-	--draw.NoTexture()
-	--render.DrawSphere(pos , 32, 50, 50, Color(255, 255, 255, 255))
-
-	--
-	render.SetBlend(1)
-
-	render.SetStencilReferenceValue(32)
-	--=render.DrawScreenQuad()
-	render.SetStencilPassOperation(STENCIL_REPLACE)
-	render.SetStencilZFailOperation(STENCIL_KEEP)
-	render.SetStencilCompareFunction(STENCIL_GREATER)
-
-	render.SetStencilReferenceValue(0)
-	render.SetStencilEnable(false)
-	render.ClearStencil()
-
-	render.UpdateFullScreenDepthTexture()
-
-	render.UpdateFullScreenDepthTexture()
-	--render.DrawTextureToScreen(bl:GetTexture("$basetexture"))
+	print("[Plutonic] DrawHoloSight is deprecated!")
 end
 
-hook.Add("PostDrawViewModel", "Longsword2.Blur", function()
-end)
-
-hook.Add("PostDrawPlayerHands", "Longsword2.Blur", function()
+Plutonic.Hooks.Add("PostDrawPlayerHands", function()
 	if LocalPlayer():Alive() and LocalPlayer():GetActiveWeapon():IsValid() then
 		local wep = LocalPlayer():GetActiveWeapon()
-		if wep.IsLongsword then
+		if wep.IsPlutonic then
 			render.UpdateRefractTexture()
     		DrawToyTown(4 * wep.VMIronsights, ScrH()*.47)
 		end
 	end
 end)
 
-hook.Remove("PostRender", "Longsword2.Blur")
-
-hook.Add(
-	"RenderScene",
-	"Longsword2.RenderScene",
-	function(pos, ang)
-		if LocalPlayer():Alive() and LocalPlayer():GetActiveWeapon():IsValid() then
-			local wep = LocalPlayer():GetActiveWeapon()
-			if wep.IsLongsword then
-
-				
-
-				if wep:GetAttachmentBehavior() != "holosight" then
-					return
-				end
-				if wep:GetIronsights() then
-					for i = 1, 4 do
-						bl:SetFloat("$blur", (i / 10) * 20)
-						bl:Recompute()
-						--render.SetStencilReferenceValue(32 - i)
-						render.SetMaterial(bl)
-						render.DrawScreenQuad()
-					end
-				end
-				local att = wep.AttachedCosmetic
-				local pos = att:GetPos()
-				pos = pos + (att:GetAngles():Forward() * 1)
-				pos = pos + (att:GetAngles():Up() * -10)
-
-				local fpos = pos + (att:GetAngles():Forward() * 36)
-
-				render.PushRenderTarget(rtx, 0, 0, 512, 512)
-
-				render.ClearRenderTarget(rtx, Color(0, 0, 0, 0))
-				--if self:GetIronsights() then
-				--render.PushRenderTarget(rtx)
-				--render.BlurRenderTarget(rtx, ScrW(), ScrH(), 3)
-				local pang = att:GetAngles()
-				-- render.PopRenderTarget()
-				--[[render.RenderView(
-					{
-						origin = pos,
-						angles = pang,
-						x = 0,
-						y = 0,
-						w = 512,
-						h = 512,
-						drawviewmodel = false,
-						fov = 14.6
-					}
-				)
-]]
-				--cam.Start2D()
-				--render.SetStencilReferenceValue(32)
-				pang:RotateAroundAxis(pang:Up(), 180)
-
-				fpos = fpos + (pang:Right() * wep.VMDeltaX)
-				fpos = fpos + (pang:Up() * wep.VMDeltaY)
-
-				cam.Start3D()
-
-				-- render.SetMaterial(aimdot)
-				render.UpdatePowerOfTwoTexture()
-
-				--render.DrawQuadEasy(fpos, pang:Forward(), 12, 12, Color(255, 255, 255, 255), 180)
-
-				--render.SetMaterial(aimdot2)
-				--render.DrawQuadEasy(fpos, pang:Forward(), 16 * 3.4, 9 * 3.4, Color(255, 255, 255, 255), 180)
-				cam.End3D()
-
-				--render.SetMaterial(aimdot)
-				--render.DrawTextureToScreen(aimdot:GetTexture("$basetexture"))
-
-				--end
-
-				render.PopRenderTarget()
-			end
-		end
-	end
-)
-
 -- Landing effect
-hook.Add(
+Plutonic.Hooks.Add(
 	"OnPlayerHitGround",
-	"Longsword2.PlayerLanding",
 	function(ply, _, __, speed)
 		if ply:Alive() and ply:GetActiveWeapon():IsValid() then
 			local wep = ply:GetActiveWeapon()
-			if wep.IsLongsword then
+			if wep.IsPlutonic then
 				wep.LastInput = CurTime()
 				wep.VMSwayY = speed / 30
 				wep.VMSwayX = math.random(-1, 1) * speed / 50
@@ -1129,7 +960,7 @@ hook.Add(
 	end
 )
 
-function SWEP:LS_ProceduralRecoil(force)
+function SWEP:ProceduralRecoil(force)
 
 	if self:GetIronsights() then
 		force = force * 0.08

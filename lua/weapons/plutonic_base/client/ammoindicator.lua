@@ -2,16 +2,18 @@ function SWEP:ClipPercent()
 	return self:Clip1() / self.Primary.ClipSize
 end
 
-LONGSWORD_SUBMACHINE_GUN = 1
-LONGSWORD_AUTOMATIC_RIFLE = 2
-LONGSWORD_MARKSMAN_RIFLE = 3
-LONGSWORD_PISTOL = 5
-LONGSWORD_SNIPER = 6
-LONGSWORD_SHOTGUN = 7
+Plutonic.Enum.WeaponType = {
+	SubmachineGun = 1,
+	AutomaticRifle = 2,
+	MarksmanRifle = 3,
+	Pistol = 5,
+	Sniper = 6,
+	Shotgun = 7
+}
 
 local indicatorIO = {}
 
-indicatorIO[LONGSWORD_SUBMACHINE_GUN] = {
+indicatorIO[Plutonic.Enum.WeaponType.SubmachineGun] = {
 	[1] = function(self)
 		local cp = self:ClipPercent()
 		return cp <= 0.4, (1-(cp/0.4))
@@ -20,7 +22,7 @@ indicatorIO[LONGSWORD_SUBMACHINE_GUN] = {
 	[3] = "Longsword.SMG_Dry"
 }
 
-indicatorIO[LONGSWORD_PISTOL] = {
+indicatorIO[Plutonic.Enum.WeaponType.Pistol] = {
 	[1] = function(self)
 		local cp = self:ClipPercent()
 		return cp <= 0.6, (1 - (cp/0.6))
@@ -29,7 +31,7 @@ indicatorIO[LONGSWORD_PISTOL] = {
 	[3] = "Longsword.Pistol_Dry"
 }
 
-indicatorIO[LONGSWORD_AUTOMATIC_RIFLE] = {
+indicatorIO[Plutonic.Enum.WeaponType.AutomaticRifle] = {
 	[1] = function(self)
 		local cp = self:ClipPercent()
 		return cp <= 0.4, (1 - (cp / 0.4))
@@ -39,23 +41,26 @@ indicatorIO[LONGSWORD_AUTOMATIC_RIFLE] = {
 }
 
 function SWEP:ShouldPlayAmmoIndicator()
-	return indicatorIO[self.WeaponType][1](self)
+	return indicatorIO[self.Enum.WeaponType][1](self)
 end
 
 function SWEP:PlayAmmoIndicator()
 
-	if not self.WeaponType then
+	if not self.Enum then
+		return
+	end
+
+	if not self.Enum.WeaponType then
 		return
 	end
 
 	local bShouldPlay, fVolume = self:ShouldPlayAmmoIndicator()
 	if bShouldPlay then
-		local snd = indicatorIO[self.WeaponType][2]
+		local snd = indicatorIO[self.Enum.WeaponType][2]
 		if self:Clip1() <= 0 then
-			snd = indicatorIO[self.WeaponType][3]
+			snd = indicatorIO[self.Enum.WeaponType][3]
 			fVolume = 1
 		end
-		chat.AddText(fVolume)
 		self.GonnaAdjustVol = true 
 		self.RequiredVolume = fVolume
 		self:EmitSound(snd, nil, nil, fVolume, SND_CHANGE_VOL )

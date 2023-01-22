@@ -69,7 +69,7 @@ end
 
 -- ADS noises
 sound.Add({
-	name = "Longsword2.ADS.In",
+	name = "Plutonic.ADS.In",
 	sound = {
 		"weapons/ins2/uni/uni_ads_in_01.wav",
 		"weapons/ins2/uni/uni_ads_in_02.wav",
@@ -84,7 +84,7 @@ sound.Add({
 })
 
 sound.Add({
-	name = "Longsword2.ADS.Out",
+	name = "Plutonic.ADS.Out",
 	sound = {
 		"weapons/ins2/uni/uni_ads_out_01.wav"
 	},
@@ -105,10 +105,10 @@ function SWEP:IronsightsThink()
 
 	if self.Owner:KeyDown( IN_ATTACK2 ) and not self:GetIronsights() then
 		self:SetIronsights( true )
-		self:EmitSound("Longsword2.ADS.In")
+		self:EmitSound("Plutonic.ADS.In")
 	elseif not self.Owner:KeyDown( IN_ATTACK2 ) and self:GetIronsights() then
 		self:SetIronsights( false )
-		self:EmitSound("Longsword2.ADS.Out")
+		self:EmitSound("Plutonic.ADS.Out")
 	end
 end
 function SWEP:ReloadThink()

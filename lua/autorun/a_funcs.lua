@@ -30,7 +30,7 @@ if SERVER then
 		end
 	end)
 
-	hook.Add("ScalePlayerDamage", "longsword2Falloff", function(ply, hitgroup, dmg)
+	hook.Add("ScalePlayerDamage", "PlutonicFalloff", function(ply, hitgroup, dmg)
 
 		local attacker = dmg:GetAttacker()
 

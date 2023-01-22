@@ -70,7 +70,7 @@ sound.Add({
 })
 
 -- based off of TFA base
-hook.Add("EntityEmitSound", "Longsword2Sounddata", function(soundData)
+hook.Add("EntityEmitSound", "PlutonicSounddata", function(soundData)
 	local ent = soundData.Entity
 	local modified
 	local weapon

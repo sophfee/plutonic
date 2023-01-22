@@ -1,6 +1,6 @@
 AddCSLuaFile()
 
-SWEP.Base = "ls_base"
+SWEP.Base = "plutonic_base"
 
 function SWEP:Reload()
 	if not self:CanReload() then return end

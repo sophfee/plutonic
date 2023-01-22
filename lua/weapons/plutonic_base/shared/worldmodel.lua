@@ -50,7 +50,7 @@ function SWEP:DrawWorldModel()
 	att:DrawModel()
 end
 
-hook.Add("PostPlayerDraw", "longswordDrawWorldAttachment", function()
+hook.Add("PostPlayerDraw", "PlutonicDrawWorldAttachment", function()
 	local wep = LocalPlayer():GetActiveWeapon()
 
 	if not IsValid(wep) then

@@ -1,12 +1,12 @@
---      Copyright (c) 2022, Nick S. All rights reserved      --
--- Longsword2 is a project built upon Longsword Weapon Base. --
+--      Copyright (c) 2022-2023, Nick S. All rights reserved      --
+-- Plutonic is a project built for Landis Games. --
 
 -- [ File Details ]
 -- Purpose: Loads the inital basic values, loads first!
 
-SWEP.IsLongsword = true
-SWEP.PrintName = "Longsword"
-SWEP.Category = "LS"
+SWEP.IsPlutonic = true
+SWEP.PrintName = "Plutonic Weapon Base"
+SWEP.Category = "Plutonic"
 SWEP.DrawWeaponInfoBox = false
 
 SWEP.Spawnable = false
@@ -73,7 +73,7 @@ SWEP.Reverb.Primary.Outdoor = Sound("")
 SWEP.Reverb.Primary.OutdoorRange = 5000
 
 sound.Add({
-	name = "Longsword2.Draw",
+	name = "Plutonic.Draw",
 	sound = {
 		"weapons/ins2/uni/uni_weapon_draw_01.wav",
 		"weapons/ins2/uni/uni_weapon_draw_02.wav",
@@ -85,7 +85,7 @@ sound.Add({
 })
 
 sound.Add({
-	name = "Longsword2.Raise",
+	name = "Plutonic.Raise",
 	sound = {
 		"weapons/ins2/uni/uni_lean_in_01.wav",
 		"weapons/ins2/uni/uni_lean_in_02.wav",
@@ -99,7 +99,7 @@ sound.Add({
 
 -- impulse
 function SWEP:OnLowered()
-	self:EmitSound("Longsword2.Raise", nil, nil, nil, nil, SND_NOFLAGS, 1)
+	self:EmitSound("Plutonic.Raise", nil, nil, nil, nil, SND_NOFLAGS, 1)
 end
 
 function SWEP:Initialize()
@@ -182,7 +182,7 @@ function SWEP:Deploy()
 	if self.Owner:IsPlayer() then
 		self.Owner:GetViewModel():SetPlaybackRate(1)
 	end
-	self:EmitSound(Sound("Longsword2.Draw"), nil, nil, nil, nil, SND_NOFLAGS, 1)
+	self:EmitSound(Sound("Plutonic.Draw"), nil, nil, nil, nil, SND_NOFLAGS, 1)
 
 	return true
 end
@@ -215,7 +215,7 @@ function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_d
 
 	if self.UseBallistics then
 		if CLIENT then return end
-		local bulllet = ents.Create("ls_ballistic")
+		local bulllet = ents.Create("plutonic_ballistic")
 		bulllet:SetPos(self.Owner:GetShootPos())
 		bulllet:SetAngles(self.Owner:GetAimVector():Angle())
 		bulllet:SetOwner(self.Owner)
@@ -411,7 +411,7 @@ function SWEP:ShootEffects()
 		self.CrosshairGapBoost = 16
 		self.VMRecoilPos = self.BlowbackPos
 		self.VMRecoilAng = self.BlowbackAngle
-		self:LS_ProceduralRecoil(1)
+		self:ProceduralRecoil(1)
 	end
 
 	self.VMRecoilFOV = 1
@@ -457,7 +457,7 @@ function SWEP:ShootEffects()
     ed:SetScale(1)
     ed:SetEntity(self.OverrideWMEntity or self)
 	ed:SetAttachment(self.MuzzleFlashAttachment or 1)
-	util.Effect("longsword_muzzleflash", ed)
+	util.Effect("plutonic_muzzleflash", ed)
 
 	self:PlayAnimWorld(ACT_VM_PRIMARYATTACK)
 
@@ -467,39 +467,6 @@ function SWEP:ShootEffects()
 	if self.CustomShootEffects then
 		self.CustomShootEffects(self)
 	end
-end
-
-if SERVER then
-	util.AddNetworkString("Longsword2_World_MuzzleFlash")
-
-	function SWEP:LS2_ParticleEffectAttach(effect, attachment)
-
-		local rf = RecipientFilter()
-		rf:AddAllPlayers()
-		--rf:AddPVS( self.Owner.GetPos( self.Owner ) )
-		--rf:RemovePlayer( self.Owner )
-
-		net.Start( "Longsword2_World_MuzzleFlash" )
-		net.WriteEntity( self.Owner )
-		net.WriteEntity( self )
-		net.WriteString( effect )
-		net.WriteInt( attachment, 32 )
-		net.Send( rf )
-	end
-else
-	net.Receive("Longsword2_World_MuzzleFlash", function()
-
-		-- The entity the particle go to
-		local usr = net.ReadEntity()
-		
-		
-
-		local ent = net.ReadEntity()
-		local eff = net.ReadString()
-		local att = net.ReadInt(32)
-
-		ParticleEffectAttach( eff, PATTACH_POINT_FOLLOW, ent, att )
-	end)	
 end
 
 function SWEP:IsSprinting()

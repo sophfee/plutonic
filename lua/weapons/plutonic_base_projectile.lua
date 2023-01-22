@@ -1,6 +1,6 @@
 AddCSLuaFile()
 
-SWEP.Base = "ls_base"
+SWEP.Base = "plutonic_base"
 
 SWEP.Projectile = {}
 
@@ -65,7 +65,7 @@ function SWEP:ThrowAttack()
 
 	self:TakePrimaryAmmo(1)
 
-	local projectile = ents.Create("ls_projectile")
+	local projectile = ents.Create("plutonic_projectile")
 	projectile:SetModel(self.Projectile.Model)
 	projectile.Owner = self.Owner
 

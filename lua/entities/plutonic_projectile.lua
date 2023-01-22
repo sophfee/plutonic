@@ -51,7 +51,7 @@ end
 function ENT:PhysicsCollide(colData, phys)
 	if self.ProjTouch then
 		if colData and colData.HitEntity and IsValid(colData.HitEntity) then
-			if colData.HitEntity:GetClass() == "ls_projectile" then
+			if colData.HitEntity:GetClass() == "plutonic_projectile" then
 				return
 			end
 			

@@ -1,10 +1,10 @@
---      Copyright (c) 2022, Nick S. All rights reserved      --
--- Longsword2 is a project built upon Longsword Weapon Base. --
+--      Copyright (c) 2022-2023, Nick S. All rights reserved      --
+-- Plutonic is a project built for Landis Games. --
 
-CreateClientConVar("longsword_debug", "0", false, false)
-CreateClientConVar("longsword_centered", "0", true, false, "Centers the viewmodel, DOOM style.",0,1)
+CreateClientConVar("plutonic_debug", "0", false, false)
+CreateClientConVar("plutonic_centered", "0", true, false, "Centers the viewmodel, DOOM style.",0,1)
 
-surface.CreateFont("lsDebug", {
+surface.CreateFont("PlutonicDebugSimple", {
 	font = "Consolas",
 	size = 18,
 	weight = 1000,
@@ -17,7 +17,7 @@ local ironFade = ironFade or 0
 local GetConVar = GetConVar
 local LocalPlayer = LocalPlayer
 function SWEP:DrawHUD()
-	local debugMode = GetConVar("longsword_debug")
+	local debugMode = GetConVar("plutonic_debug")
 
 	if (impulse_DevHud or debugMode:GetBool()) then
 		local scrW = ScrW()
@@ -25,11 +25,10 @@ function SWEP:DrawHUD()
 		local dev = GetConVar("developer"):GetInt()
 
 		if dev == 0 then
-			print("[longsword] Enabling 'developer 1'")
 			LocalPlayer():ConCommand("developer 1")
 		end
 
-		surface.SetFont("lsDebug")
+		surface.SetFont("PlutonicDebugSimple")
 		surface.SetTextColor(debugCol)
 
 		surface.SetTextPos(0, 0)
@@ -132,7 +131,7 @@ function SWEP:DrawHUD()
 		surface.DrawRect(0, 0, scrw, scrh)
 	end
 
-	ls_StopHUDDraw = true
+	plutonic_debug_StopHUDDraw = true
 
 	local scopeh = scrh * 1
 	local scopew = scopeh * 1.8
@@ -174,9 +173,9 @@ end
 
 
 
-hook.Add("ShouldDrawHUDBox", "longswordimpulseHUDStopDrawing", function()
-	local v = tonumber(ls_StopHUDDraw or 1)
-	ls_StopHUDDraw = false
+hook.Add("ShouldDrawHUDBox", "PlutonicimpulseHUDStopDrawing", function()
+	local v = tonumber(plutonic_debug_StopHUDDraw or 1)
+	plutonic_debug_StopHUDDraw = false
 
 	return tobool(v)
 end)

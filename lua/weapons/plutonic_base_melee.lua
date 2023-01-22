@@ -1,6 +1,6 @@
 AddCSLuaFile()
 
-SWEP.Base = "ls_base"
+SWEP.Base = "plutonic_base"
 
 SWEP.Primary.Ammo = "none"
 SWEP.Primary.Automatic = false
