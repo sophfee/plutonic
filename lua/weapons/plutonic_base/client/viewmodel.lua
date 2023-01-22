@@ -319,37 +319,14 @@ Plutonic.Hooks.Add(
 
 			if IsValid(wep) then
 				if wep.IsPlutonic then
-					if wep:GetIronsights() then
-						local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
+					local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
+					local m = wep:GetIronsights() and 0.001 or 0.0056
 
-						if abs(x) > 0 or abs(y) > 0 then
-							wep.LastInput = UnPredictedCurTime()
+					if abs(x) > 0 or abs(y) > 0 then
+						wep.LastInput = UnPredictedCurTime() 
 
-							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.001
-							wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.001
-						end
-					else
-						local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
-
-						if abs(x) > 0 or abs(y) > 0 then
-							wep.LastInput = UnPredictedCurTime() 
-
-							wep.VMSwayX = wep.VMSwayX + ucmd:GetMouseX() * 0.004
-
-							--[[if wep.VMSwayX > 0 then
-								wep.VMSwayX = min(wep.VMSwayX, wep.VMDeltaX) + x * 0.04
-							else
-								wep.VMSwayX = max(wep.VMSwayX, wep.VMDeltaX) + x * 0.04
-							end]]
-
-							wep.VMSwayY = wep.VMSwayY + ucmd:GetMouseY() * 0.004
-
-							--[[if wep.VMSwayY > 0 then
-								wep.VMSwayY = min(wep.VMSwayY, wep.VMDeltaY) + y * 0.04
-							else
-								wep.VMSwayY = max(wep.VMSwayY, wep.VMDeltaY) + y * 0.04
-							end]]
-						end
+						wep.VMDeltaX = wep.VMDeltaX + ucmd:GetMouseX() * m
+						wep.VMDeltaY = wep.VMDeltaY + ucmd:GetMouseY() * m
 					end
 				end
 			end
@@ -438,77 +415,7 @@ LS_BOB_STATE_IN = 0
 LS_BOB_STATE_MID = 1
 LS_BOB_STATE_OUT = 2
 
-local lerpSpeed = 1
 
-function Plutonic.Framework.ViewModelBob(self, pos, ang)
-
-	if self.CustomBob then
-		return self:CustomBob(pos, ang)
-	end
-
-	local rt = Realtime()
-
-	self.VMBobCycle = self.VMBobCycle or 0
-
-	
-
-	local alpha2 = sin(rt * 8.4 * 1.7 ) * (self.VMBobCycle)
-	local alpha = sin(rt * 8.4 * 1 ) * self.VMBobCycle
-
-	alpha = lerp(lerpSpeed, alpha, alpha2)
-	alpha = (alpha / 3) + 0.5
-
-	local bob = Plutonic.Interpolation.VectorBezierCurve(alpha, self.vBobIn, self.vBobMid, self.vBobOut)
-	local abob = Plutonic.Interpolation.AngleBezierCurve(alpha, self.aBobIn, self.aBobMid, self.aBobOut)
-
-	-- add a slight roll to the weapon
-	--ang:RotateAroundAxis(ang:Forward(), alpha * -3)
-	
-
-	if self:GetIronsights() then
-		bob = bob * ( self.VMIronsights * .08)
-		abob = abob * (self.VMIronsights * .04)
-	end
-
-	bob = bob / lerp(lerpSpeed, 1, 1.7)
-	abob = abob / lerp(lerpSpeed, 1, 1.7)
-
-	pos = pos + ang:Right() * bob.x * self.VMBobCycle
-	pos = pos + ang:Forward() * bob.y * self.VMBobCycle
-	pos = pos + ang:Up() * bob.z * self.VMBobCycle
-	local ovel = self.Owner:GetVelocity()
-	local move = vec(ovel.x, ovel.y, 0)
-	local vel = move:GetNormalized()
-	local rd = self.Owner:GetRight():Dot(vel)
-	local fd = (self.Owner:GetForward():Dot(vel) + 1) / 2
-
-	self.VMRDBEF = self.VMRDBEF or 0 -- VM Right Direction Better Effect
-
-	-- Additional effect on sidestepping
-	self.VMRDBEF = lerp(Frametime() * 2.9, self.VMRDBEF, vel:Length2DSqr())
-
-	ang:RotateAroundAxis(ang:Right(), abob.p * self.VMBobCycle)
-	ang:RotateAroundAxis(ang:Forward(), abob.r * self.VMBobCycle)
-	ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
-
-	ang:RotateAroundAxis(ang:Forward(), self.VMRDBEF * cos(rt * 8.4 * 1.7))
-	ang:RotateAroundAxis(ang:Right(), (self.VMRDBEF / -8) * sin(rt * 8.4 * 1.7))
-
-	--pos = pos + ang:Up() * (self.VMRDBEF / 18) * cos(rt * 8.4 * 1.7) * self.VMBobCycle
-
-	-- added sin/cos effects, they add a nice effect to the weapon bobbing
-	local alper = self:GetIronsights() and self.VMRDBEF / 8 or  self.VMRDBEF
-
-	--[[pos = pos + ang:Right() * (alper / 11) * sin(rt * 8.4 * 1.7) * self.VMBobCycle
-	pos = pos + ang:Forward() * (-alper * .59) * cos(rt * 8.4 * 1.7) * self.VMBobCycle
-
-	ang:RotateAroundAxis(ang:Right(), (alper / 3) * sin(rt * 8.4 * 1.7) * self.VMBobCycle)
-	ang:RotateAroundAxis(ang:Forward(), (-alper ) * cos(rt * 8.4 * 1.7 + 94.3) * self.VMBobCycle)
-	ang:RotateAroundAxis(ang:Up(), (alper / -2) * sin(rt * 8.4 * 1.7 + 94.3) * self.VMBobCycle)
-]]
-	return pos, ang
-
-end
 
 SWEP.CrouchPos = Vector(-1.5, -2.7, -1.4)
 SWEP.CrouchAng = Angle(0, 0, -12)
@@ -735,12 +642,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 		--return pos, ang 
 	end
 
-	-- START BY VISUALIZING THE MODEL IN THE CENTER!
-	-- This is the default position of the viewmodel, so we can use it as a reference point
-	-- to calculate the new position and angles
+	local start_pos = pos + Vector()
+	local start_ang = ang + Angle(0,0,0)
 
-	local start_pos, start_ang = pos + Vector(0,0,0), ang + Angle(0,0,0)
-
+	
 	local ironsightPos = self.IronsightsPos
 	local ironsightAng = self.IronsightsAng
 	ang:RotateAroundAxis(ang:Right(), ironsightAng.p)
@@ -753,8 +658,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (start_ang:Up() * -1.5)
 	pos = pos + (start_ang:Forward() * self.BarrelLength)
 
-	--offset`
-
 	self.VMDeltaX = self.VMDeltaX or 0
 	self.VMDeltaY = self.VMDeltaY or 0
 	self.VMRoll = self.VMRoll or 0
@@ -763,6 +666,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.LastInput = self.LastInput or Curtime()
 
 	local ft = Frametime()
+	local fet = Frametime() * .1
+	local ft3 = ft * 3
 	local ft8 = ft * 8
 	local ct = Curtime()
 	local rt = Realtime()
@@ -774,126 +679,34 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	local vel = move:GetNormalized()
 	local rd = self.Owner:GetRight():Dot(vel)
-	local fd = (self.Owner:GetForward():Dot(vel) + 1) / 2
-	local onGround = self.Owner:OnGround()
-
-	local isIronsights = self:GetIronsights()
-
-	-- [[ SWAY ]] --
-
-	local dt = clamp(abs((CurTime() - self.LastInput) * 0.6), 0, 1)
-
-	local elt = (1 - math.ease.OutElastic(dt))
-
-	self.VMSwayX = lerp(ft8, self.VMSwayX, 0)
-	self.VMSwayY = lerp(ft8, self.VMSwayY, 0)
-
-	self.VMDeltaX = lerp(ft8, self.VMDeltaX, self.VMSwayX)
-	self.VMDeltaY = lerp(ft8, self.VMDeltaY, self.VMSwayY)
-
-	self.VMDeltaX = clamp(self.VMDeltaX, -16, 16)
-	self.VMDeltaY = clamp(self.VMDeltaY, -16, 16)
 
 	
 
-	-- Perform VM Rotations and shit
-	ang:RotateAroundAxis(ang:Up(), self.VMDeltaX)
-	ang:RotateAroundAxis(ang:Right(), self.VMDeltaY)
-	ang:RotateAroundAxis(ang:Forward(), -self.VMDeltaY / 2)
-	ang:RotateAroundAxis(ang:Forward(), -self.VMDeltaX )
-
-	pos = pos + ( ang:Right() * math.rad(self.BarrelLength * self.VMDeltaX * .2) )
-	pos = pos + ( ang:Forward() * math.rad(self.BarrelLength * -abs(self.VMDeltaX) * .7) )
-	pos = pos + ( ang:Up() * math.rad(self.BarrelLength * self.VMDeltaY) )
 	
-
-	-- Offset the viewmodel
-
-	-- Roll
-	--local move = clamp(len / self.Owner:GetRunSpeed(), 0, 1)
-
-	-- Reduce roll when ironsights
-	if isIronsights then
-		rd = rd / 2
-	end
-	if isIronsights then
-		movement = movement * 0.2
-	end
-
-	local sRoll = 0
-	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent + sRoll)
-
-	local degRoll = deg(sin(self.VMRoll * pi)) / 4
-
-	ang:RotateAroundAxis(ang:Forward(), degRoll)
-
-	self.VMJump = self.VMJump or 0
-
-	if not onGround then
-		
-	end
-
-	-- Offset the viewmodel
-	--pos = pos + (ang:Right() * (degRoll / 14))
-	-- rolling to the left requires a different offset
 	
-	--pos = pos + (ang:Up() * (degRoll / 40))
-	--pos = pos + (ang:Up() * (degRoll / 40))
-
-	-- [[ END SWAY ]] --
-
-	-- [[ BOBBING ]] --
-
-	pos, ang = Plutonic.Framework.ViewModelBob(self, pos, ang)
-	pos, ang = Plutonic.Framework.ViewModelIdle(self, pos, ang)
-
-	local vel = self.Owner:GetVelocity()
-	local len = vel:Length()
-
-	c_move = lerp(ft8, c_move or 0, onGround and movepercent or 0)
-	--pos = pos + ang:Forward() * c_move  * fd - ang:Up() * .75 * c_move + ang:Right() * .5 * c_move
-	local p = c_move * c_sight * 1
-	local move = clamp(len / self.Owner:GetRunSpeed(), 0, 1)
-
-	if isIronsights then
-		move = move * 0.2
-	end
-
-	pos, ang = Plutonic.Framework.ViewModelCrouch(self, pos, ang)
-	-- We lerp all positions to avoid jittering
-
-	--if self:GetIronsights() then
-
-	-- ** DEBUG CODE ** --
-	
-	-- ROLLING PERFECTLY
-	--pos = pos + (ang:Right() * -sin(dbg_roll/-8))
-	--pos = pos + (ang:Up() * -sin(dbg_roll/-8))
-	--pos = pos + (ang:Up() * sin(dbg_roll/8))
-
-	-- Calculate offsets (real)
-
-	pos, ang = Plutonic.Framework.ViewModelBlocked(self, pos, ang)
-
 	pos, ang = Plutonic.Framework.ViewModelIronsights(self, pos, ang)
-
+	pos, ang = Plutonic.Framework.ViewModelBob(self, pos, ang)
+	pos, ang = Plutonic.Framework.ViewModelCrouch(self, pos, ang)
+	pos, ang = Plutonic.Framework.ViewModelBlocked(self, pos, ang)
 	pos, ang = Plutonic.Framework.ViewModelSprint(self, pos, ang)
-
-
-	if self.VMOffsetAng then
-		local offsetang = self.VMOffsetAng
+	
+	
+	
+	if self.ViewModelOffsetAng then
+		local offsetang = self.ViewModelOffsetAng
 		ang:RotateAroundAxis(ang:Right(), offsetang.p)
 		ang:RotateAroundAxis(ang:Up(), offsetang.y)
 		ang:RotateAroundAxis(ang:Forward(), offsetang.r)
 	end
-	if self.VMOffsetPos then
-		local offset = self.VMOffsetPos
+	if self.ViewModelOffset then
+		local offset = self.ViewModelOffset
 		pos = pos + (ang:Right() * offset.x)
 		pos = pos + (ang:Forward() * offset.y)
 		pos = pos + (ang:Up() * offset.z)
 	end
-	-- REVERSE THE RELATIVITY!
 	
+	
+
 	ang:RotateAroundAxis(ang:Right(), -ironsightAng.p)
 	ang:RotateAroundAxis(ang:Up(), ironsightAng.y)
 	ang:RotateAroundAxis(ang:Forward(), -ironsightAng.r)
@@ -903,31 +716,43 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (start_ang:Up() * -ironsightPos.z)
 	pos = pos + (start_ang:Up() *1.5)
 	pos = pos + (start_ang:Forward() * -self.BarrelLength)
-	
-	
 
-	self.VMPos = pos
-	self.VMAng = ang
+	self.VMDeltaX = lerp(ft * 2, self.VMDeltaX, 0)
+	self.VMDeltaY = lerp(ft * 2, self.VMDeltaY, 0)
+	self.VMDeltaX = clamp(self.VMDeltaX, -16, 16)
+	self.VMDeltaY = clamp(self.VMDeltaY, -16, 16)
+	local isIronsights = self:GetIronsights()
+	self.VMSwayIronTransform = self.VMSwayIronTransform or 0
+	self.VMSwayIronTransform = approach(self.VMSwayIronTransform, isIronsights and 1 or 0.5, ft * 2)
+	local brl = self.VMSwayIronTransform * self.BarrelLength
 
-	
+	local swayX = self.VMDeltaX * .25
+	if isIronsights then
+		rd = rd / 2
+	end
+	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent)
 
-	self.VMAng:RotateAroundAxis(self.VMAng:Right(), self.VMRecoilAng.p)
-	self.VMAng:RotateAroundAxis(self.VMAng:Up(), self.VMRecoilAng.y)
-	self.VMAng:RotateAroundAxis(self.VMAng:Forward(), self.VMRecoilAng.r)
+	-- Reduce roll when ironsights
+	pos, ang = Plutonic.Framework.RotateAroundPoint(
+		pos, 
+		ang, 
+		Vector(brl, 0, 0), 
+		Vector(0, swayX, 0), 
+		Angle(0, self.VMDeltaX , 0)
+	)
 
-	self.VMPos = self.VMPos + (self.VMAng:Right() * self.VMRecoilPos.x)
-	self.VMPos = self.VMPos + (self.VMAng:Forward() * self.VMRecoilPos.y)
-	self.VMPos = self.VMPos + (self.VMAng:Up() * self.VMRecoilPos.z)
+	ang:RotateAroundAxis(ang:Right(), self.VMRecoilAng.p)
+	ang:RotateAroundAxis(ang:Up(), self.VMRecoilAng.y)
+	ang:RotateAroundAxis(ang:Forward(), self.VMRecoilAng.r)
+
+	pos = pos + (ang:Right() * self.VMRecoilPos.x)
+	pos = pos + (ang:Forward() * self.VMRecoilPos.y)
+	pos = pos + (ang:Up() * self.VMRecoilPos.z)
 
 	self.VMRecoilPos = lerpVector(ft * 6, self.VMRecoilPos, Vector(0, 0, 0))
 	self.VMRecoilAng = lerpAngle(ft * 6, self.VMRecoilAng, Angle(0, 0, 0))
 
-	-- Recoil is last so it's overriding all
-	self.VMParticlePos = pos
-	self.VMParticlePos = ang
-	
-
-	return self.VMPos, self.VMAng
+	return pos, ang
 end
 
 local aimdot = Material("models/weapons/tfa_ins2/optics/po4x_reticule")
@@ -952,14 +777,6 @@ end)
 Plutonic.Hooks.Add(
 	"OnPlayerHitGround",
 	function(ply, _, __, speed)
-		if ply:Alive() and ply:GetActiveWeapon():IsValid() then
-			local wep = ply:GetActiveWeapon()
-			if wep.IsPlutonic then
-				wep.LastInput = CurTime()
-				wep.VMSwayY = speed / 30
-				wep.VMSwayX = math.random(-1, 1) * speed / 50
-			end
-		end
 	end
 )
 

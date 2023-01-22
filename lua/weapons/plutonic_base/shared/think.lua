@@ -11,6 +11,7 @@ function SWEP:Think()
 
 	if CLIENT then
 		self:ViewmodelThink()
+		self:OffsetThink()
 	end
 
 	self:IronsightsThink()

@@ -6,6 +6,8 @@ Plutonic.Framework = Plutonic.Framework or {} --- Creates the Plutonic Framework
 Plutonic.Constants = Plutonic.Constants or {} --- Creates the Plutonic Constants table if it doesn't exist.
 Plutonic.Interpolation = Plutonic.Interpolation or {} --- Creates the Plutonic Interpolation table if it doesn't exist.
 Plutonic.Hooks = Plutonic.Hooks or {} --- Creates the Plutonic Hooks table if it doesn't exist.
+Plutonic.FireRate = Plutonic.FireRate or {} --- Creates the Plutonic FireRate table if it doesn't exist.
+
 --- Does a fancy print to the console.
 -- @realm shared
 -- @string text The text to print.
