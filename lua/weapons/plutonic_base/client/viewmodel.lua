@@ -422,13 +422,13 @@ sound.Add(
 	}
 )
 
-SWEP.vBobIn = Vector(1.26, -0.267, -2.5) * .5
-SWEP.vBobMid = Vector(-0.3, -.4, 0.94) * .5
-SWEP.vBobOut = Vector(-1.2126, -0.2, -2.5 ) * .5
+SWEP.vBobIn = Vector(1.26, -0.267, -0.1) * .5
+SWEP.vBobMid = Vector(-0.3, -.4, -3.94) * .5
+SWEP.vBobOut = Vector(-1.2126, -0.2, -0.1 ) * .5
 
-SWEP.aBobIn = Angle(2, 1, -4) * .5
-SWEP.aBobMid = Angle(-1.2, -0.7, 1) * .5
-SWEP.aBobOut = Angle(3, -1.4, 4) * .5
+SWEP.aBobIn = Angle(2, -1, -4) * .5
+SWEP.aBobMid = Angle(-1.2, 0.7, 1) * .5
+SWEP.aBobOut = Angle(3, 1.4, 4) * .5
 
 function Plutonic.Framework.IsMoving()
 	return LocalPlayer():GetVelocity():Length2DSqr() > 40^2
@@ -466,8 +466,8 @@ function Plutonic.Framework.ViewModelBob(self, pos, ang)
 	
 
 	if self:GetIronsights() then
-		bob = bob * (1.021 - self.VMIronsights)
-		abob = abob * (1.04 -self.VMIronsights)
+		bob = bob * ( self.VMIronsights * .08)
+		abob = abob * (self.VMIronsights * .04)
 	end
 
 	bob = bob / lerp(lerpSpeed, 1, 1.7)
@@ -494,7 +494,7 @@ function Plutonic.Framework.ViewModelBob(self, pos, ang)
 	ang:RotateAroundAxis(ang:Forward(), self.VMRDBEF * cos(rt * 8.4 * 1.7))
 	ang:RotateAroundAxis(ang:Right(), (self.VMRDBEF / -8) * sin(rt * 8.4 * 1.7))
 
-	pos = pos + ang:Up() * (self.VMRDBEF / 18) * cos(rt * 8.4 * 1.7) * self.VMBobCycle
+	--pos = pos + ang:Up() * (self.VMRDBEF / 18) * cos(rt * 8.4 * 1.7) * self.VMBobCycle
 
 	-- added sin/cos effects, they add a nice effect to the weapon bobbing
 	local alper = self:GetIronsights() and self.VMRDBEF / 8 or  self.VMRDBEF
@@ -546,6 +546,9 @@ function Plutonic.Framework.ViewModelBlocked(self, pos, ang)
 	return pos, ang
 end
 
+SWEP.IronsightsMiddlePos = Vector(-8,-7,-7)
+SWEP.IronsightsMiddleAng = Angle(12, -18, 48)
+
 function Plutonic.Framework.ViewModelIronsights(self, pos, ang)
 
 	self.VMIronsights = self.VMIronsights or 0
@@ -559,8 +562,8 @@ function Plutonic.Framework.ViewModelIronsights(self, pos, ang)
 
 	local alpha = dir and math.ease.OutExpo( self.VMIronsights ) or math.ease.InSine( self.VMIronsights )
 
-	local ironsightPos = Plutonic.Interpolation.VectorBezierCurve( alpha, Vector(), Vector(-(self.BarrelLength*1.2),-7,-7), self.IronsightsPos)
-	local ironsightAng = Plutonic.Interpolation.AngleBezierCurve( alpha, Angle(), Angle(12, -18,12), self.IronsightsAng)
+	local ironsightPos = Plutonic.Interpolation.VectorBezierCurve( alpha, Vector(), self.IronsightsMiddlePos, self.IronsightsPos)
+	local ironsightAng = Plutonic.Interpolation.AngleBezierCurve( alpha, Angle(), self.IronsightsMiddleAng, self.IronsightsAng)
 
 	pos = pos + ang:Up() * ironsightPos.z * alpha
 	pos = pos + ang:Right() * ironsightPos.x * alpha
