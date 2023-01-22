@@ -18,8 +18,8 @@ indicatorIO[Plutonic.Enum.WeaponType.SubmachineGun] = {
 		local cp = self:ClipPercent()
 		return cp <= 0.4, (1-(cp/0.4))
 	end,
-	[2] = "Longsword.SMG_LowAmmo",
-	[3] = "Longsword.SMG_Dry"
+	[2] = "Plutonic.SMG_LowAmmo",
+	[3] = "Plutonic.SMG_Dry"
 }
 
 indicatorIO[Plutonic.Enum.WeaponType.Pistol] = {
@@ -27,8 +27,8 @@ indicatorIO[Plutonic.Enum.WeaponType.Pistol] = {
 		local cp = self:ClipPercent()
 		return cp <= 0.6, (1 - (cp/0.6))
 	end,
-	[2] = "Longsword.Pistol_LowAmmo",
-	[3] = "Longsword.Pistol_Dry"
+	[2] = "Plutonic.Pistol_LowAmmo",
+	[3] = "Plutonic.Pistol_Dry"
 }
 
 indicatorIO[Plutonic.Enum.WeaponType.AutomaticRifle] = {
@@ -36,8 +36,8 @@ indicatorIO[Plutonic.Enum.WeaponType.AutomaticRifle] = {
 		local cp = self:ClipPercent()
 		return cp <= 0.4, (1 - (cp / 0.4))
 	end,
-	[2] = "Longsword.Rifle_LowAmmo",
-	[3] = "Longsword.Rifle_Dry"
+	[2] = "Plutonic.Rifle_LowAmmo",
+	[3] = "Plutonic.Rifle_Dry"
 }
 
 function SWEP:ShouldPlayAmmoIndicator()

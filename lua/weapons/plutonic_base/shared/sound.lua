@@ -1,5 +1,5 @@
 sound.Add({
-	name = "Longsword.SMG_LowAmmo",
+	name = "Plutonic.SMG_LowAmmo",
 	channel = CHAN_AUTO,
 	volume = 1.0,
 	level = 60,
@@ -8,7 +8,7 @@ sound.Add({
 })
 
 sound.Add({
-	name = "Longsword.SMG_Dry",
+	name = "Plutonic.SMG_Dry",
 	channel = CHAN_AUTO,
 	volume = 1.0,
 	level = 88,
@@ -16,7 +16,7 @@ sound.Add({
 	sound = "weapons/tfa/lowammo_dry_smg.wav"
 })
 sound.Add({
-	name = "Longsword.Pistol_LowAmmo",
+	name = "Plutonic.Pistol_LowAmmo",
 	channel = CHAN_AUTO,
 	volume = 1.0,
 	level = 60,
@@ -25,7 +25,7 @@ sound.Add({
 })
 
 sound.Add({
-	name = "Longsword.Pistol_Dry",
+	name = "Plutonic.Pistol_Dry",
 	channel = CHAN_AUTO,
 	volume = 1.0,
 	level = 88,
@@ -34,7 +34,7 @@ sound.Add({
 })
 
 sound.Add({
-	name = "Longsword.Shotgun_LowAmmo",
+	name = "Plutonic.Shotgun_LowAmmo",
 	channel = CHAN_AUTO,
 	volume = 1.0,
 	level = 60,
@@ -43,7 +43,7 @@ sound.Add({
 })
 
 sound.Add({
-	name = "Longsword.Shotgun_Dry",
+	name = "Plutonic.Shotgun_Dry",
 	channel = CHAN_AUTO,
 	volume = 1.0,
 	level = 88,
@@ -52,7 +52,7 @@ sound.Add({
 })
 
 sound.Add({
-	name = "Longsword.Rifle_LowAmmo",
+	name = "Plutonic.Rifle_LowAmmo",
 	channel = CHAN_AUTO,
 	volume = 1.0,
 	level = 60,
@@ -61,7 +61,7 @@ sound.Add({
 })
 
 sound.Add({
-	name = "Longsword.Rifle_Dry",
+	name = "Plutonic.Rifle_Dry",
 	channel = CHAN_AUTO,
 	volume = 1.0,
 	level = 88,
@@ -81,7 +81,7 @@ hook.Add("EntityEmitSound", "PlutonicSounddata", function(soundData)
 		weapon = ent:GetActiveWeapon()
 	end
 
-	if IsValid(weapon) and weapon.IsLongsword then
+	if IsValid(weapon) and weapon.IsPlutonic then
 		if weapon.GonnaAdjuctPitch then
 			soundData.Pitch = soundData.Pitch * weapon.RequiredPitch
 			weapon.GonnaAdjuctPitch = false

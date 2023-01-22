@@ -323,9 +323,12 @@ Plutonic.Hooks.Add(
 					local m = wep:GetIronsights() and 0.001 or 0.0056
 
 					if abs(x) > 0 or abs(y) > 0 then
-						wep.LastInput = UnPredictedCurTime() 
+						if abs(x * m) > 1 then
+							wep.LastInput = Curtime() 
+						end
 
 						wep.VMDeltaX = wep.VMDeltaX + ucmd:GetMouseX() * m
+						wep.VMWiggly = wep.VMWiggly + ucmd:GetMouseX() * (m * 1.045)
 						wep.VMDeltaY = wep.VMDeltaY + ucmd:GetMouseY() * m
 					end
 				end
@@ -663,6 +666,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.VMRoll = self.VMRoll or 0
 	self.VMSwayX = self.VMSwayX or 0
 	self.VMSwayY = self.VMSwayY or 0
+	self.VMWiggly = self.VMWiggly or 0
 	self.LastInput = self.LastInput or Curtime()
 
 	local ft = Frametime()
@@ -680,7 +684,36 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local vel = move:GetNormalized()
 	local rd = self.Owner:GetRight():Dot(vel)
 
+	self.VMDeltaX = lerp(ft * 2, self.VMDeltaX, 0)
+	self.VMWiggly = lerp(ft * 2, self.VMWiggly, 0)
+	self.VMDeltaY = lerp(ft * 2, self.VMDeltaY, 0)
+	self.VMDeltaX = clamp(self.VMDeltaX, -16, 16)
+	self.VMDeltaY = clamp(self.VMDeltaY, -16, 16)
+	local isIronsights = self:GetIronsights()
+	self.VMSwayIronTransform = self.VMSwayIronTransform or 0
+	self.VMSwayIronTransform = approach(self.VMSwayIronTransform, isIronsights and 1 or 0.1, ft * 2)
+	local brl = self.VMSwayIronTransform * self.BarrelLength
+
 	
+
+	--local wiggly = (sin((ct - self.LastInput) * 18.4) * (clamp(abs(16 - self.VMDeltaX), 0, 1) * self.VMWiggly)) * .1
+	local swayX = self.VMDeltaX * .25
+	local swayY = self.VMDeltaY * .25
+	if isIronsights then
+		rd = rd / 2
+	end
+	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent)
+
+	local degRoll = deg(sin(self.VMRoll * pi)) / 4
+
+	-- Reduce roll when ironsights
+	pos, ang = Plutonic.Framework.RotateAroundPoint(
+		pos, 
+		ang, 
+		Vector(brl, 0, 0), 
+		Vector(0, -swayX, -swayY), 
+		Angle(self.VMDeltaY, -self.VMDeltaX , -degRoll)
+	)
 
 	
 	
@@ -689,7 +722,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos, ang = Plutonic.Framework.ViewModelCrouch(self, pos, ang)
 	pos, ang = Plutonic.Framework.ViewModelBlocked(self, pos, ang)
 	pos, ang = Plutonic.Framework.ViewModelSprint(self, pos, ang)
-	
+	pos, ang = Plutonic.Framework.ViewModelIdle(self, pos, ang)
 	
 	
 	if self.ViewModelOffsetAng then
@@ -717,29 +750,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (start_ang:Up() *1.5)
 	pos = pos + (start_ang:Forward() * -self.BarrelLength)
 
-	self.VMDeltaX = lerp(ft * 2, self.VMDeltaX, 0)
-	self.VMDeltaY = lerp(ft * 2, self.VMDeltaY, 0)
-	self.VMDeltaX = clamp(self.VMDeltaX, -16, 16)
-	self.VMDeltaY = clamp(self.VMDeltaY, -16, 16)
-	local isIronsights = self:GetIronsights()
-	self.VMSwayIronTransform = self.VMSwayIronTransform or 0
-	self.VMSwayIronTransform = approach(self.VMSwayIronTransform, isIronsights and 1 or 0.5, ft * 2)
-	local brl = self.VMSwayIronTransform * self.BarrelLength
-
-	local swayX = self.VMDeltaX * .25
-	if isIronsights then
-		rd = rd / 2
-	end
-	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent)
-
-	-- Reduce roll when ironsights
-	pos, ang = Plutonic.Framework.RotateAroundPoint(
-		pos, 
-		ang, 
-		Vector(brl, 0, 0), 
-		Vector(0, swayX, 0), 
-		Angle(0, self.VMDeltaX , 0)
-	)
+	
 
 	ang:RotateAroundAxis(ang:Right(), self.VMRecoilAng.p)
 	ang:RotateAroundAxis(ang:Up(), self.VMRecoilAng.y)
