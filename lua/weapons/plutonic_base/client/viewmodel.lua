@@ -33,14 +33,6 @@ SWEP.VMRenderTarget =
 		["$transparent"] = 1
 	}
 )
-function SWEP:GetOffset()
-end
-
-SWEP.VMOffsetPos = Vector(0, 0, 0)
-SWEP.VMOffsetAng = Angle(0, 0, 0)
-
-function SWEP:OffsetThink()
-end
 
 function SWEP:PlayAnim(act)
 	if self.CustomEvents[act] then
@@ -59,9 +51,6 @@ function SWEP:PreDrawViewModel(vm)
 		self.Owner:GetViewModel():SetMaterial(self.CustomMaterial)
 		self.CustomMatSetup = true
 	end
-
-	self:OffsetThink()
-
 	
 
 	if self.scopedIn then
@@ -349,7 +338,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		rd = rd / 2
 	end
 	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent)
-	local degRoll = deg(sin(self.VMRoll * pi)) / 4
+	local degRoll = deg(self.VMRoll) / 3
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
