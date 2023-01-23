@@ -7,7 +7,6 @@ include("shared/spread.lua")
 include("shared/think.lua")
 include("shared/worldmodel.lua")
 include("shared/reload.lua")
-include("shared/sound.lua")
 
 -- [ Now Load Client Specific Files ] --
 include("client/viewmodel.lua")

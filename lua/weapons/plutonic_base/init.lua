@@ -14,7 +14,6 @@ include("shared/spread.lua")
 include("shared/think.lua")
 include("shared/worldmodel.lua")
 include("shared/reload.lua")
-include("shared/sound.lua")
 
 -- ServerSide Files
 include("server/sound.lua")
@@ -29,7 +28,6 @@ AddCSLuaFile("shared/spread.lua")
 AddCSLuaFile("shared/think.lua")
 AddCSLuaFile("shared/worldmodel.lua")
 AddCSLuaFile("shared/reload.lua")
-AddCSLuaFile("shared/sound.lua")
 
 -- ClientSide Files
 AddCSLuaFile("client/viewmodel.lua")
@@ -41,7 +39,8 @@ AddCSLuaFile("client/crosshair.lua")
 AddCSLuaFile("client/echo.lua")
 AddCSLuaFile("client/ammoindicator.lua")
 
-Plutonic.Constants.Logo = [[////////////////////////////////////////////////////////
+Plutonic.Constants.Logo = [[
+////////////////////[ Powered By ]//////////////////////
   _____  _     _    _ _______ ____  _   _ _____ _____ 
  |  __ \| |   | |  | |__   __/ __ \| \ | |_   _/ ____|
  | |__) | |   | |  | |  | | | |  | |  \| | | || |     
@@ -52,8 +51,8 @@ Plutonic.Constants.Logo = [[////////////////////////////////////////////////////
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 Plutonic is a project built for Landis Games.
-Version: 1.0.0
-Build: 11
+Version: 1.0.1
+Build: 20
 
 ////////////////////////////////////////////////////////]]
 
