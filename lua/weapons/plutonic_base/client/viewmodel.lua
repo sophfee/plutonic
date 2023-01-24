@@ -203,8 +203,8 @@ function Plutonic.Framework.ViewModelBlocked(self, pos, ang)
 	pos = pos + ang:Right() * (1 - self.VMBlocked) * -2
 	return pos, ang
 end
-SWEP.IronsightsMiddlePos = Vector(-8,-7,-7)
-SWEP.IronsightsMiddleAng = Angle(12, -18, 48)
+SWEP.IronsightsMiddlePos = Vector(-12,-2,-9)
+SWEP.IronsightsMiddleAng = Angle(12, -18, -24)
 function Plutonic.Framework.ViewModelIronsights(self, pos, ang)
 	self.VMIronsights = self.VMIronsights or 0
 	self.VMRattle = self.VMRattle or 0
@@ -282,7 +282,7 @@ function SWEP:ViewmodelThink()
 	self.VMCrouch = approach( self.VMCrouch, isDuck and 1 or 0, Frametime() * 2.5 )
 	local ovel = self.Owner:GetVelocity()
 	local move = vec(ovel.x, ovel.y, 0)
-	self.VMBobCycle = approach(self.VMBobCycle, Plutonic.Framework.IsMoving() and 1 or 0, Frametime() * 9)
+	self.VMBobCycle = approach(self.VMBobCycle, Plutonic.Framework.IsMoving() and 1 or 0, Frametime() * 4)
 	local mul = self:IsSprinting() and 1.7 or 1
 	local l = self:IsSprinting() and 1 or 0
 	lerpSpeed = lerp(Frametime() * 5, lerpSpeed, l)

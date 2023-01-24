@@ -187,30 +187,6 @@ function SWEP:Deploy()
 	return true
 end
 
-local PIERCING_MATS = {
-	[MAT_FLESH] = true,
-	[MAT_BLOODYFLESH] = true,
-	[MAT_ALIENFLESH] = true,
-	[MAT_ANTLION] = true,
-	[MAT_DIRT] = true,
-	[MAT_SAND] = true,
-	[MAT_FOLIAGE] = true,
-	[MAT_GRASS] = true,
-	[MAT_SLOSH] = true,
-	[MAT_PLASTIC] = true,
-	[MAT_TILE] = true,
-	[MAT_CONCRETE] = true,
-	[MAT_WOOD] = true,
-	[MAT_GLASS] = true,
-	[MAT_COMPUTER] = true
-}
-
-local ALWAYS_PIERCE = {
-	[MAT_GLASS] = true,
-	[MAT_VENT] = true,
-	[MAT_GRATE] = true
-}
-
 function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_dir)
 
 	if self.UseBallistics then
@@ -249,7 +225,7 @@ function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_d
 	bullet.AmmoType = "Pistol"
 
 	Plutonic.Framework.FireBullets(self, bullet)
-	self.Owner:FireBullets(bullet)
+	self:ShootEffects()
 end
 
 function SWEP:GetShootSrc()
