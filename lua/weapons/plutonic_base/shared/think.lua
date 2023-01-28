@@ -106,9 +106,15 @@ function SWEP:IronsightsThink()
 	if self.Owner:KeyDown( IN_ATTACK2 ) and not self:GetIronsights() then
 		self:SetIronsights( true )
 		self:EmitSound("Plutonic.ADS.In")
+		if (CLIENT) then
+			self.VMIronsights = math.ease.InSine( self.VMIronsights or 0 )
+		end
 	elseif not self.Owner:KeyDown( IN_ATTACK2 ) and self:GetIronsights() then
 		self:SetIronsights( false )
 		self:EmitSound("Plutonic.ADS.Out")
+		if (CLIENT) then
+			self.VMIronsights = math.ease.OutExpo( self.VMIronsights or 0 )
+		end
 	end
 end
 function SWEP:ReloadThink()

@@ -67,10 +67,8 @@ function Plutonic.Framework.ViewModelBob(self, pos, ang)
 	local rd = self.Owner:GetRight():Dot(vel)
 	local fd = (self.Owner:GetForward():Dot(vel) + 1) / 2
 	self.VMRDBEF = lerp(Frametime() * 2.9, self.VMRDBEF or 0, vel:Length2DSqr())
-	ang:RotateAroundAxis(ang:Right(), abob.p * self.VMBobCycle)
-	ang:RotateAroundAxis(ang:Forward(), abob.r * self.VMBobCycle)
+	ang:RotateAroundAxis(ang:Right(), abob.p * (self.VMBobCycle))
 	ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
-	ang:RotateAroundAxis(ang:Forward(), self.VMRDBEF * cos(rt * 8.4 * 1.7))
 	ang:RotateAroundAxis(ang:Right(), (self.VMRDBEF / -8) * sin(rt * 8.4 * 1.7))
 	return pos, ang
 end

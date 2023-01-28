@@ -203,8 +203,8 @@ function Plutonic.Framework.ViewModelBlocked(self, pos, ang)
 	pos = pos + ang:Right() * (1 - self.VMBlocked) * -2
 	return pos, ang
 end
-SWEP.IronsightsMiddlePos = Vector(-12,-2,-9)
-SWEP.IronsightsMiddleAng = Angle(12, -18, -24)
+SWEP.IronsightsMiddlePos = Vector(-3,-2,-9)
+SWEP.IronsightsMiddleAng = Angle(12, -9, -24)
 function Plutonic.Framework.ViewModelIronsights(self, pos, ang)
 	self.VMIronsights = self.VMIronsights or 0
 	self.VMRattle = self.VMRattle or 0
