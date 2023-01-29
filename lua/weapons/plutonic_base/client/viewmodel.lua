@@ -324,7 +324,9 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local movepercent = clamp(movement / self.Owner:GetRunSpeed() ^ 2, 0, 1)
 	local vel = move:GetNormalized()
 	local rd = self.Owner:GetRight():Dot(vel)
+	local changeX = self.VMDeltaX + 0
 	self.VMDeltaX = lerp(ft * 4, self.VMDeltaX, 0)
+	self.VMWiggly = lerp(ft * 1.9, self.VMWiggly, 0)
 	self.VMDeltaY = lerp(ft * 4, self.VMDeltaY, 0)
 	self.VMDeltaX = clamp(self.VMDeltaX, -16,16)
 	self.VMDeltaY = clamp(self.VMDeltaY, -16, 16)
@@ -332,26 +334,35 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.VMSwayIronTransform = self.VMSwayIronTransform or 0
 	self.VMSwayIronTransform = approach(self.VMSwayIronTransform, isIronsights and 1 or 0.1, ft * 2)
 	local brl = self.VMSwayIronTransform * self.BarrelLength
-	local swayX = self.VMDeltaX * .25
+
+	
+	local swayXv = -(self.VMDeltaX * .25) 
+	local l_wiggle = 0 -- math.AngleDifference(self.VMWiggly,self.VMDeltaX  ) * .125
+	
+	local swayXa = -self.VMDeltaX * 1
+
 	local swayY = self.VMDeltaY * .25
 	if isIronsights then
 		rd = rd / 2
 	end
 	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent)
 	local degRoll = deg(self.VMRoll) / 3
+
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
 		Vector(brl, 0, 0), 
-		Vector(0, -swayX, -swayY), 
-		Angle(self.VMDeltaY, -self.VMDeltaX , -degRoll)
+		Vector(0, swayXv, -swayY), 
+		Angle(self.VMDeltaY, swayXa, -degRoll)
 	)
-	pos, ang = Plutonic.Framework.ViewModelIronsights(self, pos, ang)
 	pos, ang = Plutonic.Framework.ViewModelBob(self, pos, ang)
+
+	pos, ang = Plutonic.Framework.ViewModelIronsights(self, pos, ang)
+	
 	pos, ang = Plutonic.Framework.ViewModelCrouch(self, pos, ang)
 	pos, ang = Plutonic.Framework.ViewModelBlocked(self, pos, ang)
 	pos, ang = Plutonic.Framework.ViewModelSprint(self, pos, ang)
-	pos, ang = Plutonic.Framework.ViewModelIdle(self, pos, ang)
+	--pos, ang = Plutonic.Framework.ViewModelIdle(self, pos, ang)
 	if self.ViewModelOffsetAng then
 		local offsetang = self.ViewModelOffsetAng
 		ang:RotateAroundAxis(ang:Right(), offsetang.p)
@@ -375,6 +386,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	ang:RotateAroundAxis(ang:Right(), self.VMRecoilAng.p)
 	ang:RotateAroundAxis(ang:Up(), self.VMRecoilAng.y)
 	ang:RotateAroundAxis(ang:Forward(), self.VMRecoilAng.r)
+	
 	pos = pos + (ang:Right() * self.VMRecoilPos.x)
 	pos = pos + (ang:Forward() * self.VMRecoilPos.y)
 	pos = pos + (ang:Up() * self.VMRecoilPos.z)

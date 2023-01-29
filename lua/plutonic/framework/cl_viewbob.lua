@@ -69,6 +69,17 @@ function Plutonic.Framework.ViewModelBob(self, pos, ang)
 	self.VMRDBEF = lerp(Frametime() * 2.9, self.VMRDBEF or 0, vel:Length2DSqr())
 	ang:RotateAroundAxis(ang:Right(), abob.p * (self.VMBobCycle))
 	ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
-	ang:RotateAroundAxis(ang:Right(), (self.VMRDBEF / -8) * sin(rt * 8.4 * 1.7))
+	--ang:RotateAroundAxis(ang:Right(),abob.r  * self.VMBobCycle )
+
+	pos, ang = Plutonic.Framework.RotateAroundPoint(
+		pos, 
+		ang, 
+		Vector(self.BarrelLength, 0, -2), 
+		Vector(0, 0, 0), 
+		Angle(0, 0 , -(self.VMRDBEF*2) * cos(rt * 14.1))
+	)
+	if !self.GetIronsights(self) then
+		--ang:RotateAroundAxis(ang:Forward(), (self.VMRDBEF * 8 ) * cos(rt * 16.8))
+	end
 	return pos, ang
 end
