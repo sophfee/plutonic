@@ -182,9 +182,15 @@ SWEP.aBobOut = Angle(3, 1.4, 4) * .5
 function Plutonic.Framework.IsMoving()
 	return LocalPlayer():GetVelocity():Length2DSqr() > 40^2
 end
+
+function SWEP:IsMoving()
+	return self:GetOwner():GetVelocity():Length2DSqr() > 40^2
+end
+
 SWEP.CrouchPos = Vector(-1.5, -2.7, -1.4)
 SWEP.CrouchAng = Angle(0, 0, -12)
-function Plutonic.Framework.ViewModelCrouch(self, pos, ang)
+
+function SWEP:DoCrouch(pos, ang)
 	self.VMCrouch = self.VMCrouch or 0
 	local alpha = math.ease.InOutQuad(self.VMCrouch)
 	pos = pos + ang:Right() * self.CrouchPos.x * alpha
@@ -195,7 +201,8 @@ function Plutonic.Framework.ViewModelCrouch(self, pos, ang)
 	ang:RotateAroundAxis(ang:Up(), self.CrouchAng.y * alpha)
 	return pos, ang
 end
-function Plutonic.Framework.ViewModelBlocked(self, pos, ang)
+
+function SWEP:DoBlocked(pos, ang)
 	if self.Owner != LocalPlayer() then return pos, ang end
 	self.VMBlocked = self.VMBlocked or 1
 	pos = pos + ang:Forward() * (1 - self.VMBlocked) * -12
@@ -203,9 +210,11 @@ function Plutonic.Framework.ViewModelBlocked(self, pos, ang)
 	pos = pos + ang:Right() * (1 - self.VMBlocked) * -2
 	return pos, ang
 end
+
 SWEP.IronsightsMiddlePos = Vector(-3,-2,-9)
 SWEP.IronsightsMiddleAng = Angle(12, -9, -24)
-function Plutonic.Framework.ViewModelIronsights(self, pos, ang)
+
+function SWEP:DoIronsights(pos, ang)
 	self.VMIronsights = self.VMIronsights or 0
 	self.VMRattle = self.VMRattle or 0
 	local dir = false
@@ -223,7 +232,8 @@ function Plutonic.Framework.ViewModelIronsights(self, pos, ang)
 	ang:RotateAroundAxis(ang:Forward(), ironsightAng.r * alpha)
 	return pos, ang
 end
-function Plutonic.Framework.ViewModelIdle(self, pos, ang)
+
+function SWEP:DoIdle(pos, ang)
 	self.VMIdle = self.VMIdle or 0
 	if self:GetIronsights() then
 		return pos, ang
@@ -248,9 +258,13 @@ function Plutonic.Framework.ViewModelIdle(self, pos, ang)
 	pos = pos + ang:Up() * uvel * -1.25
 	return pos, ang
 end
+
 SWEP.LoweredMidPos = Vector(4,-3,-3)
 SWEP.LoweredMidAng = Angle(-6,7,5)
-function Plutonic.Framework.ViewModelSprint(self, pos, ang)
+function SWEP:ShouldDoSprint()
+	return (self.VMSprint and math.Round(self.VMSprint, 4) > 0)
+end
+function SWEP:DoSprint(pos, ang)
 	if self.CustomSprint then return self:CustomSprint(pos, ang) end
 	if not self.LoweredPos then return pos, ang end
 	local t = math.ease.InOutQuad(self.VMSprint or 0)
@@ -264,8 +278,51 @@ function Plutonic.Framework.ViewModelSprint(self, pos, ang)
 	pos = pos + ang:Forward() * loweredPos.y
 	return pos, ang
 end
+lerpSpeed = 0
+function SWEP:DoWalkBob(pos, ang)
+	if self.DoCustomWalkBob then
+		return self:DoCustomWalkBob(pos, ang)
+	end
+	local rt = Realtime()
+	self.VMBobCycle = self.VMBobCycle or 0
+	local alpha2 = sin(rt * 8.4 * 1.7 ) * (self.VMBobCycle)
+	local alpha = sin(rt * 8.4 * 1 ) * self.VMBobCycle
+	alpha = lerp(lerpSpeed, alpha, alpha2)
+	alpha = (alpha / 3) + 0.5
+	local bob = Plutonic.Interpolation.VectorBezierCurve(alpha, self.vBobIn, self.vBobMid, self.vBobOut)
+	local abob = Plutonic.Interpolation.AngleBezierCurve(alpha, self.aBobIn, self.aBobMid, self.aBobOut)
+	if self:GetIronsights() then
+		bob = bob * ( self.VMIronsights * .08)
+		abob = abob * (self.VMIronsights * .04)
+	end
+	bob = bob / lerp(lerpSpeed, 1, 1.7)
+	abob = abob / lerp(lerpSpeed, 1, 1.7)
+	pos = pos + ang:Right() * bob.x * self.VMBobCycle
+	pos = pos + ang:Forward() * bob.y * self.VMBobCycle
+	pos = pos + ang:Up() * bob.z * self.VMBobCycle
+	local ovel = self.Owner:GetVelocity()
+	local move = vec(ovel.x, ovel.y, 0)
+	local vel = move:GetNormalized()
+	local rd = self.Owner:GetRight():Dot(vel)
+	local fd = (self.Owner:GetForward():Dot(vel) + 1) / 2
+	self.VMRDBEF = lerp(Frametime() * 2.9, self.VMRDBEF or 0, vel:Length2DSqr())
+	ang:RotateAroundAxis(ang:Right(), abob.p * (self.VMBobCycle))
+	ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
+	local oscilX = -(self.VMRDBEF*2) * cos(rt * 12.6) * (self.Ironsights and .125 or .675)
+	local oscilY = -(self.VMRDBEF*2) * sin(rt * 12.6) * (self.Ironsights and .125 or .675)
+	pos, ang = Plutonic.Framework.RotateAroundPoint(
+		pos, 
+		ang, 
+		Vector(self.BarrelLength * 1.3, 0, 0), 
+		Vector(0, oscilX * .125, oscilY * -.125), 
+		Angle( oscilY, oscilX, 0)
+	)
+	return pos, ang
+end
+
 function SWEP:ViewmodelThink()
 	if not IsFirstTimePredicted() then return end
+	self.Ironsights = self:GetIronsights()
 	self.VMSprint = approach(self.VMSprint or 0, self:IsSprinting() and 1 or 0, FrameTime() * 1.6)
 	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 2.4 )
 	self.VMIronsights = self.VMIronsights or 0
@@ -355,13 +412,13 @@ function SWEP:GetViewModelPosition(pos, ang)
 		Vector(0, swayXv, -swayY), 
 		Angle(self.VMDeltaY, swayXa, -degRoll)
 	)
-	pos, ang = Plutonic.Framework.ViewModelBob(self, pos, ang)
+	pos, ang = self:DoWalkBob(pos, ang)
 
-	pos, ang = Plutonic.Framework.ViewModelIronsights(self, pos, ang)
+	pos, ang = self:DoIronsights(pos, ang)
 	
-	pos, ang = Plutonic.Framework.ViewModelCrouch(self, pos, ang)
-	pos, ang = Plutonic.Framework.ViewModelBlocked(self, pos, ang)
-	pos, ang = Plutonic.Framework.ViewModelSprint(self, pos, ang)
+	pos, ang = self:DoCrouch(pos, ang)
+	pos, ang = self:DoBlocked(pos, ang)
+	pos, ang = self:DoSprint(pos, ang)
 	--pos, ang = Plutonic.Framework.ViewModelIdle(self, pos, ang)
 	if self.ViewModelOffsetAng then
 		local offsetang = self.ViewModelOffsetAng
