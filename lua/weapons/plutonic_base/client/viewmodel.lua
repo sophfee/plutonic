@@ -277,7 +277,18 @@ function SWEP:DoSprint(pos, ang)
 
 	local rt = Realtime()
 
-	return Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(self.BarrelLength * 2, sin(rt * 16.8) * (t * 8), cos(rt * 16.8) * t), Vector(0, cos(rt * 16.8) * (t * 1), 0), Angle(sin(rt * 16.8) * t, cos(rt * 16.8) * (t * 4), 0))
+	local sn0 = sin(rt * 16.8) * t
+	local cs0 = cos(rt * 16.8) * t
+	local sn1 = sin(rt * 8.4)  * t
+	local cs1 = cos(rt * 8.4)  * t
+
+	return Plutonic.Framework.RotateAroundPoint(
+		pos, 
+		ang, 
+		Vector(self.BarrelLength, -4, 16),
+		Vector(cs0, sn1, 0),
+		Angle(cs0 * 1.1, sn1 * 5, 0)
+	)
 end
 lerpSpeed = 0
 function SWEP:DoWalkBob(pos, ang)
@@ -311,7 +322,7 @@ function SWEP:DoWalkBob(pos, ang)
 	ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
 	local offsetOscilX = 2.6
 	local oscilX = -(self.VMRDBEF*2) * cos(rt * 12.6) * (self.Ironsights and .125 or .675)
-	local oscilY = -(self.VMRDBEF*2) * sin(rt * 12.6) * (self.Ironsights and .125 or .675)
+	local oscilY = -(self.VMRDBEF*2) * sin(rt * 6.3) * (self.Ironsights and .125 or .675)
 
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
@@ -379,7 +390,7 @@ function SWEP:ViewmodelThink()
 	local ovel = self.Owner:GetVelocity()
 	local move = vec(ovel.x, ovel.y, 0)
 	self.VMBobCycle = approach(self.VMBobCycle, Plutonic.Framework.IsMoving() and 1 or 0, Frametime() * 4)
-	local mul = self:IsSprinting() and 1.7 or 1
+	local mul = self:IsSprinting() and 1 or 1
 	local l = self:IsSprinting() and 1 or 0
 	lerpSpeed = lerp(Frametime() * 5, lerpSpeed, l)
 	local onvel = self.Owner:GetVelocity()
@@ -452,7 +463,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		Vector(0, swayXv, -swayY), 
 		Angle(self.VMDeltaY, swayXa, -degRoll)
 	)
-	--pos, ang = self:DoWalkBob(pos, ang)
+	pos, ang = self:DoWalkBob(pos, ang)
 
 	pos, ang = self:DoIronsights(pos, ang)
 	
