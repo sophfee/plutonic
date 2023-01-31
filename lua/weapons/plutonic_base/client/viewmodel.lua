@@ -205,10 +205,8 @@ end
 function SWEP:DoBlocked(pos, ang)
 	if self.Owner != LocalPlayer() then return pos, ang end
 	self.VMBlocked = self.VMBlocked or 1
-	pos = pos + ang:Forward() * (1 - self.VMBlocked) * -12
-	ang:RotateAroundAxis(ang:Forward(), (1 - self.VMBlocked) * -11)
-	pos = pos + ang:Right() * (1 - self.VMBlocked) * -2
-	return pos, ang
+	local bl = -(self.VMBlocked - 1)
+	return Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(self.BarrelLength, 0, 0), Vector(bl * -11, bl * -1, -bl *7), Angle(bl * 23, bl * -12,bl * 12))
 end
 
 SWEP.IronsightsMiddlePos = Vector(-3,-2,-9)
@@ -308,8 +306,10 @@ function SWEP:DoWalkBob(pos, ang)
 	self.VMRDBEF = lerp(Frametime() * 2.9, self.VMRDBEF or 0, vel:Length2DSqr())
 	ang:RotateAroundAxis(ang:Right(), abob.p * (self.VMBobCycle))
 	ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
+	local offsetOscilX = 2.6
 	local oscilX = -(self.VMRDBEF*2) * cos(rt * 12.6) * (self.Ironsights and .125 or .675)
 	local oscilY = -(self.VMRDBEF*2) * sin(rt * 12.6) * (self.Ironsights and .125 or .675)
+
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
@@ -320,8 +320,44 @@ function SWEP:DoWalkBob(pos, ang)
 	return pos, ang
 end
 
+-- THINK FOR WALL LEANING OUT
+function SWEP:DoWallLeanThink()
+
+	-- how far to left
+	local left = 0
+	-- how far to right
+	local right = 0
+
+	-- trace to left
+	local tr = util.TraceLine({
+		start = self.Owner:GetPos(),
+		endpos = self.Owner:GetPos() + self.Owner:GetRight() * -32 + self.Owner:GetForward() * 12 + Vector(0, 0, 48),
+		filter = self.Owner
+	})
+	-- if we hit something
+	if tr.Hit then
+		-- add to left
+		left = left + 1
+	end
+
+	-- trace to right
+	local tr = util.TraceLine({
+		start = self.Owner:EyePos(),
+		endpos = self.Owner:EyePos() + self.Owner:GetRight() * 32+ self.Owner:GetForward() * 12 + Vector(0, 0, 48),
+		filter = self.Owner
+	})
+
+	-- if we hit something
+	if tr.Hit then
+		-- add to right
+		right = right + 1
+	end
+	self.VMWallLean = Lerp(FrameTime() * 6.4, self.VMWallLean or 0, left - right)
+end
+
 function SWEP:ViewmodelThink()
 	if not IsFirstTimePredicted() then return end
+	self:DoWallLeanThink()
 	self.Ironsights = self:GetIronsights()
 	self.VMSprint = approach(self.VMSprint or 0, self:IsSprinting() and 1 or 0, FrameTime() * 1.6)
 	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 2.4 )
@@ -404,6 +440,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	end
 	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent)
 	local degRoll = deg(self.VMRoll) / 3
+	degRoll = degRoll + ((self.VMWallLean or 0) * 11.4)
 
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
