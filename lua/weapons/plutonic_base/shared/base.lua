@@ -102,6 +102,30 @@ function SWEP:OnLowered()
 	self:EmitSound("Plutonic.Raise", nil, nil, nil, nil, SND_NOFLAGS, 1)
 end
 
+function SWEP:Dirty()
+	if CLIENT then
+		self.VMPos = Vector()
+		self.VMAng = Angle()
+		self.VMIronsights = 0
+		self.VMCrouch = 0
+		self.VMBlocked = 1
+		self.VMRDBEF = 0
+		self.VMBobCycle = 0
+		self.VMSwayX = 0
+		self.VMDeltaX = 0
+		self.VMRoll = 0
+		self.VMSwayY = 0
+		self.VMDeltaX = 0
+		self.VMRattle = 0
+		self.VMSprint = 0
+		self.VMVel = 0
+		self.VMIdle = 0
+		self.VMRecoil = Vector()
+		self.VMRecoilAng = Angle()
+	end
+
+end
+
 function SWEP:Initialize()
 
 	if CLIENT then

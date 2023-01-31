@@ -274,7 +274,10 @@ function SWEP:DoSprint(pos, ang)
 	pos = pos + ang:Up() * loweredPos.z
 	pos = pos + ang:Right() * loweredPos.x
 	pos = pos + ang:Forward() * loweredPos.y
-	return pos, ang
+
+	local rt = Realtime()
+
+	return Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(self.BarrelLength * 2, sin(rt * 16.8) * (t * 8), cos(rt * 16.8) * t), Vector(0, cos(rt * 16.8) * (t * 1), 0), Angle(sin(rt * 16.8) * t, cos(rt * 16.8) * (t * 4), 0))
 end
 lerpSpeed = 0
 function SWEP:DoWalkBob(pos, ang)
@@ -449,7 +452,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		Vector(0, swayXv, -swayY), 
 		Angle(self.VMDeltaY, swayXa, -degRoll)
 	)
-	pos, ang = self:DoWalkBob(pos, ang)
+	--pos, ang = self:DoWalkBob(pos, ang)
 
 	pos, ang = self:DoIronsights(pos, ang)
 	
