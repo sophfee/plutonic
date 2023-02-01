@@ -187,19 +187,36 @@ function SWEP:IsMoving()
 	return self:GetOwner():GetVelocity():Length2DSqr() > 40^2
 end
 
-SWEP.CrouchPos = Vector(-1.5, -2.7, -1.4)
+function SWEP:IsDucked()
+	local isIronsights = self:GetIronsights()
+	return ((self.Owner:KeyDown(IN_DUCK) or self.Owner:Crouching()) and not isIronsights)
+end
+
+SWEP.CrouchPos = Vector(1.5, -2.7, 1.4)
 SWEP.CrouchAng = Angle(0, 0, -12)
 
 function SWEP:DoCrouch(pos, ang)
 	self.VMCrouch = self.VMCrouch or 0
-	local alpha = math.ease.InOutQuad(self.VMCrouch)
-	pos = pos + ang:Right() * self.CrouchPos.x * alpha
-	pos = pos + ang:Forward() * self.CrouchPos.y * alpha
-	pos = pos + ang:Up() * self.CrouchPos.z * alpha
-	ang:RotateAroundAxis(ang:Right(), self.CrouchAng.p * alpha)
-	ang:RotateAroundAxis(ang:Forward(), self.CrouchAng.r * alpha)
-	ang:RotateAroundAxis(ang:Up(), self.CrouchAng.y * alpha)
-	return pos, ang
+	local alpha
+	if self:IsDucked() then
+		alpha = math.ease.OutQuad(self.VMCrouch)
+	else
+		alpha = math.ease.InQuad(self.VMCrouch)
+	end
+	
+	--pos = pos + ang:Right() * self.CrouchPos.x * alpha
+	--pos = pos + ang:Forward() * self.CrouchPos.y * alpha
+	--pos = pos + ang:Up() * self.CrouchPos.z * alpha
+	--ang:RotateAroundAxis(ang:Right(), self.CrouchAng.p * alpha)
+	--ang:RotateAroundAxis(ang:Forward(), self.CrouchAng.r * alpha)
+	--ang:RotateAroundAxis(ang:Up(), self.CrouchAng.y * alpha)
+	return Plutonic.Framework.RotateAroundPoint(
+		pos,
+		ang,
+		Vector(self.BarrelLength, 0, 0),
+		self.CrouchPos * -alpha,
+		self.CrouchAng * -alpha
+	)
 end
 
 function SWEP:DoBlocked(pos, ang)
@@ -237,24 +254,12 @@ function SWEP:DoIdle(pos, ang)
 		return pos, ang
 	end
 	local rt = Realtime()
-	local alpha = math.ease.InBack(abs(sin(rt * .4)))
-	ang:RotateAroundAxis(ang:Right(), alpha * .5)
-	ang:RotateAroundAxis(ang:Up(), sin(alpha * math.pi * 2) * -.2)
-	pos = pos + ang:Up() * alpha * -.175
-	pos = pos + ang:Right() * alpha * .07
-	pos = pos + ang:Forward() * sin(rt*.3) * -.4
-	pos = pos + ang:Right() * sin(rt * -.9) * -.3
-	pos = pos + ang:Up() * cos(rt * 1.17) * .2^2
-	ang:RotateAroundAxis(ang:Right(), sin(rt * 2.67) * .23)
-	ang:RotateAroundAxis(ang:Up(), cos(rt * .87) * .23)
-	ang:RotateAroundAxis(ang:Forward(), cos(rt * .97) * 3.23)
-	self.VMVel = self.VMVel or 0
-	ang:RotateAroundAxis(ang:Forward(), self.VMVel * 1.5)
-	pos = pos + ang:Right() * self.VMVel * .125
-	local uvel = min(self.VMVel / pi, 12)
-	ang:RotateAroundAxis(ang:Right(), uvel * 2.5)
-	pos = pos + ang:Up() * uvel * -1.25
-	return pos, ang
+	local idle = sin(rt * 1.03) * 0.1
+	local idle2 = cos(rt * .84) * 0.1
+	local fidget = sin(rt * 1.03) * cos(rt * .84) * 2
+
+
+	return Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(self.BarrelLength, 0, 0), Vector(idle * -1, idle2 * -1, idle * -1), Angle(idle * 1, idle2 * 1, fidget * 1))
 end
 
 SWEP.LoweredMidPos = Vector(4,-3,-3)
@@ -282,13 +287,13 @@ function SWEP:DoSprint(pos, ang)
 	local sn1 = sin(rt * 8.4)  * t
 	local cs1 = cos(rt * 8.4)  * t
 
-	return Plutonic.Framework.RotateAroundPoint(
+	return pos, ang --[[ Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
 		Vector(self.BarrelLength, -4, 16),
 		Vector(cs0, sn1, 0),
 		Angle(cs0 * 1.1, sn1 * 5, 0)
-	)
+	) ]]
 end
 lerpSpeed = 0
 function SWEP:DoWalkBob(pos, ang)
@@ -470,7 +475,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos, ang = self:DoCrouch(pos, ang)
 	pos, ang = self:DoBlocked(pos, ang)
 	pos, ang = self:DoSprint(pos, ang)
-	--pos, ang = Plutonic.Framework.ViewModelIdle(self, pos, ang)
+	pos, ang = self:DoIdle(pos, ang)
 	if self.ViewModelOffsetAng then
 		local offsetang = self.ViewModelOffsetAng
 		ang:RotateAroundAxis(ang:Right(), offsetang.p)
