@@ -543,3 +543,32 @@ function SWEP:ProceduralRecoil(force)
 	self.VMRecoil = (self.VMRecoil or Vector()) + (rPos)
 	self.VMRecoilAng = (self.VMRecoilAng or Angle()) + (rAng)
 end
+
+SWEP.CAM_ReloadAlp = 0
+SWEP.CAM_ReloadAct = 0
+
+function SWEP:CalcView(ply, pos, ang, fov)
+	if self:GetReloading() then
+		local vm = self.Owner:GetViewModel()
+		local n_ang = nil
+
+		PrintTable(vm:GetAttachments())
+		-- aim
+		local aim = vm:GetAttachment(self.ReloadAttach or 2)
+		if aim then
+			n_ang = (aim.Pos - pos):Angle()
+		end
+
+		self.CAM_ReloadAlp = Lerp(Frametime(), self.CAM_ReloadAlp, .1)
+
+		return pos, lerpAngle(self.CAM_ReloadAlp * ((vm:SequenceDuration() - (Curtime() - self.CAM_ReloadAct))/vm:SequenceDuration()), ang, n_ang), fov
+
+		
+	else
+		
+		self.CAM_ReloadAlp =0
+		self.CAM_ReloadAct = Curtime()
+
+		return pos, ang, fov
+	end
+end
