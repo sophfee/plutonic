@@ -5,9 +5,11 @@ Plutonic.Hooks.Add = function(hookName, callback)
 
 	if Plutonic.Hooks.Data[hookName] then
 		Plutonic.Framework.Print("Hook: " .. hookName .. " already exists. Overwriting...")
+		Plutonic.Hooks.Remove(hookName)
 	end
 
 	Plutonic.Framework.Print("Hook: " .. hookName .. " added.")
+	Plutonic.Hooks.Data[hookName] = callback
 	hook.Add(hookName, "Plutonic.Hooks." .. hookName, callback)
 end
 
