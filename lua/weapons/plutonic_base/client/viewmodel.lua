@@ -328,6 +328,9 @@ function SWEP:DoWalkBob(pos, ang)
 	local offsetOscilX = 2.6
 	local oscilX = -(self.VMRDBEF*2) * cos(rt * 12.6) * (self.Ironsights and .125 or .675)
 	local oscilY = -(self.VMRDBEF*2) * sin(rt * 6.3) * (self.Ironsights and .125 or .675)
+	--local oscilZ = (self.VMRDBEF*2) * sin((rt + 0.4) * 16.8) * (self.Ironsights and .012 or .112)
+
+	--pos = pos + ang:Up() * abs(oscilZ) * self.VMBobCycle
 
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
@@ -378,7 +381,8 @@ function SWEP:ViewmodelThink()
 	if not IsFirstTimePredicted() then return end
 	self:DoWallLeanThink()
 	self.Ironsights = self:GetIronsights()
-	self.VMSprint = approach(self.VMSprint or 0, self:IsSprinting() and 1 or 0, FrameTime() * 1.6)
+	
+	self.VMSprint = lerp(FrameTime() * 4, self.VMSprint or 0, self:IsSprinting() and 1 or 0)
 	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 2.4 )
 	self.VMIronsights = self.VMIronsights or 0
 	self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or 0
