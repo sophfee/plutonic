@@ -226,7 +226,7 @@ function SWEP:DoBlocked(pos, ang)
 	return Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(self.BarrelLength, 0, 0), Vector(bl * -11, bl * -1, -bl *7), Angle(bl * 23, bl * -12,bl * 12))
 end
 
-SWEP.IronsightsMiddlePos = Vector(-3,-2,-9)
+SWEP.IronsightsMiddlePos = Vector(-6,-2,-11.6)
 SWEP.IronsightsMiddleAng = Angle(12, -9, -24)
 
 function SWEP:DoIronsights(pos, ang)
@@ -421,6 +421,30 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (start_ang:Up() * ironsightPos.z)
 	pos = pos + (start_ang:Up() * -1.5)
 	pos = pos + (start_ang:Forward() * self.BarrelLength)
+	self.centeredMode = self.centeredMode or GetConVar("plutonic_centered")
+
+	if self.centeredMode and self.centeredMode:GetBool() then
+
+		self.CenteredPos = self.CenteredPos or Vector()
+		self.CenteredAng = self.CenteredAng or Angle()
+
+		self.VMCenter = self.VMCenter or 0
+
+		if !self:GetIronsights() then
+			self.VMCenter = Lerp(FrameTime() * 4, self.VMCenter, 1)
+		else
+			self.VMCenter = Lerp(FrameTime() * 4, self.VMCenter, 0)
+		end
+
+		pos = pos + (start_ang:Forward() * self.CenteredPos.y * self.VMCenter)
+		pos = pos + (start_ang:Right() * (self.CenteredPos.x * self.VMCenter))
+		pos = pos + (start_ang:Up() * self.CenteredPos.z * self.VMCenter)
+
+		ang:RotateAroundAxis(ang:Right(), self.CenteredAng.p * self.VMCenter)
+		ang:RotateAroundAxis(ang:Up(), -self.CenteredAng.y * self.VMCenter)
+		ang:RotateAroundAxis(ang:Forward(), self.CenteredAng.r * self.VMCenter)
+	end
+
 	self.VMDeltaX = self.VMDeltaX or 0
 	self.VMDeltaY = self.VMDeltaY or 0
 	self.VMRoll = self.VMRoll or 0
@@ -552,18 +576,28 @@ SWEP.CAM_ReloadAlp = 0
 SWEP.CAM_ReloadAct = 0
 
 function SWEP:CalcView(ply, pos, ang, fov)
+
+	if ( !Plutonic.Framework.GetControl_Bool("use_anim_cam", true) ) then
+		return
+	end
+
 	if self:GetReloading() then
 		local vm = self.Owner:GetViewModel()
 		local n_ang = nil
 
-		PrintTable(vm:GetAttachments())
+		
 		-- aim
-		local aim = vm:GetAttachment(self.ReloadAttach or 2)
-		if aim then
-			n_ang = (aim.Pos - pos):Angle()
+		if not self.GetReloadAnimation then
+
+			local aim = vm:GetAttachment(self.ReloadAttach or 2)
+			if aim then
+				n_ang = (aim.Pos - pos):Angle()
+			end
+		else
+			n_ang = self:GetReloadAnimation(pos, ang)
 		end
 
-		self.CAM_ReloadAlp = Lerp(Frametime(), self.CAM_ReloadAlp, .1)
+		self.CAM_ReloadAlp = Lerp(Frametime(), self.CAM_ReloadAlp, self.ReloadProceduralCameraFrac or .1)
 
 		return pos, lerpAngle(self.CAM_ReloadAlp * ((vm:SequenceDuration() - (Curtime() - self.CAM_ReloadAct))/vm:SequenceDuration()), ang, n_ang), fov
 

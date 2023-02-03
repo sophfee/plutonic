@@ -93,6 +93,12 @@ sound.Add({
 	pitch = {95,105}
 })
 
+local IronsightsIO = {
+	["ar2"] = "rpg",
+	["smg"] = "rpg",
+	["shotgun"] = "ar2"
+}
+
 function SWEP:IronsightsThink()
 	if (self.CanDecreaseBlowback or 0) < CurTime() then
 		self:SetIronsightsRecoil( math.Clamp( self:GetIronsightsRecoil() - (FrameTime() * 600), 0, 1) )
@@ -106,12 +112,14 @@ function SWEP:IronsightsThink()
 	if self.Owner:KeyDown( IN_ATTACK2 ) and not self:GetIronsights() then
 		self:SetIronsights( true )
 		self:EmitSound("Plutonic.ADS.In")
+		self:SetHoldType( IronsightsIO[self.HoldType] or "ar2" )
 		if (CLIENT) then
 			self.VMIronsights = math.ease.InSine( self.VMIronsights or 0 )
 		end
 	elseif not self.Owner:KeyDown( IN_ATTACK2 ) and self:GetIronsights() then
 		self:SetIronsights( false )
 		self:EmitSound("Plutonic.ADS.Out")
+		self:SetHoldType( self.HoldType )
 		if (CLIENT) then
 			self.VMIronsights = math.ease.OutExpo( self.VMIronsights or 0 )
 		end

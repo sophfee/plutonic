@@ -179,3 +179,10 @@ hook.Add("ShouldDrawHUDBox", "PlutonicimpulseHUDStopDrawing", function()
 
 	return tobool(v)
 end)
+
+concommand.Add("plutonic_debug_vm_bones", function(ply, cmd, args)
+	for boneId = 1, ply:GetViewModel():GetBoneCount() do
+		local bone = ply:GetViewModel():GetBoneName(boneId)
+		print(boneId, bone)
+	end
+end)
