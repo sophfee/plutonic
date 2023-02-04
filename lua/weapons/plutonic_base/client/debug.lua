@@ -186,3 +186,7 @@ concommand.Add("plutonic_debug_vm_bones", function(ply, cmd, args)
 		print(boneId, bone)
 	end
 end)
+
+concommand.Add("plutonic_debug_vm_attachments", function(ply, cmd, args)
+	PrintTable(ply:GetViewModel():GetAttachments())
+end)

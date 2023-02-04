@@ -316,13 +316,16 @@ function SWEP:ShootEffects()
 		end
 	end
 
+	local att = self.MuzzleFlashAttachment or self.IronsightsMuzzleFlashAttachment or "muzzle"
+
+	att = self.Owner:GetViewModel():LookupAttachment(att)
 
 	local ed = EffectData()
     ed:SetStart(self:GetShootSrc())
     ed:SetOrigin(self:GetShootSrc())
     ed:SetScale(1)
     ed:SetEntity(self.OverrideWMEntity or self)
-	ed:SetAttachment(self.MuzzleFlashAttachment or 1)
+	ed:SetAttachment(att)
 	util.Effect("plutonic_muzzleflash", ed)
 
 	self:PlayAnimWorld(ACT_VM_PRIMARYATTACK)
@@ -360,7 +363,7 @@ function SWEP:PrimaryAttack()
 		self:AddRecoil()
 		self:ViewPunch()
 
-		self:EmitSound(self.Primary.Sound)
+		self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_WEAPON, nil, 31)
 
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetReloadTime(CurTime() + self.Primary.Delay)
