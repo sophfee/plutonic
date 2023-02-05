@@ -374,7 +374,7 @@ function SWEP:DoWallLeanThink()
 		-- add to right
 		right = right + 1
 	end
-	self.VMWallLean = Lerp(FrameTime() * 6.4, self.VMWallLean or 0, left - right)
+	--self.VMWallLean = Lerp(FrameTime() * 6.4, self.VMWallLean or 0, left - right)
 end
 
 function SWEP:ViewmodelThink()

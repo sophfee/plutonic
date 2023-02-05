@@ -11,7 +11,7 @@ net.Receive("Longsword.EmitSound", function()
 	local entity = net.ReadEntity()
 	local owner = net.ReadEntity()
 	local snd = net.ReadString()
-	local dsp = 38
+	local dsp = 1
 
 	if owner == LocalPlayer() then
 		local shouldPlay = impulse and impulse.GetSetting("view_thirdperson", false)
@@ -35,7 +35,7 @@ net.Receive("Longsword.EmitSound", function()
 
     	local inside = true
 		
-		if tr.HitSky or not passthroughMaterials[tr.MatType] then
+		if tr.HitSky and not passthroughMaterials[tr.MatType] then
         	inside = false
     	end
 
@@ -43,12 +43,49 @@ net.Receive("Longsword.EmitSound", function()
 		local tr = util.TraceLine({
 			start = LocalPlayer():EyePos(),
 			endpos = owner:EyePos(),
-			mask = MASK_SHOT_HULL
+			mask = MASK_BLOCKLOS
 		})
 
-		if tr.Hit then
-			dsp = 38
+		local rHit = tr.Hit
+
+		if tr.HitEntity == owner then
+			rHit = false
 		end
+
+		if tr.Hit == LocalPlayer() then
+			rHit = false
+		end
+
+		
+
+		local sourceInSameRoom = false 
+
+		local rtr=  util.TraceLine({
+			start = owner:EyePos(),
+			endpos = owner:EyePos() + Vector(0, 0, 10000),
+			mask = MASK_BLOCKLOS
+		})
+
+		if rtr.HitSky and (not inside) then
+			sourceInSameRoom = true
+		end
+
+		if rHit and not sourceInSameRoom then
+			if owner:GetPos():DistToSqr(LocalPlayer():GetPos()) < 900^2  then
+				rHit = false
+			end
+		end
+
+		if rHit and inside then
+			dsp = 31
+		elseif inside then
+			dsp = 1
+		elseif rHit then
+			dsp = 124
+		else
+			dsp = 21
+		end
+
 
 		entity:EmitSound(snd, nil, nil, nil, nil, nil, dsp)
 	end

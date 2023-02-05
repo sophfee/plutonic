@@ -364,7 +364,16 @@ function SWEP:PrimaryAttack()
 		self:ViewPunch()
 
 		if self.Primary.Sound_World then
-			if CLIENT then self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_WEAPON, nil, 1) end
+			if CLIENT then 
+				local owner = self:GetOwner()
+				if owner == LocalPlayer() then
+					local shouldPlay = impulse and impulse.GetSetting("view_thirdperson", false)
+
+					if shouldPlay == false then
+						self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_WEAPON, nil, 1)
+					end
+				end 
+			end
 			if SERVER then self:EmitWorldSound(self.Primary.Sound_World) end
 		else
 			self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_WEAPON, nil, 1)
