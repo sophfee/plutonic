@@ -363,8 +363,12 @@ function SWEP:PrimaryAttack()
 		self:AddRecoil()
 		self:ViewPunch()
 
-		self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_WEAPON, nil, 31)
-
+		if self.Primary.Sound_World then
+			if CLIENT then self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_WEAPON, nil, 1) end
+			if SERVER then self:EmitWorldSound(self.Primary.Sound_World) end
+		else
+			self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_WEAPON, nil, 1)
+		end
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		self:SetReloadTime(CurTime() + self.Primary.Delay)
 	else

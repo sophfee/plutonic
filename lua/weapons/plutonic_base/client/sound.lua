@@ -1,19 +1,56 @@
 --      Copyright (c) 2022-2023, Nick S. All rights reserved      --
 -- Plutonic is a project built for Landis Games. --
 
+local passthroughMaterials = {
+	[MAT_GRATE] = true,
+	[MAT_GLASS] = true,
+	[MAT_FLESH] = true
+}
+
 net.Receive("Longsword.EmitSound", function()
 	local entity = net.ReadEntity()
 	local owner = net.ReadEntity()
 	local snd = net.ReadString()
+	local dsp = 38
 
 	if owner == LocalPlayer() then
-		local shouldPlay = impulse and impulse.GetSetting("view_thirdperson") or true
+		local shouldPlay = impulse and impulse.GetSetting("view_thirdperson", false)
 
 		if shouldPlay then
-			entity:EmitSound(snd)
+			entity:EmitSound(snd, nil, nil, nil, nil, nil, dsp)
 		end
 	else
-		entity:EmitSound(snd)
+
+		local tr = util.TraceLine({
+        	start = LocalPlayer():EyePos(),
+        	endpos = LocalPlayer():EyePos() + Vector(0, 0, 10000),
+        	filter = function(ent)
+            	if ent:IsPlayer() then 
+                	return false 
+            	end
+
+           		return true
+        	end
+   		})
+
+    	local inside = true
+		
+		if tr.HitSky or not passthroughMaterials[tr.MatType] then
+        	inside = false
+    	end
+
+		-- trace to the owner
+		local tr = util.TraceLine({
+			start = LocalPlayer():EyePos(),
+			endpos = owner:EyePos(),
+			mask = MASK_SHOT_HULL
+		})
+
+		if tr.Hit then
+			dsp = 38
+		end
+
+		entity:EmitSound(snd, nil, nil, nil, nil, nil, dsp)
 	end
 end)
 net.Receive("Longsword.Echo", function()
