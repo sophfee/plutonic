@@ -125,14 +125,14 @@ SWEP.BarrelLength = 6
 local function LerpC(t, a, b, powa)
 	return a + (b - a) * math.pow(t, powa)
 end
-local abs,min,max,clamp,sin,cos,rad,deg,pi,pi2,round,Curtime,Frametime,Realtime,vec,ang,lerp,lerpAngle,lerpVector,approach=math.abs,math.min,math.max,math.Clamp,math.sin,math.cos,math.rad,math.deg,math.pi,math.pi * 2,math.Round,CurTime,FrameTime,RealTime,Vector,Angle,Lerp,LerpAngle,LerpVector,math.Approach
+local abs,min,max,clamp,sin,cos,rad,deg,pi,pi2,round,Curtime,Frametime,Realtime,vec,ang,lerp,lerpAngle,lerpVector,approach=math.abs,math.min,math.max,math.Clamp,math.sin,math.cos,math.rad,math.deg,math.pi,math.pi * 2,math.Round,UnPredictedCurTime,RealFrameTime,RealTime,Vector,Angle,Lerp,LerpAngle,LerpVector,math.Approach
 local easeInOutQuad, easeOutElastic, easeInOutQuint = math.ease.InOutQuad, math.ease.OutElastic, math.ease.InOutQuint
 
 function SWEP:PostRender()
 	self:DoWallLeanThink()
 	self.Ironsights = self:GetIronsights()
 	
-	self.VMSprint = lerp(FrameTime() * 4, self.VMSprint or 0, self:IsSprinting() and 1 or 0)
+	self.VMSprint = lerp(Frametime() * 4, self.VMSprint or 0, self:IsSprinting() and 1 or 0)
 	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 2.4 )
 	self.VMIronsights = self.VMIronsights or 0
 	self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or 0
@@ -163,8 +163,6 @@ function SWEP:PostRender()
 	self.VMDeltaX = lerp(ft * 8, self.VMDeltaX or 0, 0)
 	self.VMWiggly = lerp(ft * 1.9, self.VMWiggly or 0, 0)
 	self.VMDeltaY = lerp(ft * 8, self.VMDeltaY or 0, 0)
-	self.VMDeltaX = clamp(self.VMDeltaX or 0, -16,16)
-	self.VMDeltaY = clamp(self.VMDeltaY or 0, -16, 16)
 	self.VMCounterDeltaX = lerp(ft * 12, self.VMCounterDeltaX or 0, -self.VMDeltaX)
 end
 
