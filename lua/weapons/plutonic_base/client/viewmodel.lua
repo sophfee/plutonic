@@ -34,6 +34,8 @@ SWEP.VMRenderTarget =
 	}
 )
 
+
+
 function SWEP:PlayAnim(act)
 	if self.CustomEvents[act] then
 		act = self.CustomEvents[act]
@@ -125,6 +127,61 @@ local function LerpC(t, a, b, powa)
 end
 local abs,min,max,clamp,sin,cos,rad,deg,pi,pi2,round,Curtime,Frametime,Realtime,vec,ang,lerp,lerpAngle,lerpVector,approach=math.abs,math.min,math.max,math.Clamp,math.sin,math.cos,math.rad,math.deg,math.pi,math.pi * 2,math.Round,CurTime,FrameTime,RealTime,Vector,Angle,Lerp,LerpAngle,LerpVector,math.Approach
 local easeInOutQuad, easeOutElastic, easeInOutQuint = math.ease.InOutQuad, math.ease.OutElastic, math.ease.InOutQuint
+
+function SWEP:PostRender()
+	self:DoWallLeanThink()
+	self.Ironsights = self:GetIronsights()
+	
+	self.VMSprint = lerp(FrameTime() * 4, self.VMSprint or 0, self:IsSprinting() and 1 or 0)
+	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 2.4 )
+	self.VMIronsights = self.VMIronsights or 0
+	self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or 0
+	local tr = util.TraceLine({
+		start = self.Owner:GetShootPos(),
+		endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * 32,
+		filter = self.Owner
+	})
+	self.VMBlocked = self.VMBlocked or 0
+	self.VMBlocked = lerp(Frametime() * 13, self.VMBlocked, tr.Hit and tr.Fraction or 1) 
+	local isIronsights = self:GetIronsights()
+	local isDuck = (self.Owner:KeyDown(IN_DUCK) or self.Owner:Crouching()) and not isIronsights
+	self.VMCrouch = approach( self.VMCrouch, isDuck and 1 or 0, Frametime() * 2.5 )
+	local ovel = self.Owner:GetVelocity()
+	local move = vec(ovel.x, ovel.y, 0)
+	self.VMBobCycle = approach(self.VMBobCycle, Plutonic.Framework.IsMoving() and 1 or 0, Frametime() * 4)
+	local mul = self:IsSprinting() and 1 or 1
+	local l = self:IsSprinting() and 1 or 0
+	lerpSpeed = lerp(Frametime() * 5, lerpSpeed, l)
+	local onvel = self.Owner:GetVelocity()
+	local uvel = onvel.z
+	local vel = clamp((uvel) / 80, -34, 34)
+	self.VMVel = self.VMVel or 0
+	self.VMVel = Lerp(Frametime() * 5, self.VMVel, vel)
+
+	local ft = Frametime()
+	
+	self.VMDeltaX = lerp(ft * 8, self.VMDeltaX or 0, 0)
+	self.VMWiggly = lerp(ft * 1.9, self.VMWiggly or 0, 0)
+	self.VMDeltaY = lerp(ft * 8, self.VMDeltaY or 0, 0)
+	self.VMDeltaX = clamp(self.VMDeltaX or 0, -16,16)
+	self.VMDeltaY = clamp(self.VMDeltaY or 0, -16, 16)
+	self.VMCounterDeltaX = lerp(ft * 12, self.VMCounterDeltaX or 0, -self.VMDeltaX)
+end
+
+Plutonic.Hooks.Add("PostRender", function()
+
+	local me = LocalPlayer()
+
+	if not IsValid(me) then return end
+
+	local wep = me:GetActiveWeapon()
+
+	if not IsValid(wep) then return end
+	if not wep.IsPlutonic then return end
+
+	wep:PostRender()
+end)
+
 SWEP.VMDeltaX = 0
 SWEP.VMDeltaY = 0
 SWEP.VMRoll = 0
@@ -331,6 +388,8 @@ function SWEP:DoWalkBob(pos, ang)
 	--local oscilZ = (self.VMRDBEF*2) * sin((rt + 0.4) * 16.8) * (self.Ironsights and .012 or .112)
 
 	--pos = pos + ang:Up() * abs(oscilZ) * self.VMBobCycle
+	pos = pos + (ang:Forward() * (-.66 * self.VMBobCycle))
+	pos = pos + (ang:Up() * (-.16 * self.VMBobCycle))
 
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
@@ -378,36 +437,10 @@ function SWEP:DoWallLeanThink()
 end
 
 function SWEP:ViewmodelThink()
-	if not IsFirstTimePredicted() then return end
-	self:DoWallLeanThink()
-	self.Ironsights = self:GetIronsights()
-	
-	self.VMSprint = lerp(FrameTime() * 4, self.VMSprint or 0, self:IsSprinting() and 1 or 0)
-	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 2.4 )
-	self.VMIronsights = self.VMIronsights or 0
-	self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or 0
-	local tr = util.TraceLine({
-		start = self.Owner:GetShootPos(),
-		endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * 32,
-		filter = self.Owner
-	})
-	self.VMBlocked = self.VMBlocked or 0
-	self.VMBlocked = lerp(Frametime() * 13, self.VMBlocked, tr.Hit and tr.Fraction or 1) 
-	local isIronsights = self:GetIronsights()
-	local isDuck = (self.Owner:KeyDown(IN_DUCK) or self.Owner:Crouching()) and not isIronsights
-	self.VMCrouch = approach( self.VMCrouch, isDuck and 1 or 0, Frametime() * 2.5 )
-	local ovel = self.Owner:GetVelocity()
-	local move = vec(ovel.x, ovel.y, 0)
-	self.VMBobCycle = approach(self.VMBobCycle, Plutonic.Framework.IsMoving() and 1 or 0, Frametime() * 4)
-	local mul = self:IsSprinting() and 1 or 1
-	local l = self:IsSprinting() and 1 or 0
-	lerpSpeed = lerp(Frametime() * 5, lerpSpeed, l)
-	local onvel = self.Owner:GetVelocity()
-	local uvel = onvel.z
-	local vel = clamp((uvel) / 80, -34, 34)
-	self.VMVel = self.VMVel or 0
-	self.VMVel = Lerp(Frametime() * 5, self.VMVel, vel)
+	local flip = Plutonic.Framework.GetControl_Bool( "vm_flip_lefty", true )
+	self.ViewModelFlip = flip
 end
+
 function SWEP:GetViewModelPosition(pos, ang)
 	local start_pos = pos + Vector()
 	local start_ang = ang + Angle(0,0,0)
@@ -465,21 +498,19 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local vel = move:GetNormalized()
 	local rd = self.Owner:GetRight():Dot(vel)
 	local changeX = self.VMDeltaX + 0
-	self.VMDeltaX = lerp(ft * 4, self.VMDeltaX, 0)
-	self.VMWiggly = lerp(ft * 1.9, self.VMWiggly, 0)
-	self.VMDeltaY = lerp(ft * 4, self.VMDeltaY, 0)
-	self.VMDeltaX = clamp(self.VMDeltaX, -16,16)
-	self.VMDeltaY = clamp(self.VMDeltaY, -16, 16)
+	
 	local isIronsights = self:GetIronsights()
 	self.VMSwayIronTransform = self.VMSwayIronTransform or 0
 	self.VMSwayIronTransform = approach(self.VMSwayIronTransform, isIronsights and 1 or 0.1, ft * 2)
 	local brl = self.VMSwayIronTransform * self.BarrelLength
 
 	
-	local swayXv = -(self.VMDeltaX * .25) 
+	local swayXv = -((self.VMDeltaX ) * .25) 
 	local l_wiggle = 0 -- math.AngleDifference(self.VMWiggly,self.VMDeltaX  ) * .125
 	
 	local swayXa = -self.VMDeltaX * 1
+
+	
 
 	local swayY = self.VMDeltaY * .25
 	if isIronsights then
@@ -488,6 +519,13 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent)
 	local degRoll = deg(self.VMRoll) / 3
 	degRoll = degRoll + ((self.VMWallLean or 0) * 11.4)
+
+	local flip = Plutonic.Framework.GetControl_Bool( "vm_flip_lefty", false ) 
+	if flip then
+		swayXv = swayXv * -1
+		swayXa = swayXa * -1
+		degRoll = degRoll * -1
+	end
 
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
