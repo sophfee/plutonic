@@ -591,7 +591,7 @@ Plutonic.Hooks.Add("PostDrawPlayerHands", function()
 end)
 function SWEP:ProceduralRecoil(force)
 	if self:GetIronsights() then force = force * 0.08 end
-	force = force
+	force = force * 3
 	local rPos = self.BlowbackPos + Vector()
 	local rAng = self.BlowbackAngle + Angle()
 	local pitchKnock = math.Rand(1.1, 3.2) * force

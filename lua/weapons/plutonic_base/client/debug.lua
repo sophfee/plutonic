@@ -5,14 +5,24 @@ CreateClientConVar("plutonic_debug", "0", false, false)
 CreateClientConVar("plutonic_centered", "0", true, false, "Centers the viewmodel, DOOM style.",0,1)
 
 surface.CreateFont("PlutonicDebugSimple", {
-	font = "Consolas",
-	size = 18,
+	font = "Segoe UI Black",
+	size = 14,
 	weight = 1000,
 	antialias = true,
 	shadow = true
 })
 
-local debugCol = Color(0, 255, 0, 200)
+surface.CreateFont("PlutonicDebugUnSimple", {
+	font = "Segoe UI Black",
+	size = 32,
+	weight = 1000,
+	antialias = true,
+	shadow = true
+})
+
+
+local debugCol = Color(12, 120, 255, 255)
+local debugValue = Color(200, 200, 200, 255)
 local ironFade = ironFade or 0
 local GetConVar = GetConVar
 local LocalPlayer = LocalPlayer
@@ -20,64 +30,81 @@ function SWEP:DrawHUD()
 	local debugMode = GetConVar("plutonic_debug")
 
 	if (impulse_DevHud or debugMode:GetBool()) then
-		local scrW = ScrW()
-		local scrH = ScrH()
+		local scrW = 68
+		local scrH = 292
 		local dev = GetConVar("developer"):GetInt()
 
 		if dev == 0 then
 			LocalPlayer():ConCommand("developer 1")
 		end
 
-		surface.SetFont("PlutonicDebugSimple")
+		surface.SetFont("PlutonicDebugUnSimple")
 		surface.SetTextColor(debugCol)
 
-		surface.SetTextPos(0, 0)
-		surface.DrawText("[LONGSWORD DEBUG MODE ENABLED]")
+		surface.SetTextPos(64, 96)
+		surface.DrawText("[PLUTONIC v1.0.0]")
 
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) - 20)
+		surface.SetFont("PlutonicDebugSimple")
+
+		surface.SetTextPos(64, 128)
+		surface.DrawText("Debug Mode Enabled!")
+
+		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) - 0)
 		surface.DrawText((self.PrintName or "PrintName ERROR").." [BDMG: "..(self.Primary.Damage or "?")..", RPM: "..(60 / (self.Primary.Delay or 0))..", SHOTS: "..(self.Primary.NumShots or "?").."]")
 
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2))
-		surface.DrawText("Recoil: "..self:GetRecoil())
+		surface.SetTextColor(debugCol)
+		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 15)
+		surface.DrawText("Recoil: ")
+		surface.SetTextColor(debugValue)
+		surface.DrawText(tostring(math.Round(self.Recoil or 0, 4)))
 
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 20)
-		surface.DrawText("Ironsights Recoil: "..self:GetIronsightsRecoil())
-
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 40)
-		surface.DrawText("Last Spread: "..(self.LastSpread or "[SHOOT WEAPON]"))
+		surface.SetTextColor(debugCol)
+		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 30)
+		surface.DrawText("Spread: ")
+		surface.SetTextColor(debugValue)
+		surface.DrawText(tostring(math.Round(self.LastSpread  or 0, 4)))
+		--surface.DrawText("Last Spread: "..math.Round(self.LastSpread or "[SHOOT WEAPON]", 4))
 
 
 		if self.LastSpread then
-			local perc = (self.LastSpread / self.Primary.Cone)
-			surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 60)
-			surface.SetTextColor(Color(255 * perc, 255 * (1 - perc), 0, 200))
-			surface.DrawText((perc * 100).."% of Base Cone")
+			surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 45)
 			surface.SetTextColor(debugCol)
+			surface.DrawText("Cone: ")
+			surface.SetTextColor(debugValue)
+
+			local perc = self.LastSpread / self.Primary.Cone
+
+			surface.DrawText(math.floor(perc * 100).."% of Base Cone")
+			--
 		end
 
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 90)
-		surface.DrawText("Is Ironsights: "..tostring(self:GetIronsights()))
-
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 110)
-		surface.DrawText("Is Bursting: "..tostring(self:GetBursting()))
-
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 130)
-		surface.DrawText("Is Reloading: "..tostring(self:GetReloading()))
-
 		local ns = (self:GetNextPrimaryFire() or 0) - CurTime()
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 150)
+		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 105)
 		surface.DrawText("Next Shot: "..(ns > 0 and ns or "CLEAR"))
 
+		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 120)
+		surface.DrawText("VMBobCycle Oscillation: " .. tostring(self.VMBobCycle))
+
+		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 135)
+		surface.DrawText("VMBetterVis Oscillation: " .. math.Round(tostring(self.VMRDBEF), 8))
+
+		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 150)
+		surface.DrawText("VMBlocked: " .. tostring(self.VMBlocked))
+
+		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 165)
+		surface.DrawText("VMVel: " .. tostring(math.Round(self.VMVel,4)))
+
+		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 180)
+		surface.DrawText("VMIronsightsFraction: " .. tostring(self.VMIronsights))
+
+		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 195)
+		surface.DrawText("VMSprint: " .. tostring(self.VMSprint))
+
 		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 210)
-		
-		surface.DrawText("Sway X: " .. tostring(math.Round(self.VMSwayX, 8)))
+		surface.DrawText("VMRecoilPos: " .. tostring(self.VMRecoilPos))
 
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 230)
-		surface.DrawText("Delta X: " .. tostring(math.Round(self.VMDeltaX, 8)))
-
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 250)
-		surface.DrawText("Sway Y: " .. tostring(self.VMDeltaY))
-
+		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 225)
+		surface.DrawText("VMRecoilAng: " .. tostring(self.VMRecoilAng))
 
 		local attach = self:GetCurAttachment()
 
