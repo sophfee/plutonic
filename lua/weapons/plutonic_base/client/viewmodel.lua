@@ -159,12 +159,26 @@ function SWEP:PostRender()
 	self.VMVel = Lerp(Frametime() * 5, self.VMVel, vel)
 
 	local ft = Frametime()
-	
+
 	self.VMDeltaX = lerp(ft * 8, self.VMDeltaX or 0, 0)
-	self.VMWiggly = lerp(ft * 1.9, self.VMWiggly or 0, 0)
 	self.VMDeltaY = lerp(ft * 8, self.VMDeltaY or 0, 0)
-	self.VMCounterDeltaX = lerp(ft * 12, self.VMCounterDeltaX or 0, -self.VMDeltaX)
+
+	--[[if (abs(self.VMLastDeltaXInFrame or 0) < abs(self.VMDeltaX or 0)) then
+		self.VMDeltaXT = Curtime()
+	end
 	
+	self.VMDeltaX = approach(self.VMDeltaX or 0, 0, ft * (isIronsights and 8 or 48))
+	self.VMDeltaY = approach(self.VMDeltaY or 0, 0, ft * (isIronsights and 8 or 48))
+
+	self.VMHighestDeltaXUntilRest = max(self.VMHighestDeltaXUntilRest or 0, self.VMDeltaX)
+	if round(self.VMDeltaX, 4) == 0 then
+		self.VMDeltaXM = self.VMHighestDeltaXUntilRest + 0
+		self.VMHighestDeltaXUntilRest = 0
+	end
+
+	self.VMLastDeltaXInFrame = self.VMDeltaX + 0
+	self.VMLastDeltaYInFrame = self.VMDeltaY + 0]]
+
 end
 
 Plutonic.Hooks.Add("PostRender", function()
@@ -510,13 +524,19 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local isIronsights = self:GetIronsights()
 	self.VMSwayIronTransform = self.VMSwayIronTransform or 0
 	self.VMSwayIronTransform = approach(self.VMSwayIronTransform, isIronsights and 1 or 0.1, ft * 2)
-	local brl = self.VMSwayIronTransform * self.BarrelLength
+	local brl = self.BarrelLength * 2
+
+	--local xsa = 1 - clamp(abs(self.VMDeltaXT - Curtime()) * 1.4, 0, 1)
+	local xva = self.VMDeltaX 
+
+	self.xsa = xsa
+	self.xva = xva
 
 	
-	local swayXv = -((self.VMDeltaX ) * .25) 
+	local swayXv = -(xva * .25) 
 	local l_wiggle = 0 -- math.AngleDifference(self.VMWiggly,self.VMDeltaX  ) * .125
 	
-	local swayXa = -self.VMDeltaX * 1
+	local swayXa = -(xva)* 1
 
 	
 
@@ -535,13 +555,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		degRoll = degRoll * -1
 	end
 
-	pos, ang = Plutonic.Framework.RotateAroundPoint(
-		pos, 
-		ang, 
-		Vector(brl, 0, 0), 
-		Vector(0, swayXv, -swayY), 
-		Angle(self.VMDeltaY, swayXa, -degRoll)
-	)
+	
 	pos, ang = self:DoWalkBob(pos, ang)
 
 	pos, ang = self:DoIronsights(pos, ang)
@@ -562,6 +576,18 @@ function SWEP:GetViewModelPosition(pos, ang)
 		pos = pos + (ang:Forward() * offset.y)
 		pos = pos + (ang:Up() * offset.z)
 	end
+	local att = self:GetAttachment(self:LookupAttachment("muzzle"))
+
+	att.Pos = att.Pos - (att.Ang:Forward() * brl)
+	local xsn = self:WorldToLocal(att.Pos)
+
+	pos, ang = Plutonic.Framework.RotateAroundPoint(
+		pos, 
+		ang, 
+		xsn, 
+		Vector(0, 0, 0), 
+		Angle(self.VMDeltaY, swayXa, -degRoll)
+	)
 	ang:RotateAroundAxis(ang:Right(), -ironsightAng.p)
 	ang:RotateAroundAxis(ang:Up(), ironsightAng.y)
 	ang:RotateAroundAxis(ang:Forward(), -ironsightAng.r)
