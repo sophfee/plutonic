@@ -164,6 +164,7 @@ function SWEP:PostRender()
 	self.VMWiggly = lerp(ft * 1.9, self.VMWiggly or 0, 0)
 	self.VMDeltaY = lerp(ft * 8, self.VMDeltaY or 0, 0)
 	self.VMCounterDeltaX = lerp(ft * 12, self.VMCounterDeltaX or 0, -self.VMDeltaX)
+	
 end
 
 Plutonic.Hooks.Add("PostRender", function()
@@ -191,7 +192,7 @@ SWEP.Primary.FirePower = 1
 sound.Add(
 	{
 		name = "Plutonic.Sprint",
-		channel = CHAN_AUTO,
+		channel = CHAN_ITEM,
 		volume = 0.7,
 		level = 45,
 		pitch = {95, 110},
@@ -211,7 +212,7 @@ sound.Add(
 sound.Add(
 	{
 		name = "Plutonic.Walk",
-		channel = CHAN_AUTO,
+		channel = CHAN_ITEM,
 		volume = 0.2,
 		level = 45,
 		pitch = {95, 110},
@@ -437,6 +438,15 @@ end
 function SWEP:ViewmodelThink()
 	local flip = Plutonic.Framework.GetControl_Bool( "vm_flip_lefty", true )
 	self.ViewModelFlip = flip
+
+	self.VMNextNoise = self.VMNextNoise or 0
+
+	if self.VMNextNoise < Curtime() and self.VMBobCycle > 0 then
+
+		self.VMNextNoise = Curtime() + 0.5
+		self:EmitSound("Plutonic.Walk")
+		
+	end
 end
 
 function SWEP:GetViewModelPosition(pos, ang)
@@ -591,7 +601,7 @@ Plutonic.Hooks.Add("PostDrawPlayerHands", function()
 end)
 function SWEP:ProceduralRecoil(force)
 	if self:GetIronsights() then force = force * 0.08 end
-	force = force * 3
+	force = force 
 	local rPos = self.BlowbackPos + Vector()
 	local rAng = self.BlowbackAngle + Angle()
 	local pitchKnock = math.Rand(1.1, 3.2) * force
