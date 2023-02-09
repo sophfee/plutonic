@@ -2,6 +2,8 @@ AddCSLuaFile()
 
 SWEP.Base = "plutonic_base"
 
+SWEP.IsMelee = true
+
 SWEP.Primary.Ammo = "none"
 SWEP.Primary.Automatic = false
 SWEP.Primary.ClipSize = -1

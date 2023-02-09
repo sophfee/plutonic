@@ -160,15 +160,15 @@ function SWEP:PostRender()
 
 	local ft = Frametime()
 
-	self.VMDeltaX = lerp(ft * 8, self.VMDeltaX or 0, 0)
-	self.VMDeltaY = lerp(ft * 8, self.VMDeltaY or 0, 0)
+	self.VMDeltaX = lerp(ft * 11, self.VMDeltaX or 0, 0)
+	self.VMDeltaY = lerp(ft * 11, self.VMDeltaY or 0, 0)
 
 	--[[if (abs(self.VMLastDeltaXInFrame or 0) < abs(self.VMDeltaX or 0)) then
 		self.VMDeltaXT = Curtime()
 	end
 	
-	self.VMDeltaX = approach(self.VMDeltaX or 0, 0, ft * (isIronsights and 8 or 48))
-	self.VMDeltaY = approach(self.VMDeltaY or 0, 0, ft * (isIronsights and 8 or 48))
+	self.VMDeltaX = approach(self.VMDeltaX or 0, 0, ft * (isIronsights and 8 or 16))
+	self.VMDeltaY = approach(self.VMDeltaY or 0, 0, ft * (isIronsights and 8 or 16))
 
 	self.VMHighestDeltaXUntilRest = max(self.VMHighestDeltaXUntilRest or 0, self.VMDeltaX)
 	if round(self.VMDeltaX, 4) == 0 then
@@ -293,7 +293,7 @@ function SWEP:DoBlocked(pos, ang)
 	if self.Owner != LocalPlayer() then return pos, ang end
 	self.VMBlocked = self.VMBlocked or 1
 	local bl = -(self.VMBlocked - 1)
-	return Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(self.BarrelLength, 0, 0), Vector(bl * -11, bl * -1, -bl *7), Angle(bl * 23, bl * -12,bl * 12))
+	return Plutonic.Framework.RotateAroundPoint(pos, ang, self.PointOrigin or Vector(0, 0, 0), Vector(bl * -11, bl * -1, -bl *7), Angle(bl * 23, bl * -12,bl * 12))
 end
 
 SWEP.IronsightsMiddlePos = Vector(-6,-2,-11.6)
@@ -407,7 +407,7 @@ function SWEP:DoWalkBob(pos, ang)
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
-		Vector(self.BarrelLength * 1.3, 0, 0), 
+		self.PointOrigin or Vector(0, 0, 0),
 		Vector(0, oscilX * .125, oscilY * -.125), 
 		Angle( oscilY, oscilX, 0)
 	)
@@ -480,8 +480,26 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	if self.centeredMode and self.centeredMode:GetBool() then
 
-		self.CenteredPos = self.CenteredPos or Vector()
-		self.CenteredAng = self.CenteredAng or Angle()
+		if true then
+
+			local att = self:GetAttachment(self:LookupAttachment("muzzle"))
+			att.Pos = att.Pos - (att.Ang:Forward() * 32)
+			att.Pos = att.Pos + (att.Ang:Up() * 8)
+			att.Pos = att.Pos + (att.Ang:Right() * -12)
+			--att.Pos = att.Pos + (att.Ang:Right() * -159)
+
+			local mypos = self:WorldToLocal(att.Pos)
+			
+
+			self.CenteredPos = mypos
+			self.CenteredAng = Angle()
+		end
+
+
+		--self.CenteredPos = self.CenteredPos or Vector()
+		--elf.CenteredAng = self.CenteredAng or Angle()
+
+
 
 		self.VMCenter = self.VMCenter or 0
 
@@ -500,13 +518,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 		ang:RotateAroundAxis(ang:Forward(), self.CenteredAng.r * self.VMCenter)
 	end
 
-	self.VMDeltaX = self.VMDeltaX or 0
-	self.VMDeltaY = self.VMDeltaY or 0
-	self.VMRoll = self.VMRoll or 0
-	self.VMSwayX = self.VMSwayX or 0
-	self.VMSwayY = self.VMSwayY or 0
-	self.VMWiggly = self.VMWiggly or 0
-	self.LastInput = self.LastInput or Curtime()
 	local ft = Frametime()
 	local fet = Frametime() * .1
 	local ft3 = ft * 3
@@ -526,15 +537,14 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.VMSwayIronTransform = approach(self.VMSwayIronTransform, isIronsights and 1 or 0.1, ft * 2)
 	local brl = self.BarrelLength * 2
 
-	--local xsa = 1 - clamp(abs(self.VMDeltaXT - Curtime()) * 1.4, 0, 1)
-	local xva = self.VMDeltaX 
+	--local xsa = 1 - clamp(abs(Curtime()-self.VMDeltaXT) * .7, 0, 1)
+	local xva =self.VMDeltaX --(math.ease.InElastic(xsa)) * self.VMDeltaX
 
-	self.xsa = xsa
-	self.xva = xva
+	--self.xsa = xsa
+	--self.xva = xva
 
 	
-	local swayXv = -(xva * .25) 
-	local l_wiggle = 0 -- math.AngleDifference(self.VMWiggly,self.VMDeltaX  ) * .125
+	local swayXv = -(xva * .25)
 	
 	local swayXa = -(xva)* 1
 
@@ -546,7 +556,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	end
 	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent)
 	local degRoll = deg(self.VMRoll) / 3
-	degRoll = degRoll + ((self.VMWallLean or 0) * 11.4)
+	degRoll = degRoll + ((self.VMWallLean or 0) * 24.4)
 
 	local flip = Plutonic.Framework.GetControl_Bool( "vm_flip_lefty", false ) 
 	if flip then
@@ -555,14 +565,30 @@ function SWEP:GetViewModelPosition(pos, ang)
 		degRoll = degRoll * -1
 	end
 
+	pos, ang = self:DoIronsights(pos, ang)
+	pos, ang = self:DoSprint(pos, ang)
+
+	local att = self:GetAttachment(self:LookupAttachment(self.MuzzleFlashAttachment or "muzzle"))
+	att.Pos = att.Pos - (att.Ang:Forward() * brl)
+	local xsn = self:WorldToLocal(att.Pos)
+
+	pos, ang = Plutonic.Framework.RotateAroundPoint(
+		pos, 
+		ang, 
+		xsn, 
+		Vector(0, 0, 0), 
+		Angle(self.VMDeltaY, swayXa, -degRoll)
+	)
+
+	self.PointOrigin = xsn
 	
 	pos, ang = self:DoWalkBob(pos, ang)
 
-	pos, ang = self:DoIronsights(pos, ang)
+	
 	
 	pos, ang = self:DoCrouch(pos, ang)
 	pos, ang = self:DoBlocked(pos, ang)
-	pos, ang = self:DoSprint(pos, ang)
+	
 	pos, ang = self:DoIdle(pos, ang)
 	if self.ViewModelOffsetAng then
 		local offsetang = self.ViewModelOffsetAng
@@ -576,18 +602,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 		pos = pos + (ang:Forward() * offset.y)
 		pos = pos + (ang:Up() * offset.z)
 	end
-	local att = self:GetAttachment(self:LookupAttachment("muzzle"))
+	
 
-	att.Pos = att.Pos - (att.Ang:Forward() * brl)
-	local xsn = self:WorldToLocal(att.Pos)
-
-	pos, ang = Plutonic.Framework.RotateAroundPoint(
-		pos, 
-		ang, 
-		xsn, 
-		Vector(0, 0, 0), 
-		Angle(self.VMDeltaY, swayXa, -degRoll)
-	)
 	ang:RotateAroundAxis(ang:Right(), -ironsightAng.p)
 	ang:RotateAroundAxis(ang:Up(), ironsightAng.y)
 	ang:RotateAroundAxis(ang:Forward(), -ironsightAng.r)

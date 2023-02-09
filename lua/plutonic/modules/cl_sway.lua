@@ -13,12 +13,8 @@ Plutonic.Hooks.Add(
 					local m = wep:GetIronsights() and 0.001 or 0.0056
 
 					if abs(x) > 0 or abs(y) > 0 then
-						if abs(x * m) > 1 then
-							wep.LastInput = Curtime() 
-						end
 
 						wep.VMDeltaX = wep.VMDeltaX + ucmd:GetMouseX() * m
-						wep.VMWiggly = wep.VMWiggly + ucmd:GetMouseX() * m
 						wep.VMDeltaY = wep.VMDeltaY + ucmd:GetMouseY() * m
 					end
 				end
