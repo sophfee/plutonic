@@ -278,6 +278,17 @@ function SWEP:ShootEffects()
 		self.VMRecoilPos = self.BlowbackPos
 		self.VMRecoilAng = self.BlowbackAngle
 		self:ProceduralRecoil(1)
+
+		if self.Primary.Shell then
+			local vm = self.Owner:GetViewModel()
+			local att = vm:GetAttachment(self.Primary.ShellAttachment or 2)
+			local fx = EffectData()
+			fx:SetEntity(self)
+			fx:SetOrigin(att.Pos)
+			fx:SetAngles(att.Ang)
+			fx:SetScale(self.Primary.ShellScale or 1)
+			util.Effect(self.Primary.Shell, fx)
+		end
 	end
 
 	self.VMRecoilFOV = 1
@@ -294,9 +305,6 @@ function SWEP:ShootEffects()
 		end
 		
 	else
-		--self.ViewModelPos = self.IronsightsPos + self.BlowbackPos + (self.ViewModelOffset or Vector())
-		--self.ViewModelAng = self.IronsightsAng + self.BlowbackAngle + (self.ViewModelOFfsetAng or Angle())
-		self:SetIronsightsRecoil( 2 )
 		self.CanDecreaseBlowback = CurTime() + 0.1
 	end
 

@@ -1,6 +1,6 @@
 sound.Add({
 	name = "Plutonic.SMG_LowAmmo",
-	channel = CHAN_AUTO,
+	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 60,
 	pitch = {95, 105},
@@ -9,7 +9,7 @@ sound.Add({
 
 sound.Add({
 	name = "Plutonic.SMG_Dry",
-	channel = CHAN_AUTO,
+	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 88,
 	pitch = {95, 105},
@@ -17,7 +17,7 @@ sound.Add({
 })
 sound.Add({
 	name = "Plutonic.Pistol_LowAmmo",
-	channel = CHAN_AUTO,
+	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 60,
 	pitch = {95, 105},
@@ -26,7 +26,7 @@ sound.Add({
 
 sound.Add({
 	name = "Plutonic.Pistol_Dry",
-	channel = CHAN_AUTO,
+	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 88,
 	pitch = {95, 105},
@@ -35,7 +35,7 @@ sound.Add({
 
 sound.Add({
 	name = "Plutonic.Shotgun_LowAmmo",
-	channel = CHAN_AUTO,
+	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 60,
 	pitch = {95, 105},
@@ -44,7 +44,7 @@ sound.Add({
 
 sound.Add({
 	name = "Plutonic.Shotgun_Dry",
-	channel = CHAN_AUTO,
+	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 88,
 	pitch = {95, 105},
@@ -53,7 +53,7 @@ sound.Add({
 
 sound.Add({
 	name = "Plutonic.Rifle_LowAmmo",
-	channel = CHAN_AUTO,
+	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 60,
 	pitch = {95, 105},
@@ -62,7 +62,7 @@ sound.Add({
 
 sound.Add({
 	name = "Plutonic.Rifle_Dry",
-	channel = CHAN_AUTO,
+	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 88,
 	pitch = {95, 105},
