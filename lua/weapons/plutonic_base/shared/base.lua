@@ -378,7 +378,7 @@ function SWEP:PrimaryAttack()
 					local shouldPlay = impulse and impulse.GetSetting("view_thirdperson", false)
 
 					if shouldPlay == false then
-						self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_WEAPON, nil, 1)
+						self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_STATIC, SND_NOFLAGS, 0)
 					end
 				end 
 			end
@@ -468,16 +468,6 @@ end
 function SWEP:ViewPunch()
 
 	if self.Owner:IsNPC() then return end
-
-	local punch = Angle()
-
-	local mul = self:GetIronsights() and 0.65 or 1
-	punch.p = util.SharedRandom( "ViewPunch", -0.5, 0.5 ) * self.Primary.Recoil * mul
-	punch.y = util.SharedRandom( "ViewPunch", -0.5, 0.5 ) * self.Primary.Recoil * mul
-	punch.r = 0
-
-	self.Owner:ViewPunch( punch )
-
 	if IsFirstTimePredicted() and ( CLIENT or game.SinglePlayer() ) then
 		self.Owner:SetEyeAngles( self.Owner:EyeAngles() -
 			Angle( self.Primary.Recoil * ( self:GetIronsights() and 0.5 or 1 ), 0, 0 ) )

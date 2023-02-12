@@ -41,7 +41,7 @@ indicatorIO[Plutonic.Enum.WeaponType.AutomaticRifle] = {
 }
 
 function SWEP:ShouldPlayAmmoIndicator()
-	return indicatorIO[self.Enum.WeaponType][1](self)
+	return false --indicatorIO[self.Enum.WeaponType][1](self)
 end
 
 function SWEP:PlayAmmoIndicator()

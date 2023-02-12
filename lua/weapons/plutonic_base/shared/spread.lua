@@ -34,4 +34,22 @@ end
 
 function SWEP:AddRecoil()
 	self:SetRecoil( math.Clamp( self:GetRecoil() + self.Primary.Recoil * 0.4, 0, self.Primary.MaxRecoil or 1 ) )
+	self:DoRecoil()
+end
+
+SWEP.Primary.RecoilSide = 1
+SWEP.Primary.RecoilUp = 1
+SWEP.Primary.RecoilDown = 1
+
+function SWEP:DoRecoil()
+	local recoil = self:GetRecoil()
+
+	local maxUp = self.Primary.RecoilUp * recoil
+	local maxDown = self.Primary.RecoilDown * recoil
+	local maxSide = self.Primary.RecoilSide * recoil
+
+	local side = math.Rand( -maxSide, maxSide )
+	local up = math.Rand( -maxDown, maxDown )
+
+	self.Owner:ViewPunch( Angle( up, side, side * .34 ) )
 end
