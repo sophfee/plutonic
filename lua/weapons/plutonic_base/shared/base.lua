@@ -287,7 +287,7 @@ function SWEP:ShootEffects()
 			fx:SetOrigin(att.Pos)
 			fx:SetAngles(att.Ang)
 			fx:SetScale(self.Primary.ShellScale or 1)
-			util.Effect(self.Primary.Shell, fx)
+			--util.Effect(self.Primary.Shell, fx)
 		end
 	end
 
