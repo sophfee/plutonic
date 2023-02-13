@@ -621,6 +621,15 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (ang:Up() * self.VMRecoilPos.z)
 	self.VMRecoilPos = lerpVector(ft * 6, self.VMRecoilPos, Vector(0, 0, 0))
 	self.VMRecoilAng = lerpAngle(ft * 6, self.VMRecoilAng, Angle(0, 0, 0))
+
+	pos, ang = Plutonic.Framework.RotateAroundPoint(
+		pos, 
+		ang, 
+		self.PointOrigin, 
+		Vector(0, 0, 0), 
+		-LocalPlayer():GetViewPunchAngles()
+	)
+
 	return pos, ang
 end
 local aimdot = Material("models/weapons/tfa_ins2/optics/po4x_reticule")
