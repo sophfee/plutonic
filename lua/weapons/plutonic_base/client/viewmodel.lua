@@ -332,8 +332,8 @@ function SWEP:DoIdle(pos, ang)
 	return Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(self.BarrelLength, 0, 0), Vector(idle * -1, idle2 * -1, idle * -1), Angle(idle * 1, idle2 * 1, fidget * 1))
 end
 
-SWEP.LoweredMidPos = Vector(4,-3,-3)
-SWEP.LoweredMidAng = Angle(-6,7,5)
+SWEP.LoweredMidPos = Vector(4,-3,0.4)
+SWEP.LoweredMidAng = Angle(-6,7,-5)
 function SWEP:ShouldDoSprint()
 	return (self.VMSprint and math.Round(self.VMSprint, 4) > 0)
 end
