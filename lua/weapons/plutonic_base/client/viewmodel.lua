@@ -296,8 +296,8 @@ function SWEP:DoBlocked(pos, ang)
 	return Plutonic.Framework.RotateAroundPoint(pos, ang, self.PointOrigin or Vector(0, 0, 0), Vector(bl * -11, bl * -1, -bl *7), Angle(bl * 23, bl * -12,bl * 12))
 end
 
-SWEP.IronsightsMiddlePos = Vector(-6,-2,-11.6)
-SWEP.IronsightsMiddleAng = Angle(12, -9, -24)
+SWEP.IronsightsMiddlePos = Vector(-6,-2,-4.6)
+SWEP.IronsightsMiddleAng = Angle(12, -9, 24)
 
 function SWEP:DoIronsights(pos, ang)
 	self.VMIronsights = self.VMIronsights or 0
