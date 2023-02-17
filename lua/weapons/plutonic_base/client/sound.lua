@@ -11,7 +11,7 @@ net.Receive("Longsword.EmitSound", function()
 	local entity = net.ReadEntity()
 	local owner = net.ReadEntity()
 	local snd = net.ReadString()
-	local dsp = 1
+	local dsp = 0
 
 	if owner == LocalPlayer() then
 		local shouldPlay = impulse and impulse.GetSetting("view_thirdperson", false)
@@ -79,11 +79,11 @@ net.Receive("Longsword.EmitSound", function()
 		if rHit and inside then
 			dsp = 31
 		elseif inside then
-			dsp = 1
+			dsp = 0
 		elseif rHit then
 			dsp = 124
 		else
-			dsp = 21
+			dsp = 0
 		end
 
 
