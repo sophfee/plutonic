@@ -569,8 +569,14 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos, ang = self:DoSprint(pos, ang)
 
 	local att = self:GetAttachment(self:LookupAttachment(self.MuzzleFlashAttachment or "muzzle"))
-	att.Pos = att.Pos - (att.Ang:Forward() * brl)
-	local xsn = self:WorldToLocal(att.Pos)
+	local xsn
+	if att then
+		att.Pos = att.Pos - (att.Ang:Forward() * brl)
+		xsn = self:WorldToLocal(att.Pos)
+	else
+		xsn = Vector(0,0,0)
+	end
+
 
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
