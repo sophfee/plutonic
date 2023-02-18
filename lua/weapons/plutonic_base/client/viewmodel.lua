@@ -645,8 +645,8 @@ Plutonic.Hooks.Add("PostDrawPlayerHands", function()
 			if wep.VMIronsights < 0.1 then
 				return
 			end
-			render.UpdateRefractTexture()
-			DrawToyTown(4 * wep.VMIronsights, ScrH()*.47)
+			--render.UpdateRefractTexture()
+			--DrawToyTown(4 * wep.VMIronsights, ScrH()*.47)
 		end
 	end
 end)

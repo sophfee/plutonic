@@ -17,14 +17,14 @@ function EFFECT:Init(data)
     end
 
     if !wm then
-        return
+        --return
     end
 
     pos = (wpn:GetAttachment(att) or {}).Pos
     ang = (wpn:GetAttachment(att) or {}).Ang
 
     if gmmuzzle then
-        if muzzle then
+        if muzzle and wm then
             if !pos then return end
 
             local fx = EffectData()
@@ -39,7 +39,7 @@ function EFFECT:Init(data)
             util.Effect(muzzle, fx)
         end
     else
-        if muzzle then
+        if muzzle and wm  then
             ParticleEffectAttach(muzzle, PATTACH_POINT_FOLLOW, wpn, att)
         end
     end
