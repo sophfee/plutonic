@@ -20,7 +20,7 @@ net.Receive("Longsword.EmitSound", function()
 			entity:EmitSound(snd, nil, nil, nil, nil, nil, dsp)
 		end
 	else
-
+		if not IsValid(owner) then return end
 		local tr = util.TraceLine({
         	start = LocalPlayer():EyePos(),
         	endpos = LocalPlayer():EyePos() + Vector(0, 0, 10000),
