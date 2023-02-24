@@ -13,6 +13,7 @@ net.Receive("Longsword.EmitSound", function()
 	local snd = net.ReadString()
 	local dsp = 0
 
+	if not IsValid(entity) then return end -- Edge case where entity is invalid
 	if owner == LocalPlayer() then
 		local shouldPlay = impulse and impulse.GetSetting("view_thirdperson", false)
 
