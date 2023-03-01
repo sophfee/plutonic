@@ -8,16 +8,16 @@ function SWEP:TranslateFOV(fov)
 		self.VMRecoilFOV = Lerp(FrameTime() * 8, self.VMRecoilFOV or 1, 0)
 	end
 
-	
+	if self.scopedIn then
+		return fov * (self.FOVScoped or 1)
+	end
 
 	if self:GetIronsights() then
 		
 		return (fov * self.FOVMultiplier) + (.8 * self.VMRecoilFOV)
 	end
 
-	if self.scopedIn then
-		return fov * (self.FOVScoped or 1)
-	end
+	
 
 	return fov * self.FOVMultiplier
 end
