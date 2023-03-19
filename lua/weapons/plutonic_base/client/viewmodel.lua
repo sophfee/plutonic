@@ -90,7 +90,7 @@ function SWEP:ViewModelDrawn()
 		self.AttachedCosmetic = ClientsideModel(attData.Cosmetic.Model, RENDER_GROUP_VIEW_MODEL_OPAQUE)
 		self.AttachedCosmetic:SetParent(vm)
 		self.AttachedCosmetic:SetNoDraw(true)
-		self.AttachedCosmetic:AddEffects(EF_BONEMERGE)
+		--self.AttachedCosmetic:AddEffects(EF_BONEMERGE)
 
 		if attData.Cosmetic.Scale then
 			self.AttachedCosmetic:SetModelScale(attData.Cosmetic.Scale)
@@ -106,9 +106,7 @@ function SWEP:ViewModelDrawn()
 	end
 
 	local m = vm:GetBoneMatrix(bone)
-
 	local pos, ang = m:GetTranslation(), m:GetAngles()
-
 	att:SetPos(pos + ang:Forward() * c.Pos.x + ang:Right() * c.Pos.y + ang:Up() * c.Pos.z)
 	ang:RotateAroundAxis(ang:Up(), c.Ang.y)
 	ang:RotateAroundAxis(ang:Right(), c.Ang.p)
