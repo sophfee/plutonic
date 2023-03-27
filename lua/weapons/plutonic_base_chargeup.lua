@@ -83,7 +83,6 @@ hook.Add("StartCommand", "Plutonic_StartCommand", function(ply, cmd)
 				cmd:RemoveKey(IN_ATTACK)
 			end
 		elseif not cmd:KeyDown(IN_ATTACK) and wep.ChargingShot then
-			print("resetting charge time")
 			wep.ChargeTime = 0
 			wep.ChargingShot = false
 			wep:OnChargeStateChanged(false)
