@@ -366,13 +366,13 @@ function SWEP:DoSprint(pos, ang)
 	) ]]
 end
 
-SWEP.vBobIn2 = Vector(-1.7, 0, 1.2733)
-SWEP.vBobMid2 = Vector(0, 0, -2.15 )
-SWEP.vBobOut2 = Vector(2.1, 0, 1.1733)
+SWEP.vBobIn2 = Vector(-1.7, -1.2, 0)
+SWEP.vBobMid2 = Vector(0, 0, -4.8 )
+SWEP.vBobOut2 = Vector(1.7, -4.2, 0)
 
-SWEP.aBobIn2 = Angle(1, 0, -3)
+SWEP.aBobIn2 = Angle(0, 3, -3)
 SWEP.aBobMid2 = Angle(0, 0, 0)
-SWEP.aBobOut2 = Angle(1, 0, 3)
+SWEP.aBobOut2 = Angle(0, -3, 3)
 
 lerpSpeed = 0
 function SWEP:DoWalkBob(pos, ang)
@@ -424,12 +424,12 @@ function SWEP:DoWalkBob(pos, ang)
 		pos, 
 		ang, 
 		self.PointOrigin or Vector(0, 0, 0),
-		Vector(0, oscilX * 0, oscilY * 0), 
-		Angle( 0, 0, 0)
+		Vector(0, oscilX * .125, -oscilY * .125), 
+		Angle( oscilY, oscilX, 0)
 	)
 
-	local alpha3 = sin((rt - .1) * 8.4 * 2 ) * (self.VMBobCycle)
-	local alpha4 = sin((rt - .1) * 8.4 * 1 ) * self.VMBobCycle
+	local alpha3 = sin((rt - .1) * 8.4 * 1.5 ) * (self.VMBobCycle)
+	local alpha4 = sin((rt - .1) * 8.4 * 1.125 ) * self.VMBobCycle
 	alpha4 = lerp(lerpSpeed, alpha4, alpha3)
 	alpha4 = (alpha4 / 3) + 0.5
 
@@ -442,20 +442,23 @@ function SWEP:DoWalkBob(pos, ang)
 		bob = bob * ( self.VMIronsights * .08)
 		abob = abob * (self.VMIronsights * .04)
 	end
-	bob = bob / lerp(lerpSpeed, 1, 1.25)
-	abob = abob / lerp(lerpSpeed, 1, 1.25)
+	bob = bob / lerp(lerpSpeed, 2, 1.5)
+	abob = abob / lerp(lerpSpeed, 2, 1.5)
 	pos = pos + ang:Right() * bob.x * self.VMBobCycle
 	pos = pos + ang:Forward() * bob.y * self.VMBobCycle
 	pos = pos + ang:Up() * bob.z * self.VMBobCycle
 	ang:RotateAroundAxis(ang:Right(), abob.p * (self.VMBobCycle))
 	ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
 
+	local oscilX = -(self.VMRDBEF*2) * cos(rt * 4.6) * (self.Ironsights and 0 or 0)
+	local oscilY = -(self.VMRDBEF*2) * sin(rt * 9.3) * (self.Ironsights and 0 or 0)
+
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
 		Vector(0, 0, 0),
-		Vector(0, 0,  0), 
-		Angle( 0, 0, 0)
+		Vector(0, oscilX * .125, -oscilY * .125), 
+		Angle( oscilY, oscilX, 0)
 	)
 	return pos, ang
 end
