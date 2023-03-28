@@ -393,10 +393,6 @@ function SWEP:DoWalkBob(pos, ang)
 
 	local bob = Plutonic.Interpolation.VectorBezierCurve(alpha, self.vBobIn, self.vBobMid, self.vBobOut)
 	local abob = Plutonic.Interpolation.AngleBezierCurve(alpha, self.aBobIn, self.aBobMid, self.aBobOut)
-
-	local bob2 = Plutonic.Interpolation.VectorBezierCurve(alpha4, self.vBobIn2, self.vBobMid2, self.vBobOut2)
-	local abob2 = Plutonic.Interpolation.AngleBezierCurve(alpha4, self.aBobIn2, self.aBobMid2, self.aBobOut2)
-
 	
 	if self:GetIronsights() then
 		bob = bob * ( self.VMIronsights * .08)
@@ -437,9 +433,6 @@ function SWEP:DoWalkBob(pos, ang)
 	alpha4 = lerp(lerpSpeed, alpha4, alpha3)
 	alpha4 = (alpha4 / 3) + 0.5
 
-	local bob = Plutonic.Interpolation.VectorBezierCurve(alpha, self.vBobIn, self.vBobMid, self.vBobOut)
-	local abob = Plutonic.Interpolation.AngleBezierCurve(alpha, self.aBobIn, self.aBobMid, self.aBobOut)
-
 	local bob2 = Plutonic.Interpolation.VectorBezierCurve(alpha4, self.vBobIn2, self.vBobMid2, self.vBobOut2)
 	local abob2 = Plutonic.Interpolation.AngleBezierCurve(alpha4, self.aBobIn2, self.aBobMid2, self.aBobOut2)
 
@@ -449,8 +442,8 @@ function SWEP:DoWalkBob(pos, ang)
 		bob = bob * ( self.VMIronsights * .08)
 		abob = abob * (self.VMIronsights * .04)
 	end
-	bob = bob / lerp(lerpSpeed, 1, 2)
-	abob = abob / lerp(lerpSpeed, 1, 2)
+	bob = bob / lerp(lerpSpeed, 1, 1.25)
+	abob = abob / lerp(lerpSpeed, 1, 1.25)
 	pos = pos + ang:Right() * bob.x * self.VMBobCycle
 	pos = pos + ang:Forward() * bob.y * self.VMBobCycle
 	pos = pos + ang:Up() * bob.z * self.VMBobCycle
