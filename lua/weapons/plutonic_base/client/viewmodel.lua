@@ -65,6 +65,7 @@ mat:SetTexture("$basetexture", rtx:GetName())
 mat:SetInt("$translucent", 1)
 mat:Recompute()
 
+
 function SWEP:ViewModelDrawn()
 	if Plutonic.Framework.Overdraw then return end
 
@@ -72,6 +73,85 @@ function SWEP:ViewModelDrawn()
 
 	if not IsValid(vm) then
 		return
+	end
+
+	if self.lastshot then
+		if (math.abs(self.lastshot - CurTime()) < .06 ) then
+			
+			local alpha = 1 - ((CurTime() - self.lastshot) / 3)
+			if not self.heatedbarrel then
+				chat.AddText("racism is funny")
+				self.heatedbarrel = ProjectedTexture()
+				self.heatedbarrel:SetTexture("effects/flashlight001")
+				self.heatedbarrel:SetFarZ(256)
+				self.heatedbarrel:SetFOV(140)
+				self.heatedbarrel:SetBrightness(2)
+				self.heatedbarrel:SetColor(self.MuzzleFlashColor or Color(244, 209, 66))
+				self.heatedbarrel:SetEnableShadows(true)
+				self.heatedbarrel:SetNearZ(1)
+				self.heatedbarrel:SetPos(vm:LocalToWorld(self.PointOrigin + Vector(4, 0, 0)))
+				self.heatedbarrel:SetAngles(self.Owner:EyeAngles())
+				self.heatedbarrel:Update()
+
+			else
+				self.heatedbarrel:SetTexture("effects/flashlight001")
+				self.heatedbarrel:SetFarZ(256)
+				self.heatedbarrel:SetFOV(140)
+				self.heatedbarrel:SetBrightness(0)
+				self.heatedbarrel:SetColor(self.MuzzleFlashColor or Color(244, 209, 66))
+				self.heatedbarrel:SetEnableShadows(true)
+				self.heatedbarrel:SetNearZ(1)
+				local attchhhhgf = vm:GetAttachment(1)
+				self.heatedbarrel:SetPos(attchhhhgf.Pos)
+				self.heatedbarrel:SetAngles(attchhhhgf.Ang)
+				self.heatedbarrel:Update()
+			end
+			
+		else
+			if self.heatedbarrel then
+				self.heatedbarrel:Remove()
+				self.heatedbarrel = nil
+			end
+		end
+	end
+
+	if self.lastshot then
+		if ( true ) then
+			
+			local alpha = 1 - ((CurTime() - self.lastshot) / 3)
+			if not self.TexGunLight then
+				self.TexGunLight = ProjectedTexture()
+				self.TexGunLight:SetTexture("effects/flashlight001")
+				self.TexGunLight:SetFarZ(2048)
+				self.TexGunLight:SetFOV(60)
+				self.TexGunLight:SetBrightness(2)
+				self.TexGunLight:SetColor(color_white)
+				self.TexGunLight:SetTargetEntity(vm)
+				self.TexGunLight:SetEnableShadows(true)
+				self.TexGunLight:SetNearZ(1)
+				--self.TexGunLight:SetPos()
+				self.TexGunLight:SetAngles(self.Owner:EyeAngles())
+				self.TexGunLight:Update()
+
+			else
+				self.TexGunLight:SetTexture("effects/flashlight001")
+				self.TexGunLight:SetColor(Color(151, 174, 217))
+				self.TexGunLight:SetEnableShadows(true)
+				self.TexGunLight:SetTargetEntity(nil)
+				self.TexGunLight:SetShadowFilter(0)
+				self.TexGunLight:SetNearZ(1)
+				local attchhhhgf = vm:GetAttachment(1)
+				self.TexGunLight:SetPos(attchhhhgf.Pos)
+				self.TexGunLight:SetAngles(attchhhhgf.Ang)
+				self.TexGunLight:Update()
+			end
+			
+		else
+			if self.TexGunLight then
+				self.TexGunLight:Remove()
+				self.TexGunLight = nil
+			end
+		end
 	end
 
 	local attachment = self:GetCurAttachment()
@@ -159,9 +239,9 @@ function SWEP:PostRender()
 	self.VMVel = Lerp(Frametime() * 5, self.VMVel, vel)
 
 	local ft = Frametime()
-
-	self.VMDeltaX = lerp(ft * 11, self.VMDeltaX or 0, 0)
-	self.VMDeltaY = lerp(ft * 11, self.VMDeltaY or 0, 0)
+	local ftM = self.SwaySpeed or 11
+	self.VMDeltaX = lerp(ft * ftM, self.VMDeltaX or 0, 0)
+	self.VMDeltaY = lerp(ft * ftM, self.VMDeltaY or 0, 0)
 
 	--[[if (abs(self.VMLastDeltaXInFrame or 0) < abs(self.VMDeltaX or 0)) then
 		self.VMDeltaXT = Curtime()
@@ -243,12 +323,7 @@ sound.Add(
 		}
 	}
 )
-SWEP.vBobIn = Vector(1.26, -0.267, -0.1) * .5
-SWEP.vBobMid = Vector(-0.3, -.4, -3.94) * .5
-SWEP.vBobOut = Vector(-1.2126, -0.2, -0.1 ) * .5
-SWEP.aBobIn = Angle(2, -1, -4) * .5
-SWEP.aBobMid = Angle(-1.2, 0.7, 1) * .5
-SWEP.aBobOut = Angle(3, 1.4, 4) * .5
+
 function Plutonic.Framework.IsMoving()
 	return LocalPlayer():GetVelocity():Length2DSqr() > 40^2
 end
@@ -296,8 +371,8 @@ function SWEP:DoBlocked(pos, ang)
 	return Plutonic.Framework.RotateAroundPoint(pos, ang, self.PointOrigin or Vector(0, 0, 0), Vector(bl * -11, bl * -1, -bl *7), Angle(bl * 23, bl * -12,bl * 12))
 end
 
-SWEP.IronsightsMiddlePos = Vector(-6,-2,-4.6)
-SWEP.IronsightsMiddleAng = Angle(12, -9, 24)
+SWEP.IronsightsMiddlePos = Vector(-3,-2,-1.6)
+SWEP.IronsightsMiddleAng = Angle(3, 9, 4)
 
 function SWEP:DoIronsights(pos, ang)
 	self.VMIronsights = self.VMIronsights or 0
@@ -328,8 +403,7 @@ function SWEP:DoIdle(pos, ang)
 	local idle2 = cos(rt * .84) * 0.1
 	local fidget = sin(rt * 1.03) * cos(rt * .84) * 2
 
-
-	return Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(self.BarrelLength, 0, 0), Vector(idle * -1, idle2 * -1, idle * -1), Angle(idle * 1, idle2 * 1, fidget * 1))
+	return pos, ang --Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(self.BarrelLength, 0, 0), Vector(idle * -1, idle2 * -1, idle * -1), Angle(idle * 1, idle2 * 1, fidget * 1))
 end
 
 SWEP.LoweredMidPos = Vector(4,-3,0.4)
@@ -357,13 +431,7 @@ function SWEP:DoSprint(pos, ang)
 	local sn1 = sin(rt * 8.4)  * t
 	local cs1 = cos(rt * 8.4)  * t
 
-	return pos, ang --[[ Plutonic.Framework.RotateAroundPoint(
-		pos, 
-		ang, 
-		Vector(self.BarrelLength, -4, 16),
-		Vector(cs0, sn1, 0),
-		Angle(cs0 * 1.1, sn1 * 5, 0)
-	) ]]
+	return pos, ang
 end
 
 SWEP.vBobIn2 = Vector(-1.7, -1.2, 0)
@@ -374,6 +442,13 @@ SWEP.aBobIn2 = Angle(0, 3, -3)
 SWEP.aBobMid2 = Angle(0, 0, 0)
 SWEP.aBobOut2 = Angle(0, -3, 3)
 
+SWEP.vBobIn = Vector( 0.2, 2.15, .1) 
+SWEP.vBobMid = Vector(  -3.6, 0,-3) 
+SWEP.vBobOut = Vector(  0.2, -2.15, .1)
+SWEP.aBobIn = Angle(3, -6, 5)
+SWEP.aBobMid = Angle(-2.2, 0, -.4)
+SWEP.aBobOut = Angle(3, 6, -5)
+
 lerpSpeed = 0
 function SWEP:DoWalkBob(pos, ang)
 	if self.DoCustomWalkBob then
@@ -381,15 +456,10 @@ function SWEP:DoWalkBob(pos, ang)
 	end
 	local rt = Realtime()
 	self.VMBobCycle = self.VMBobCycle or 0
-	local alpha2 = sin(rt * 8.4 * 2 ) * (self.VMBobCycle)
+	local alpha2 = sin(rt * 8.4 * 1.5 ) * (self.VMBobCycle)
 	local alpha = sin(rt * 8.4 * 1 ) * self.VMBobCycle
 	alpha = lerp(lerpSpeed, alpha, alpha2)
 	alpha = (alpha / 3) + 0.5
-
-	local alpha3 = sin((rt + .5) * 8.4 * 1.75 ) * (self.VMBobCycle)
-	local alpha4 = sin((rt + .5) * 8.4 * 1.25 ) * self.VMBobCycle
-	alpha4 = lerp(lerpSpeed, alpha4, alpha3)
-	alpha4 = (alpha4 / 3) + 0.5
 
 	local bob = Plutonic.Interpolation.VectorBezierCurve(alpha, self.vBobIn, self.vBobMid, self.vBobOut)
 	local abob = Plutonic.Interpolation.AngleBezierCurve(alpha, self.aBobIn, self.aBobMid, self.aBobOut)
@@ -398,67 +468,62 @@ function SWEP:DoWalkBob(pos, ang)
 		bob = bob * ( self.VMIronsights * .08)
 		abob = abob * (self.VMIronsights * .04)
 	end
-	bob = bob / lerp(lerpSpeed, 1, 1.7)
-	abob = abob / lerp(lerpSpeed, 1, 1.7)
-	pos = pos + ang:Right() * bob.x * self.VMBobCycle
-	pos = pos + ang:Forward() * bob.y * self.VMBobCycle
-	pos = pos + ang:Up() * bob.z * self.VMBobCycle
+
+	if not self.LoweredPos then
+		bob = bob / lerp(lerpSpeed, 1, 1.6)
+		abob = abob / lerp(lerpSpeed, 1, 1.6)
+	else
+		bob = bob / lerp(lerpSpeed, 1.6, 1)
+		abob = abob / lerp(lerpSpeed, 1.6, 1)
+	end
+
+	--pos = pos + ang:Right() * bob.x * self.VMBobCycle
+	--pos = pos + ang:Forward() * bob.y * self.VMBobCycle
+	--pos = pos + ang:Up() * bob.z * self.VMBobCycle
 	local ovel = self.Owner:GetVelocity()
 	local move = vec(ovel.x, ovel.y, 0)
 	local vel = move:GetNormalized()
 	local rd = self.Owner:GetRight():Dot(vel)
 	local fd = (self.Owner:GetForward():Dot(vel) + 1) / 2
-	self.VMRDBEF = lerp(Frametime() * 2.9, self.VMRDBEF or 0, vel:Length2DSqr())
-	ang:RotateAroundAxis(ang:Right(), abob.p * (self.VMBobCycle))
-	ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
+	--self.VMRDBEF = lerp(Frametime() * 2.9, self.VMRDBEF or 0, vel:Length2DSqr())
+	--ang:RotateAroundAxis(ang:Right(), abob.p * (self.VMBobCycle))
+	--ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
+	--ang:RotateAroundAxis(ang:Forward(), abob.r * self.VMBobCycle)
 	local offsetOscilX = 2.6
-	local oscilX = -(self.VMRDBEF*2) * cos(rt * 12.6) * (self.Ironsights and .125 or .675)
-	local oscilY = -(self.VMRDBEF*2) * sin(rt * 6.3) * (self.Ironsights and .125 or .675)
-	--local oscilZ = (self.VMRDBEF*2) * sin((rt + 0.4) * 16.8) * (self.Ironsights and .012 or .112)
+	local oscilX = -(self.VMRDBEF*2) * cos(rt * 12.6) * (self.Ironsights and .1 or .5)
+	local oscilY = -(self.VMRDBEF*2) * sin(rt * 6.3) * (self.Ironsights and .1 or .5)
 
-	--pos = pos + ang:Up() * abs(oscilZ) * self.VMBobCycle
-	pos = pos + (ang:Forward() * (-.66 * self.VMBobCycle))
-	pos = pos + (ang:Up() * (-.16 * self.VMBobCycle))
+	local snx  = sin(rt * 8.4)
+	local wasneg
+	if snx < 0 then
+		snx = snx * -1
+		wasneg= true
+	end
+	local oscilZ = (self.VMRDBEF*2) * math.ease.InBack( abs(snx) )
+	if wasneg then
+		oscilZ = oscilZ * -1
+	end
+
+	local xnx  = cos(rt * 8.4)
+	local wasneg
+	if xnx < 0 then
+		xnx = xnx * -1
+		wasneg= true
+	end
+	local oscilX = (self.VMRDBEF*2) * math.ease.InBack( abs(xnx) )
+	if wasneg then
+		oscilX = oscilX * -1
+	end
+
+	bob = LerpVector(self.VMBobCycle, Vector(), bob)
+	abob = LerpAngle(self.VMBobCycle, Angle(), abob)
 
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
 		self.PointOrigin or Vector(0, 0, 0),
-		Vector(0, oscilX * .125, -oscilY * .125), 
-		Angle( oscilY, oscilX, 0)
-	)
-
-	local alpha3 = sin((rt - .1) * 8.4 * 1.5 ) * (self.VMBobCycle)
-	local alpha4 = sin((rt - .1) * 8.4 * 1.125 ) * self.VMBobCycle
-	alpha4 = lerp(lerpSpeed, alpha4, alpha3)
-	alpha4 = (alpha4 / 3) + 0.5
-
-	local bob2 = Plutonic.Interpolation.VectorBezierCurve(alpha4, self.vBobIn2, self.vBobMid2, self.vBobOut2)
-	local abob2 = Plutonic.Interpolation.AngleBezierCurve(alpha4, self.aBobIn2, self.aBobMid2, self.aBobOut2)
-
-	bob = bob2
-	abob = abob2
-	if self:GetIronsights() then
-		bob = bob * ( self.VMIronsights * .08)
-		abob = abob * (self.VMIronsights * .04)
-	end
-	bob = bob / lerp(lerpSpeed, 2, 1.5)
-	abob = abob / lerp(lerpSpeed, 2, 1.5)
-	pos = pos + ang:Right() * bob.x * self.VMBobCycle
-	pos = pos + ang:Forward() * bob.y * self.VMBobCycle
-	pos = pos + ang:Up() * bob.z * self.VMBobCycle
-	ang:RotateAroundAxis(ang:Right(), abob.p * (self.VMBobCycle))
-	ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
-
-	local oscilX = -(self.VMRDBEF*2) * cos(rt * 4.6) * (self.Ironsights and 0 or 0)
-	local oscilY = -(self.VMRDBEF*2) * sin(rt * 9.3) * (self.Ironsights and 0 or 0)
-
-	pos, ang = Plutonic.Framework.RotateAroundPoint(
-		pos, 
-		ang, 
-		Vector(0, 0, 0),
-		Vector(0, oscilX * .125, -oscilY * .125), 
-		Angle( oscilY, oscilX, 0)
+		bob + Vector(oscilZ * .15, oscilX* .15 , 0),
+		abob
 	)
 	return pos, ang
 end
@@ -501,15 +566,6 @@ end
 function SWEP:ViewmodelThink()
 	local flip = Plutonic.Framework.GetControl_Bool( "vm_flip_lefty", true )
 	self.ViewModelFlip = flip
-
-	self.VMNextNoise = self.VMNextNoise or 0
-
-	if self.VMNextNoise < Curtime() and self.VMBobCycle > 0 then
-
-		self.VMNextNoise = Curtime() + 0.5
-		self:EmitSound("Plutonic.Walk")
-		
-	end
 end
 
 function SWEP:GetViewModelPosition(pos, ang)
@@ -517,38 +573,17 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local start_ang = ang + Angle(0,0,0)
 	local ironsightPos = self.IronsightsPos
 	local ironsightAng = self.IronsightsAng
-	ang:RotateAroundAxis(ang:Right(), ironsightAng.p)
+	--[[ang:RotateAroundAxis(ang:Right(), ironsightAng.p)
 	ang:RotateAroundAxis(ang:Up(), -ironsightAng.y)
 	ang:RotateAroundAxis(ang:Forward(), ironsightAng.r)
 	pos = pos + (start_ang:Forward() * ironsightPos.y)
 	pos = pos + (start_ang:Right() * (ironsightPos.x))
 	pos = pos + (start_ang:Up() * ironsightPos.z)
 	pos = pos + (start_ang:Up() * -1.5)
-	pos = pos + (start_ang:Forward() * self.BarrelLength)
+	pos = pos + (start_ang:Forward() * self.BarrelLength)]]
 	self.centeredMode = self.centeredMode or GetConVar("plutonic_centered")
 
 	if self.centeredMode and self.centeredMode:GetBool() then
-
-		if true then
-
-			local att = self:GetAttachment(self:LookupAttachment("muzzle"))
-			att.Pos = att.Pos - (att.Ang:Forward() * 32)
-			att.Pos = att.Pos + (att.Ang:Up() * 8)
-			att.Pos = att.Pos + (att.Ang:Right() * -12)
-			--att.Pos = att.Pos + (att.Ang:Right() * -159)
-
-			local mypos = self:WorldToLocal(att.Pos)
-			
-
-			self.CenteredPos = mypos
-			self.CenteredAng = Angle()
-		end
-
-
-		--self.CenteredPos = self.CenteredPos or Vector()
-		--elf.CenteredAng = self.CenteredAng or Angle()
-
-
 
 		self.VMCenter = self.VMCenter or 0
 
@@ -558,13 +593,15 @@ function SWEP:GetViewModelPosition(pos, ang)
 			self.VMCenter = Lerp(FrameTime() * 4, self.VMCenter, 0)
 		end
 
-		pos = pos + (start_ang:Forward() * self.CenteredPos.y * self.VMCenter)
-		pos = pos + (start_ang:Right() * (self.CenteredPos.x * self.VMCenter))
-		pos = pos + (start_ang:Up() * self.CenteredPos.z * self.VMCenter)
+		local cpos, cang = self.CenteredPos * self.VMCenter, self.CenteredAng * self.VMCenter
 
-		ang:RotateAroundAxis(ang:Right(), self.CenteredAng.p * self.VMCenter)
-		ang:RotateAroundAxis(ang:Up(), -self.CenteredAng.y * self.VMCenter)
-		ang:RotateAroundAxis(ang:Forward(), self.CenteredAng.r * self.VMCenter)
+		pos = pos + (cpos.y * ang:Forward())
+		pos = pos + (cpos.x * ang:Right())
+		pos = pos + (cpos.z * ang:Up())
+		
+		ang:RotateAroundAxis(ang:Right(), cang.p)
+		ang:RotateAroundAxis(ang:Up(), cang.y)
+		ang:RotateAroundAxis(ang:Forward(), cang.r)
 	end
 
 	local ft = Frametime()
@@ -592,7 +629,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 	--self.xsa = xsa
 	--self.xva = xva
 
-	
+	pos, ang = self:DoIronsights(pos, ang)
+	pos, ang = self:DoSprint(pos, ang)
 	local swayXv = -(xva * .25)
 	
 	local swayXa = -(xva)* 1
@@ -614,9 +652,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		degRoll = degRoll * -1
 	end
 
-	pos, ang = self:DoIronsights(pos, ang)
-	pos, ang = self:DoSprint(pos, ang)
-
+	
 	local att = self:GetAttachment(self:LookupAttachment(self.MuzzleFlashAttachment or "muzzle"))
 	local xsn
 	if att then
@@ -625,21 +661,24 @@ function SWEP:GetViewModelPosition(pos, ang)
 	else
 		xsn = Vector(0,0,0)
 	end
-
-
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
 		xsn, 
 		Vector(0, 0, 0), 
-		Angle(self.VMDeltaY, swayXa, -degRoll)
+		Angle(self.VMDeltaY, swayXa, 0)
 	)
+
+	ang:RotateAroundAxis(ang:Forward(), degRoll)
+
+	
 
 	self.PointOrigin = xsn
 	
 	pos, ang = self:DoWalkBob(pos, ang)
 
 	
+
 	
 	pos, ang = self:DoCrouch(pos, ang)
 	pos, ang = self:DoBlocked(pos, ang)
@@ -657,16 +696,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		pos = pos + (ang:Forward() * offset.y)
 		pos = pos + (ang:Up() * offset.z)
 	end
-	
 
-	ang:RotateAroundAxis(ang:Right(), -ironsightAng.p)
-	ang:RotateAroundAxis(ang:Up(), ironsightAng.y)
-	ang:RotateAroundAxis(ang:Forward(), -ironsightAng.r)
-	pos = pos + (start_ang:Forward() * -ironsightPos.y)
-	pos = pos + (start_ang:Right() * -ironsightPos.x)
-	pos = pos + (start_ang:Up() * -ironsightPos.z)
-	pos = pos + (start_ang:Up() *1.5)
-	pos = pos + (start_ang:Forward() * -self.BarrelLength)
 	ang:RotateAroundAxis(ang:Right(), self.VMRecoilAng.p)
 	ang:RotateAroundAxis(ang:Up(), self.VMRecoilAng.y)
 	ang:RotateAroundAxis(ang:Forward(), self.VMRecoilAng.r)
@@ -700,12 +730,13 @@ Plutonic.Hooks.Add("PostDrawPlayerHands", function()
 			if wep.VMIronsights < 0.1 then
 				return
 			end
-			--render.UpdateRefractTexture()
-			--DrawToyTown(4 * wep.VMIronsights, ScrH()*.47)
+			render.UpdateRefractTexture()
+			DrawToyTown(4 * wep.VMIronsights, ScrH()*.47)
 		end
 	end
 end)
 function SWEP:ProceduralRecoil(force)
+	self.lastshot = CurTime()
 	if self:GetIronsights() then force = force * 0.08 end
 	force = force 
 	local rPos = self.BlowbackPos + Vector()

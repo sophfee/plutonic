@@ -53,9 +53,9 @@ function EFFECT:Init(data)
         light.r = clr.r
         light.g = clr.g
         light.b = clr.b
-        light.Brightness = 2
-        light.Decay = 2500
-        light.Size = Owner == LocalPlayer() and 256 or 128
+        light.Brightness = 4
+        light.Decay = 5000
+        light.Size = Owner == LocalPlayer() and (wpn.MuzzleFlashLocalSize or wpn.MuzzleFlashSize or 128) or (wpn.MuzzleFlashSize or 128)
         light.DieTime = CurTime() + 0.1
     end
 end

@@ -413,6 +413,16 @@ function SWEP:Holster()
 		self.ViewModelPos = Vector( 0, 0, 0 )
 		self.ViewModelAng = Angle( 0, 0, 0 )
 		self.FOV = nil
+
+		if self.TexGunLight then
+			self.TexGunLight:Remove()
+			self.TexGunLight = nil
+		end
+
+		if self.heatedbarrel then
+			self.heatedbarrel:Remove()
+			self.heatedbarrel = nil
+		end
 	end
 
 	if self.CustomMaterial then
