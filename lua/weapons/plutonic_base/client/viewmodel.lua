@@ -75,7 +75,7 @@ function SWEP:ViewModelDrawn()
 		return
 	end
 
-	if self.lastshot then
+	--[[if self.lastshot then
 		if (math.abs(self.lastshot - CurTime()) < .06 ) then
 			
 			local alpha = 1 - ((CurTime() - self.lastshot) / 3)
@@ -152,7 +152,7 @@ function SWEP:ViewModelDrawn()
 				self.TexGunLight = nil
 			end
 		end
-	end
+	end]]
 
 	local attachment = self:GetCurAttachment()
 
