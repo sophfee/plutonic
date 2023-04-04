@@ -212,7 +212,7 @@ function SWEP:PostRender()
 	self:DoWallLeanThink()
 	self.Ironsights = self:GetIronsights()
 	
-	self.VMSprint = lerp(Frametime() * 4, self.VMSprint or 0, self:IsSprinting() and 1 or 0)
+	self.VMSprint = lerp(Frametime() * 5, self.VMSprint or 0, self:IsSprinting() and 1 or 0)
 	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 2.4 )
 	self.VMIronsights = self.VMIronsights or 0
 	self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or 0
