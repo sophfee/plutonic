@@ -461,6 +461,8 @@ function SWEP:DoWalkBob(pos, ang)
 	alpha = lerp(lerpSpeed, alpha, alpha2)
 	alpha = (alpha / 3) + 0.5
 
+	
+
 	local bob = Plutonic.Interpolation.VectorBezierCurve(alpha, self.vBobIn, self.vBobMid, self.vBobOut)
 	local abob = Plutonic.Interpolation.AngleBezierCurve(alpha, self.aBobIn, self.aBobMid, self.aBobOut)
 	
@@ -477,18 +479,12 @@ function SWEP:DoWalkBob(pos, ang)
 		abob = abob / lerp(lerpSpeed, 1.6, 1)
 	end
 
-	--pos = pos + ang:Right() * bob.x * self.VMBobCycle
-	--pos = pos + ang:Forward() * bob.y * self.VMBobCycle
-	--pos = pos + ang:Up() * bob.z * self.VMBobCycle
 	local ovel = self.Owner:GetVelocity()
 	local move = vec(ovel.x, ovel.y, 0)
 	local vel = move:GetNormalized()
 	local rd = self.Owner:GetRight():Dot(vel)
 	local fd = (self.Owner:GetForward():Dot(vel) + 1) / 2
-	--self.VMRDBEF = lerp(Frametime() * 2.9, self.VMRDBEF or 0, vel:Length2DSqr())
-	--ang:RotateAroundAxis(ang:Right(), abob.p * (self.VMBobCycle))
-	--ang:RotateAroundAxis(ang:Up(), abob.y * self.VMBobCycle)
-	--ang:RotateAroundAxis(ang:Forward(), abob.r * self.VMBobCycle)
+
 	local offsetOscilX = 2.6
 	local oscilX = -(self.VMRDBEF*2) * cos(rt * 12.6) * (self.Ironsights and .1 or .5)
 	local oscilY = -(self.VMRDBEF*2) * sin(rt * 6.3) * (self.Ironsights and .1 or .5)
@@ -515,6 +511,18 @@ function SWEP:DoWalkBob(pos, ang)
 		oscilX = oscilX * -1
 	end
 
+	local alpha2 = sin(rt * 8.4 * 1.5 ) * (self.VMBobCycle)
+	local alpha = sin(rt * 8.4 * 1 ) * self.VMBobCycle
+	alpha = lerp(lerpSpeed, alpha, alpha2)
+	alpha = (alpha / 3) + 0.5
+
+	local rattle = math.sin(CurTime() * 8.5) * (math.cos(alpha * pi) * 2.5)
+	local rattle2 = math.cos(CurTime() * 4.3) * (alpha)
+
+	local smoothKnocking = math.ease.InQuad( math.abs(-math.cos(alpha * pi))) * -1
+	local smoothKnocking2 = math.ease.InQuint( math.abs(-math.sin(alpha * pi))) * -.2
+
+	
 	bob = LerpVector(self.VMBobCycle, Vector(), bob)
 	abob = LerpAngle(self.VMBobCycle, Angle(), abob)
 
@@ -525,6 +533,15 @@ function SWEP:DoWalkBob(pos, ang)
 		bob + Vector(oscilZ * .15, oscilX* .15 , 0),
 		abob
 	)
+
+	pos, ang = Plutonic.Framework.RotateAroundPoint(
+		pos, 
+		ang, 
+		Vector(0, 0, 0),
+		Vector(0, 0 , 0),
+		Angle(-smoothKnocking, 0, smoothKnocking2)
+	)
+
 	return pos, ang
 end
 
@@ -675,8 +692,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	self.PointOrigin = xsn
 	
-	pos, ang = self:DoWalkBob(pos, ang)
-
+	
 	
 
 	
@@ -714,6 +730,18 @@ function SWEP:GetViewModelPosition(pos, ang)
 		Vector(0, 0, 0), 
 		-LocalPlayer():GetViewPunchAngles()
 	)
+
+	local att = self:GetAttachment(self:LookupAttachment(self.MuzzleFlashAttachment or "muzzle"))
+	local xsn
+	if att then
+		att.Pos = att.Pos - (att.Ang:Forward() * brl)
+		xsn = self:WorldToLocal(att.Pos)
+	else
+		xsn = Vector(0,0,0)
+	end
+	self.PointOrigin = xsn
+
+	pos, ang = self:DoWalkBob(pos, ang)
 
 	return pos, ang
 end
