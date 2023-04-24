@@ -442,12 +442,12 @@ SWEP.aBobIn2 = Angle(0, 3, -3)
 SWEP.aBobMid2 = Angle(0, 0, 0)
 SWEP.aBobOut2 = Angle(0, -3, 3)
 
-SWEP.vBobIn = Vector( 0.2, 2.15, .1) 
-SWEP.vBobMid = Vector(  -3.6, 0,-3) 
-SWEP.vBobOut = Vector(  0.2, -2.15, .1)
-SWEP.aBobIn = Angle(3, -6, 5)
-SWEP.aBobMid = Angle(-2.2, 0, -.4)
-SWEP.aBobOut = Angle(3, 6, -5)
+SWEP.vBobIn = Vector( -1.6, -2.6, 1) 
+SWEP.vBobMid = Vector(  0.2, 0,-3) 
+SWEP.vBobOut = Vector( -.6, 2.6, 1)
+SWEP.aBobIn = Angle(4, 3, 4)
+SWEP.aBobMid = Angle(-3.2, 0, -.4)
+SWEP.aBobOut = Angle(4, -4, 2)
 
 lerpSpeed = 0
 function SWEP:DoWalkBob(pos, ang)
@@ -519,9 +519,10 @@ function SWEP:DoWalkBob(pos, ang)
 	local rattle = math.sin(CurTime() * 8.5) * (math.cos(alpha * pi) * 2.5)
 	local rattle2 = math.cos(CurTime() * 4.3) * (alpha)
 
-	local smoothKnocking = math.ease.InQuad( math.abs(-math.cos(alpha * pi))) * -1
-	local smoothKnocking2 = math.ease.InQuint( math.abs(-math.sin(alpha * pi))) * -.2
+	
 
+	local smoothKnocking = math.ease.InQuad( math.abs(-math.cos(alpha * pi))) * (-1 * math.ceil(math.abs(alpha - 0.5)))
+	local smoothKnocking2 = math.ease.OutBounce( math.abs(-math.sin(alpha * pi))) * (-.2 * math.ceil(math.abs(alpha - 0.5)))
 	
 	bob = LerpVector(self.VMBobCycle, Vector(), bob)
 	abob = LerpAngle(self.VMBobCycle, Angle(), abob)
@@ -534,13 +535,13 @@ function SWEP:DoWalkBob(pos, ang)
 		abob
 	)
 
-	pos, ang = Plutonic.Framework.RotateAroundPoint(
+	--[[pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
 		Vector(0, 0, 0),
-		Vector(0, 0 , 0),
-		Angle(-smoothKnocking, 0, smoothKnocking2)
-	)
+		Vector(smoothKnocking * 2, 0 , smoothKnocking2),
+		Angle(-smoothKnocking, 0, -smoothKnocking2)
+	)]]
 
 	return pos, ang
 end
@@ -682,8 +683,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 		pos, 
 		ang, 
 		xsn, 
-		Vector(0, 0, 0), 
-		Angle(self.VMDeltaY, swayXa, 0)
+		Vector(0, self.VMDeltaX * .08, (math.abs(self.VMDeltaX) * -.02) ), 
+		Angle(self.VMDeltaY, swayXa *.7, swayXa * .7)
 	)
 
 	ang:RotateAroundAxis(ang:Forward(), degRoll)
