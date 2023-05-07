@@ -434,17 +434,17 @@ function SWEP:DoSprint(pos, ang)
 	return pos, ang
 end
 
-SWEP.vBobIn2 = Vector(-1.7, -1.2, 0)
-SWEP.vBobMid2 = Vector(0, 0, -4.8 )
-SWEP.vBobOut2 = Vector(1.7, -4.2, 0)
+SWEP.vBobIn2 = Vector(-1.7, -1.2, -4.8)
+SWEP.vBobMid2 = Vector(0, 0, -1 )
+SWEP.vBobOut2 = Vector(1.7, -4.2, -4.8)
 
 SWEP.aBobIn2 = Angle(0, 3, -3)
 SWEP.aBobMid2 = Angle(0, 0, 0)
 SWEP.aBobOut2 = Angle(0, -3, 3)
 
-SWEP.vBobIn = Vector( -1.6, -2.6, 1) 
-SWEP.vBobMid = Vector(  0.2, 0,-3) 
-SWEP.vBobOut = Vector( -.6, 2.6, 1)
+SWEP.vBobIn = Vector( -1.6, -1.6, -4.8) 
+SWEP.vBobMid = Vector(  0.2, 0,1) 
+SWEP.vBobOut = Vector( .6, 1.6, -4.8)
 SWEP.aBobIn = Angle(4, 3, 4)
 SWEP.aBobMid = Angle(-3.2, 0, -.4)
 SWEP.aBobOut = Angle(4, -4, 2)
@@ -721,8 +721,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (ang:Right() * self.VMRecoilPos.x)
 	pos = pos + (ang:Forward() * self.VMRecoilPos.y)
 	pos = pos + (ang:Up() * self.VMRecoilPos.z)
-	self.VMRecoilPos = lerpVector(ft * 6, self.VMRecoilPos, Vector(0, 0, 0))
-	self.VMRecoilAng = lerpAngle(ft * 6, self.VMRecoilAng, Angle(0, 0, 0))
+	self.VMRecoilPos = lerpVector(ft * 2, self.VMRecoilPos, Vector(0, 0, 0))
+	self.VMRecoilAng = lerpAngle(ft * 2, self.VMRecoilAng, Angle(0, 0, 0))
 
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
