@@ -445,9 +445,9 @@ SWEP.aBobOut2 = Angle(0, -3, 3)
 SWEP.vBobIn = Vector( -1.6, -1.6, -4.8) 
 SWEP.vBobMid = Vector(  0.2, 0,1) 
 SWEP.vBobOut = Vector( .6, 1.6, -4.8)
-SWEP.aBobIn = Angle(4, 3, 4)
-SWEP.aBobMid = Angle(-3.2, 0, -.4)
-SWEP.aBobOut = Angle(4, -4, 2)
+SWEP.aBobIn = Angle()
+SWEP.aBobMid = Angle()
+SWEP.aBobOut = Angle()
 
 lerpSpeed = 0
 function SWEP:DoWalkBob(pos, ang)
