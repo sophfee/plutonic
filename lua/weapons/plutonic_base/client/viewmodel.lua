@@ -450,100 +450,32 @@ SWEP.aBobMid = Angle()
 SWEP.aBobOut = Angle()
 
 lerpSpeed = 0
+
+local WalkingTime = 0
 function SWEP:DoWalkBob(pos, ang)
 	if self.DoCustomWalkBob then
-		return self:DoCustomWalkBob(pos, ang)
+		return self:DoCustomWalkBob(pos, ang);
+	end;
+	local rt = Realtime();
+	if self.Owner:GetVelocity():Length2DSqr() > 60^2 then
+		WalkingTime = WalkingTime + FrameTime() * 2;
 	end
-	local rt = Realtime()
-	self.VMBobCycle = self.VMBobCycle or 0
-	local alpha2 = sin(rt * 8.4 * 1.5 ) * (self.VMBobCycle)
-	local alpha = sin(rt * 8.4 * 1 ) * self.VMBobCycle
-	alpha = lerp(lerpSpeed, alpha, alpha2)
-	alpha = (alpha / 3) + 0.5
 
-	
+	local mv = self.Owner:GetVelocity():Length2D() / 200;
 
-	local bob = Plutonic.Interpolation.VectorBezierCurve(alpha, self.vBobIn, self.vBobMid, self.vBobOut)
-	local abob = Plutonic.Interpolation.AngleBezierCurve(alpha, self.aBobIn, self.aBobMid, self.aBobOut)
-	
+	if self:IsSprinting() then
+		mv = mv * 2;
+	end
+
 	if self:GetIronsights() then
-		bob = bob * ( self.VMIronsights * .08)
-		abob = abob * (self.VMIronsights * .04)
+		mv = mv * 0.25;
 	end
+	local sn0 = sin(rt * 12.6) * mv;
+	local cs0 = cos(rt * 25.2) * mv;
+	local cs0 = (-.25 * mv) + cos(rt * 25.2) * mv;
+	pos, ang = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(0, 0, 0), Vector(0, sn0 * -.39, cs0 * .2), Angle(0, 0, cos(rt * -12.6) * 2.6 * mv));
 
-	if not self.LoweredPos then
-		bob = bob / lerp(lerpSpeed, 1, 1.6)
-		abob = abob / lerp(lerpSpeed, 1, 1.6)
-	else
-		bob = bob / lerp(lerpSpeed, 1.6, 1)
-		abob = abob / lerp(lerpSpeed, 1.6, 1)
-	end
-
-	local ovel = self.Owner:GetVelocity()
-	local move = vec(ovel.x, ovel.y, 0)
-	local vel = move:GetNormalized()
-	local rd = self.Owner:GetRight():Dot(vel)
-	local fd = (self.Owner:GetForward():Dot(vel) + 1) / 2
-
-	local offsetOscilX = 2.6
-	local oscilX = -(self.VMRDBEF*2) * cos(rt * 12.6) * (self.Ironsights and .1 or .5)
-	local oscilY = -(self.VMRDBEF*2) * sin(rt * 6.3) * (self.Ironsights and .1 or .5)
-
-	local snx  = sin(rt * 8.4)
-	local wasneg
-	if snx < 0 then
-		snx = snx * -1
-		wasneg= true
-	end
-	local oscilZ = (self.VMRDBEF*2) * math.ease.InBack( abs(snx) )
-	if wasneg then
-		oscilZ = oscilZ * -1
-	end
-
-	local xnx  = cos(rt * 8.4)
-	local wasneg
-	if xnx < 0 then
-		xnx = xnx * -1
-		wasneg= true
-	end
-	local oscilX = (self.VMRDBEF*2) * math.ease.InBack( abs(xnx) )
-	if wasneg then
-		oscilX = oscilX * -1
-	end
-
-	local alpha2 = sin(rt * 8.4 * 1.5 ) * (self.VMBobCycle)
-	local alpha = sin(rt * 8.4 * 1 ) * self.VMBobCycle
-	alpha = lerp(lerpSpeed, alpha, alpha2)
-	alpha = (alpha / 3) + 0.5
-
-	local rattle = math.sin(CurTime() * 8.5) * (math.cos(alpha * pi) * 2.5)
-	local rattle2 = math.cos(CurTime() * 4.3) * (alpha)
-
-	
-
-	local smoothKnocking = math.ease.InQuad( math.abs(-math.cos(alpha * pi))) * (-1 * math.ceil(math.abs(alpha - 0.5)))
-	local smoothKnocking2 = math.ease.OutBounce( math.abs(-math.sin(alpha * pi))) * (-.2 * math.ceil(math.abs(alpha - 0.5)))
-	
-	bob = LerpVector(self.VMBobCycle, Vector(), bob)
-	abob = LerpAngle(self.VMBobCycle, Angle(), abob)
-
-	pos, ang = Plutonic.Framework.RotateAroundPoint(
-		pos, 
-		ang, 
-		self.PointOrigin or Vector(0, 0, 0),
-		bob + Vector(oscilZ * .15, oscilX* .15 , 0),
-		abob
-	)
-
-	--[[pos, ang = Plutonic.Framework.RotateAroundPoint(
-		pos, 
-		ang, 
-		Vector(0, 0, 0),
-		Vector(smoothKnocking * 2, 0 , smoothKnocking2),
-		Angle(-smoothKnocking, 0, -smoothKnocking2)
-	)]]
-
-	return pos, ang
+	return pos, ang;
 end
 
 -- THINK FOR WALL LEANING OUT
