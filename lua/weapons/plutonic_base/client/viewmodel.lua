@@ -211,8 +211,8 @@ local easeInOutQuad, easeOutElastic, easeInOutQuint = math.ease.InOutQuad, math.
 function SWEP:PostRender()
 	self:DoWallLeanThink()
 	self.Ironsights = self:GetIronsights()
-	
-	self.VMSprint = approach(self.VMSprint or 0, self:IsSprinting() and 1 or 0, Frametime() )
+	local sprinting = self:IsSprinting()
+	self.VMSprint = approach(self.VMSprint or 0, sprinting and 1 or 0, sprinting and Frametime() * 1.15 or Frametime() * 2.5)
 	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 2.4 )
 	self.VMIronsights = self.VMIronsights or 0
 	self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or 0
@@ -414,7 +414,7 @@ end
 function SWEP:DoSprint(pos, ang)
 	if self.CustomSprint then return self:CustomSprint(pos, ang) end
 	if not self.LoweredPos then return pos, ang end
-	local t = math.ease.InOutQuad(self.VMSprint or 0)
+	local t = self:IsSprinting() and math.ease.OutQuint(self.VMSprint or 0) or math.ease.InSine(self.VMSprint or 0)
 	local loweredPos = Plutonic.Interpolation.VectorBezierCurve( t, Vector(), self.LoweredMidPos, self.LoweredPos)
 	local loweredAng = Plutonic.Interpolation.AngleBezierCurve( t, Angle(), self.LoweredMidAng, self.LoweredAng)
 	ang:RotateAroundAxis(ang:Right(), loweredAng.p)
@@ -463,10 +463,6 @@ function SWEP:DoWalkBob(pos, ang)
 
 	local mv = self.Owner:GetVelocity():Length2D() / 200;
 
-	if self:IsSprinting() then
-		mv = mv * 2;
-	end
-
 	if self:GetIronsights() then
 		mv = mv * 0.25;
 	end
@@ -487,7 +483,8 @@ function SWEP:DoWalkBob(pos, ang)
 		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(0, 0, 0), Vector(0, sn1 * -.39, cs1 * .2), Angle(0, 0, cos(rt * -12.6) * 2.6 * mv));
 	end
 
-	pos, ang = lerpVector(self.VMSprint or 0, pos1, pos0), lerpAngle(self.VMSprint or 0, ang1, ang0);
+	local interp = Plutonic.Interpolation.BezierCurve(self.VMSprint, 0, .65, 1);
+	pos, ang = lerpVector(interp, pos1, pos0), lerpAngle(interp, ang1, ang0);
 
 	return pos, ang;
 end
