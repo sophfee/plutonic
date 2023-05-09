@@ -51,8 +51,8 @@ Plutonic.Constants.Logo = [[
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 Plutonic is a project built for Landis Games.
-Version: 1.0.1
-Build: 109
+Version: 1.1.0
+Build: 288
 
 ////////////////////////////////////////////////////////]]
 

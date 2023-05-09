@@ -212,7 +212,7 @@ function SWEP:PostRender()
 	self:DoWallLeanThink()
 	self.Ironsights = self:GetIronsights()
 	
-	self.VMSprint = lerp(Frametime() * 5, self.VMSprint or 0, self:IsSprinting() and 1 or 0)
+	self.VMSprint = approach(self.VMSprint or 0, self:IsSprinting() and 1 or 0, Frametime() )
 	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 2.4 )
 	self.VMIronsights = self.VMIronsights or 0
 	self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or 0
@@ -470,10 +470,24 @@ function SWEP:DoWalkBob(pos, ang)
 	if self:GetIronsights() then
 		mv = mv * 0.25;
 	end
-	local sn0 = sin(rt * 12.6) * mv;
-	local cs0 = cos(rt * 25.2) * mv;
-	local cs0 = (-.25 * mv) + cos(rt * 25.2) * mv;
-	pos, ang = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(0, 0, 0), Vector(0, sn0 * -.39, cs0 * .2), Angle(0, 0, cos(rt * -12.6) * 2.6 * mv));
+
+	local pos0, ang0 = pos + Vector(), ang + Angle();
+	do
+		local sn0 = sin(rt * 12.6) * mv;
+		local cs0 = cos(rt * 25.2) * mv;
+		local cs0 = (-.25 * mv) + cos(rt * 25.2) * mv;
+		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(0, 0, 0), Vector(0, sn0 * -.39, cs0 * .2), Angle(0, 0, cos(rt * -12.6) * 2.6 * mv));
+	end
+
+	local pos1, ang1 = pos + Vector(), ang + Angle();
+	do
+		local sn1 = sin(rt * 8.4) * mv;
+		local cs1 = cos(rt * 16.8) * mv;
+		local cs1 = (-.25 * mv) + cos(rt * 16.8) * mv;
+		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(0, 0, 0), Vector(0, sn1 * -.39, cs1 * .2), Angle(0, 0, cos(rt * -12.6) * 2.6 * mv));
+	end
+
+	pos, ang = lerpVector(self.VMSprint or 0, pos1, pos0), lerpAngle(self.VMSprint or 0, ang1, ang0);
 
 	return pos, ang;
 end
