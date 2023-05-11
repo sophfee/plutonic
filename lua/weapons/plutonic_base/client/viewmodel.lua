@@ -630,8 +630,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 		Angle(self.VMDeltaY, swayXa *.7, swayXa * .7)
 	)
 
-	ang:RotateAroundAxis(ang:Forward(), degRoll)
-
 	
 
 	self.PointOrigin = xsn
@@ -667,12 +665,14 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.VMRecoilPos = lerpVector(ft * 2, self.VMRecoilPos, Vector(0, 0, 0))
 	self.VMRecoilAng = lerpAngle(ft * 2, self.VMRecoilAng, Angle(0, 0, 0))
 
+	local att2 = self:GetAttachment(self:LookupAttachment(self.MuzzleFlashAttachment or "muzzle"))
+
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
-		pos, 
+		LocalToWorld(Vector(), Angle(), pos, ang),
 		ang, 
-		self.PointOrigin, 
+		Vector(), 
 		Vector(0, 0, 0), 
-		-LocalPlayer():GetViewPunchAngles()
+		-LocalPlayer():GetViewPunchAngles() - Angle(0, 0, degRoll)
 	)
 
 	local att = self:GetAttachment(self:LookupAttachment(self.MuzzleFlashAttachment or "muzzle"))
