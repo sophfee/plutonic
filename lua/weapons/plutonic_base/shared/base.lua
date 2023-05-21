@@ -360,8 +360,16 @@ function SWEP:PrimaryAttack()
 		self:SetBursting(true)
 		self.Burst = 3
 
-		local delay = CurTime() + ((self.Primary.Delay * 3) + (self.Primary.BurstEndDelay or 0.3))
-		self:SetNextPrimaryFire(delay)
+		
+		local curtime = CurTime()
+		local curatt = self:GetNextPrimaryFire()
+		local diff = curtime - curatt
+
+		if diff > engine.TickInterval() or diff < 0 then
+			curatt = curtime
+		end
+		local delay = ((self.Primary.Delay * 3) + (self.Primary.BurstEndDelay or 0.3))
+		self:SetNextPrimaryFire(curatt + delay)
 		self:SetReloadTime(delay)
 	elseif clip >= 1 then
 		self:TakePrimaryAmmo(1)
@@ -386,11 +394,26 @@ function SWEP:PrimaryAttack()
 		else
 			self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_WEAPON, nil, 1)
 		end
-		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-		self:SetReloadTime(CurTime() + self.Primary.Delay)
+		
+		local curtime = CurTime()
+		local curatt = self:GetNextPrimaryFire()
+		local diff = curtime - curatt
+
+		if diff > engine.TickInterval() or diff < 0 then
+			curatt = curtime
+		end
+
+		self:SetNextPrimaryFire(curatt + self.Primary.Delay)
 	else
 		self:EmitSound(self.EmptySound)
 		self:Reload()
+		local curtime = CurTime()
+		local curatt = self:GetNextPrimaryFire()
+		local diff = curtime - curatt
+
+		if diff > engine.TickInterval() or diff < 0 then
+			curatt = curtime
+		end
 		self:SetNextPrimaryFire(CurTime() + 1)
 	end
 end

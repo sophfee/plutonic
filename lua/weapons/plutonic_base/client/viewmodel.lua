@@ -75,85 +75,6 @@ function SWEP:ViewModelDrawn()
 		return
 	end
 
-	--[[if self.lastshot then
-		if (math.abs(self.lastshot - CurTime()) < .06 ) then
-			
-			local alpha = 1 - ((CurTime() - self.lastshot) / 3)
-			if not self.heatedbarrel then
-				chat.AddText("racism is funny")
-				self.heatedbarrel = ProjectedTexture()
-				self.heatedbarrel:SetTexture("effects/flashlight001")
-				self.heatedbarrel:SetFarZ(256)
-				self.heatedbarrel:SetFOV(140)
-				self.heatedbarrel:SetBrightness(2)
-				self.heatedbarrel:SetColor(self.MuzzleFlashColor or Color(244, 209, 66))
-				self.heatedbarrel:SetEnableShadows(true)
-				self.heatedbarrel:SetNearZ(1)
-				self.heatedbarrel:SetPos(vm:LocalToWorld(self.PointOrigin + Vector(4, 0, 0)))
-				self.heatedbarrel:SetAngles(self.Owner:EyeAngles())
-				self.heatedbarrel:Update()
-
-			else
-				self.heatedbarrel:SetTexture("effects/flashlight001")
-				self.heatedbarrel:SetFarZ(256)
-				self.heatedbarrel:SetFOV(140)
-				self.heatedbarrel:SetBrightness(0)
-				self.heatedbarrel:SetColor(self.MuzzleFlashColor or Color(244, 209, 66))
-				self.heatedbarrel:SetEnableShadows(true)
-				self.heatedbarrel:SetNearZ(1)
-				local attchhhhgf = vm:GetAttachment(1)
-				self.heatedbarrel:SetPos(attchhhhgf.Pos)
-				self.heatedbarrel:SetAngles(attchhhhgf.Ang)
-				self.heatedbarrel:Update()
-			end
-			
-		else
-			if self.heatedbarrel then
-				self.heatedbarrel:Remove()
-				self.heatedbarrel = nil
-			end
-		end
-	end
-
-	if self.lastshot then
-		if ( true ) then
-			
-			local alpha = 1 - ((CurTime() - self.lastshot) / 3)
-			if not self.TexGunLight then
-				self.TexGunLight = ProjectedTexture()
-				self.TexGunLight:SetTexture("effects/flashlight001")
-				self.TexGunLight:SetFarZ(2048)
-				self.TexGunLight:SetFOV(60)
-				self.TexGunLight:SetBrightness(2)
-				self.TexGunLight:SetColor(color_white)
-				self.TexGunLight:SetTargetEntity(vm)
-				self.TexGunLight:SetEnableShadows(true)
-				self.TexGunLight:SetNearZ(1)
-				--self.TexGunLight:SetPos()
-				self.TexGunLight:SetAngles(self.Owner:EyeAngles())
-				self.TexGunLight:Update()
-
-			else
-				self.TexGunLight:SetTexture("effects/flashlight001")
-				self.TexGunLight:SetColor(Color(151, 174, 217))
-				self.TexGunLight:SetEnableShadows(true)
-				self.TexGunLight:SetTargetEntity(nil)
-				self.TexGunLight:SetShadowFilter(0)
-				self.TexGunLight:SetNearZ(1)
-				local attchhhhgf = vm:GetAttachment(1)
-				self.TexGunLight:SetPos(attchhhhgf.Pos)
-				self.TexGunLight:SetAngles(attchhhhgf.Ang)
-				self.TexGunLight:Update()
-			end
-			
-		else
-			if self.TexGunLight then
-				self.TexGunLight:Remove()
-				self.TexGunLight = nil
-			end
-		end
-	end]]
-
 	local attachment = self:GetCurAttachment()
 
 	if not self.Attachments or not self.Attachments[attachment] or not self.Attachments[attachment].Cosmetic then
@@ -195,8 +116,16 @@ function SWEP:ViewModelDrawn()
 	ang:RotateAroundAxis(ang:Forward(), c.Ang.r)
 	att:SetAngles(ang)
 	att:DrawModel()
-	if self:GetAttachmentBehavior() == "holosight" then
+	if self:GetAttachmentBehavior() == "dummy" then
 		-- Deprecated until at least 1.12.1
+		
+		if true then
+			local attPos = pos
+			local attAng = att:GetAngles()
+			attPos = attPos + (attAng:Up() * 2)
+			render.DrawSprite(attPos, 32, 32, Color(255, 255, 255, 255))
+		end
+
 	end
 end
 function SWEP:PostDrawViewModel(vm, ply, wep)
@@ -403,7 +332,7 @@ function SWEP:DoIdle(pos, ang)
 	local idle2 = cos(rt * .84) * 0.1
 	local fidget = sin(rt * 1.03) * cos(rt * .84) * 2
 
-	return pos, ang --Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(self.BarrelLength, 0, 0), Vector(idle * -1, idle2 * -1, idle * -1), Angle(idle * 1, idle2 * 1, fidget * 1))
+	return Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(self.BarrelLength, 0, 0), Vector(idle * -1, idle2 * -1, idle * -1), Angle(idle * 1, idle2 * 1, fidget * 1))
 end
 
 SWEP.LoweredMidPos = Vector(4,-3,0.4)
@@ -451,6 +380,8 @@ SWEP.aBobOut = Angle()
 
 lerpSpeed = 0
 
+local hastickedthiscycle = false
+
 local WalkingTime = 0
 function SWEP:DoWalkBob(pos, ang)
 	if self.DoCustomWalkBob then
@@ -471,10 +402,36 @@ function SWEP:DoWalkBob(pos, ang)
 	do
 		local sn0 = sin(rt * 12.6) * mv;
 		local cs0 = cos(rt * 25.2) * mv;
-		local cs0 = (-.25 * mv) + cos(rt * 25.2) * mv;
-		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(0, 0, 0), Vector(0, sn0 * -.39, cs0 * .2), Angle(0, 0, cos(rt * -12.6) * 2.6 * mv));
-	end
 
+		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(0, 0, 0), Vector(0, sn0 * -.39, cs0 * -.22), Angle(0, 0, sin(rt * 25.2) * 2));
+	end
+--[[
+	if Plutonic.Framework.IsMoving() then
+		if self:IsSprinting() then
+			local cosSprint = sin(rt * 25.2);
+			if (math.floor(cosSprint + .5) != 1) then
+				if not hastickedthiscycle then
+					EmitSound("Plutonic.Sprint", self.Owner:GetPos(), self.Owner:EntIndex(), CHAN_AUTO, 0.2, 75, 0, 100)
+					hastickedthiscycle = true
+				end
+			else
+				hastickedthiscycle = false
+			end
+		else
+			local cosSprint = sin(rt * 16.8);
+			if (math.floor(cosSprint + .5) != 1) then
+				if not hastickedthiscycle then
+					EmitSound("Plutonic.Walk", self.Owner:GetPos(), self.Owner:EntIndex(), CHAN_AUTO, 0.2, 75, 0, 100)
+					hastickedthiscycle = true
+				end
+			else
+				hastickedthiscycle = false
+			end
+		end
+	else
+		hastickedthiscycle = false
+	end
+]]
 	local pos1, ang1 = pos + Vector(), ang + Angle();
 	do
 		local sn1 = sin(rt * 8.4) * mv;
@@ -485,6 +442,12 @@ function SWEP:DoWalkBob(pos, ang)
 
 	local interp = Plutonic.Interpolation.BezierCurve(self.VMSprint, 0, .65, 1);
 	pos, ang = lerpVector(interp, pos1, pos0), lerpAngle(interp, ang1, ang0);
+
+	if self:IsSprinting() then
+		--ang:RotateAroundAxis(ang:Right(), sin(rt * 25.2) * mv  *-.3 )
+	else
+		ang:RotateAroundAxis(ang:Forward(), cos(rt * 16.8) * mv * .1)
+	end
 
 	return pos, ang;
 end
@@ -672,7 +635,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		ang, 
 		Vector(), 
 		Vector(0, 0, 0), 
-		-LocalPlayer():GetViewPunchAngles() - Angle(0, 0, degRoll)
+		-LocalPlayer():GetViewPunchAngles() - Angle(0, 0, degRoll *1)
 	)
 
 	local att = self:GetAttachment(self:LookupAttachment(self.MuzzleFlashAttachment or "muzzle"))
