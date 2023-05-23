@@ -1,4 +1,4 @@
---      Copyright (c) 2022-2023, Nick S. All rights reserved      --
+--      Copyright (c) 2022-2023, sophie S. All rights reserved      --
 -- Plutonic is a project built for Landis Games. --
 
 CreateClientConVar("plutonic_debug", "0", false, false)

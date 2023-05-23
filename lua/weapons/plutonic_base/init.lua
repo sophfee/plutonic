@@ -1,6 +1,6 @@
 AddCSLuaFile()
 
---      Copyright (c) 2022-2023, Nick S. All rights reserved      --
+--      Copyright (c) 2022-2023, sophie S. All rights reserved      --
 -- Plutonic is a project built for Landis Games. --
 
 -- We cannot Link, we have to copy the code. --
