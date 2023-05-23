@@ -30,9 +30,7 @@ function SWEP:Detach(att)
 end
 
 function SWEP:AttachmentEquipped(att)
-	print("Equipped " .. att)
 end
 
 function SWEP:AttachmentDetached(att)
-	print("Detached " .. att)
 end

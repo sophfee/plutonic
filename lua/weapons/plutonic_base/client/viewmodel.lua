@@ -96,13 +96,22 @@ function SWEP:ViewModelDrawn()
 		end
 
 		local c = attData.Cosmetic
+		
 
 		local att = self.AttachmentEntCache[attName]
-		if (c and not att) then
+		if (not IsValid(att)) then
 			att = ClientsideModel(c.Model, RENDERGROUP_VIEWMODEL)
 			att:SetParent(vm)
 			att:SetNoDraw(true)
 			att:AddEffects(EF_BONEMERGE)
+
+			if c.Scale then
+				if c.BoneScale then
+					att:ManipulateBoneScale(0, Vector(c.Scale,c.Scale,c.Scale))
+				else
+					att:SetModelScale(c.Scale)
+				end
+			end
 			self.AttachmentEntCache[attName] = att
 		end
 		local bone = vm:LookupBone(c.Bone)
@@ -119,8 +128,6 @@ function SWEP:ViewModelDrawn()
 		pos = pos + ang:Right() * c.Pos.y
 		pos = pos + ang:Up() * c.Pos.z
 
-		
-
 		att:SetPos(pos)
 		ang:RotateAroundAxis(ang:Up(), c.Ang.y)
 		ang:RotateAroundAxis(ang:Right(), c.Ang.p)
@@ -131,7 +138,9 @@ function SWEP:ViewModelDrawn()
 		drawnNames[attName] = true
 
 		if attData.Behavior == "1x_Sight" then
-			render.SetMaterial(reticule)
+			Plutonic.Framework.Mask(att)
+
+			render.SetMaterial(attData.Reticule.Material or reticule)
 
 			local rpos = attData.Reticule.Pos
 			local pos, ang = m:GetTranslation(), m:GetAngles()
@@ -140,7 +149,11 @@ function SWEP:ViewModelDrawn()
 			pos = pos + ang:Right() * rpos.y
 			pos = pos + ang:Up() * rpos.z
 
-			render.DrawSprite(pos, .5, .5, color_white)
+			local size = attData.Reticule.Size or 4
+
+			render.DrawSprite(pos, size, size, color_white)
+
+			Plutonic.Framework.UnMask()
 		end
 	end
 
@@ -709,7 +722,7 @@ Plutonic.Hooks.Add("PostDrawPlayerHands", function()
 	end
 end)
 function SWEP:ProceduralRecoil(force)
-	self.lastshot = CurTime()
+	--[[self.lastshot = CurTime()
 	if self:GetIronsights() then force = force * 0.08 end
 	force = force 
 	local rPos = self.BlowbackPos + Vector()
@@ -725,7 +738,7 @@ function SWEP:ProceduralRecoil(force)
 	rPos = rPos + (rAng:Right() * (rollKnock / 2))
 	rPos = rPos - (rAng:Forward() * (math.Rand(4,6)) ) * force
 	self.VMRecoil = (self.VMRecoil or Vector()) + (rPos)
-	self.VMRecoilAng = (self.VMRecoilAng or Angle()) + (rAng)
+	self.VMRecoilAng = (self.VMRecoilAng or Angle()) + (rAng)]]
 end
 
 SWEP.CAM_ReloadAlp = 0

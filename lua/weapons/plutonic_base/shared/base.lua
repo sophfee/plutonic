@@ -251,7 +251,7 @@ function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_d
 		bullet.Distance = self.Primary.Range
 	end
 
-	bullet.Tracer	= 1 -- Show a tracer on every x bullets
+	bullet.Tracer	= self.Primary.TracerEveryX or 1 -- Show a tracer on every x bullets
 	bullet.Force	= 1 -- Amount of force to give to phys objects
 	bullet.Damage	= damage
 	bullet.AmmoType = "Pistol"
@@ -313,6 +313,9 @@ function SWEP:ShootEffects()
 		end
 		
 	else
+		if self.IronsightsFireActivity then
+			self:PlayAnim(self.IronsightsFireActivity)
+		end
 		self.CanDecreaseBlowback = CurTime() + 0.1
 	end
 
@@ -499,7 +502,6 @@ function SWEP:QueueIdle()
 	if self.Owner:IsNPC() then return end
 	self:SetNextIdle( CurTime() + self.Owner:GetViewModel():SequenceDuration() + 0.1 )
 end
-
 
 
 function SWEP:CanShoot()
