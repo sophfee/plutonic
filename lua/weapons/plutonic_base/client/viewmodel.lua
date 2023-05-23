@@ -147,9 +147,12 @@ function SWEP:ViewModelDrawn()
 			pos = pos + ang:Right() * rpos.y
 			pos = pos + ang:Up() * rpos.z
 
+			local rang = attData.Reticule.Ang or Angle(90, 180, 90)
+
 			
-			ang:RotateAroundAxis(ang:Right(), 90)
-			ang:RotateAroundAxis(ang:Up(), 180)
+			ang:RotateAroundAxis(ang:Right(), rang.p)
+			ang:RotateAroundAxis(ang:Up(), rang.y)
+			ang:RotateAroundAxis(ang:Forward(), rang.r)
 			
 			local size = attData.Reticule.Size or 4
 			
