@@ -101,7 +101,7 @@ function SWEP:DrawHUD()
 		surface.DrawText("VMSprint: " .. tostring(self.VMSprint))
 
 		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 210)
-		surface.DrawText("VMRecoilPos: " .. tostring(self.VMRecoilPos))
+		surface.DrawText("Attachments: " .. table.concat(self.AttachmentEntCache, ", "))
 
 		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 225)
 		surface.DrawText("VMRecoilAng: " .. tostring(self.VMRecoilAng))

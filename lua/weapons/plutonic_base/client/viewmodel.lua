@@ -65,7 +65,6 @@ mat:SetTexture("$basetexture", rtx:GetName())
 mat:SetInt("$translucent", 1)
 mat:Recompute()
 
-
 function SWEP:ViewModelDrawn()
 	if Plutonic.Framework.Overdraw then return end
 
@@ -75,59 +74,73 @@ function SWEP:ViewModelDrawn()
 		return
 	end
 
-	local attachment = self:GetCurAttachment()
-
-	if not self.Attachments or not self.Attachments[attachment] or not self.Attachments[attachment].Cosmetic then
-		return
+	if self.ExtraViewModelRender then
+		self:ExtraViewModelRender(vm)
 	end
 
-	local attData = self.Attachments[attachment]
+	local boneMatrices = {}
 
-	if attData.PlayerParent then
-		vm = self.Owner
-	end
+	for attName, _ in pairs(self.EquippedAttachments) do
 
-	if not IsValid(self.AttachedCosmetic) then
-		self.AttachedCosmetic = ClientsideModel(attData.Cosmetic.Model, RENDER_GROUP_VIEW_MODEL_OPAQUE)
-		self.AttachedCosmetic:SetParent(vm)
-		self.AttachedCosmetic:SetNoDraw(true)
-		self.AttachedCosmetic:AddEffects(EF_BONEMERGE)
+		local attData = self.Attachments[attName]
 
-		if attData.Cosmetic.Scale then
-			self.AttachedCosmetic:SetModelScale(attData.Cosmetic.Scale)
+		if not attData then
+			continue
 		end
-	end
 
-	local att = self.AttachedCosmetic
-	local c = attData.Cosmetic
-	local bone = vm:LookupBone(c.Bone)
+		local c = attData.Cosmetic
 
-	if not bone then
-		return
-	end
-
-	local m = vm:GetBoneMatrix(bone)
-
-	local pos, ang = m:GetTranslation(), m:GetAngles()
-
-	att:SetPos(pos + ang:Forward() * c.Pos.x + ang:Right() * c.Pos.y + ang:Up() * c.Pos.z)
-	ang:RotateAroundAxis(ang:Up(), c.Ang.y)
-	ang:RotateAroundAxis(ang:Right(), c.Ang.p)
-	ang:RotateAroundAxis(ang:Forward(), c.Ang.r)
-	att:SetAngles(ang)
-	att:DrawModel()
-	if self:GetAttachmentBehavior() == "dummy" then
-		-- Deprecated until at least 1.12.1
+		local att = self.AttachmentEntCache[attName]
+		if (c and not att) then
+			att = ClientsideModel(c.Model, RENDERGROUP_VIEWMODEL)
+			att:SetNoDraw(true)
+			att:SetParent(vm)
+			if (c.BoneMerge == nil and true or c.BoneMerge) then
+				att:AddEffects(EF_BONEMERGE)
+			end
+			self.AttachmentEntCache[attName] = att
+		end
 		
-		if true then
-			local attPos = pos
-			local attAng = att:GetAngles()
-			attPos = attPos + (attAng:Up() * 2)
-			render.DrawSprite(attPos, 32, 32, Color(255, 255, 255, 255))
+		local c = attData.Cosmetic
+		local bone = vm:LookupBone(c.Bone)
+
+		if not bone then
+			print("NO BONE NIGGA")
+			continue
 		end
 
+		local m = vm:GetBoneMatrix(bone)
+
+		local pos, ang = m:GetTranslation(), m:GetAngles()
+
+		att:SetPos(pos + ang:Forward() * c.Pos.x + ang:Right() * c.Pos.y + ang:Up() * c.Pos.z)
+		ang:RotateAroundAxis(ang:Up(), c.Ang.y)
+		ang:RotateAroundAxis(ang:Right(), c.Ang.p)
+		ang:RotateAroundAxis(ang:Forward(), c.Ang.r)
+		att:SetAngles(ang)
+		att:DrawModel()
+		if attData.Behavior == "1x_Sight" then
+			-- Deprecated until at least 1.12.1
+			
+		end
 	end
 end
+
+concommand.Add("plutonic_client_debug_attachments", function()
+	local lp = LocalPlayer()
+	local wep = lp:GetActiveWeapon()
+
+	print("Dumping Weapon.Attachments:")
+	PrintTable(wep.Attachments)
+
+	print("\nDumping Weapon.AttachmentEntCache:")
+	PrintTable(wep.AttachmentEntCache)
+
+	print("\nDumping Weapon.EquippedAttachments:")
+	PrintTable(wep.EquippedAttachments)
+
+end)
+
 function SWEP:PostDrawViewModel(vm, ply, wep)
 end
 SWEP.BarrelLength = 6

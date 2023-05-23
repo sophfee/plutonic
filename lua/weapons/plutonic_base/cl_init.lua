@@ -16,6 +16,7 @@ include("client/replacement.lua")
 include("client/debug.lua")
 include("client/crosshair.lua")
 include("client/ammoindicator.lua")
+include("client/attachment.lua")
 
 Plutonic.Constants.Logo = [[////////////////////////////////////////////////////////
   _____  _     _    _ _______ ____  _   _ _____ _____ 
@@ -28,8 +29,8 @@ Plutonic.Constants.Logo = [[////////////////////////////////////////////////////
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 Plutonic is a project built for Landis Games.
-Version: 1.1.0
-Build: 288
+Version: 1.2.0
+Build: 365
 
 ////////////////////////////////////////////////////////]]
 

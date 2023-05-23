@@ -18,6 +18,7 @@ include("shared/reload.lua")
 -- ServerSide Files
 include("server/sound.lua")
 include("server/echo.lua")
+include("server/attachments.lua")
 
 -- Shared Files (for Client)
 AddCSLuaFile("shared/base.lua")
@@ -30,6 +31,7 @@ AddCSLuaFile("shared/worldmodel.lua")
 AddCSLuaFile("shared/reload.lua")
 
 -- ClientSide Files
+AddCSLuaFile("client/attachment.lua")
 AddCSLuaFile("client/viewmodel.lua")
 AddCSLuaFile("client/sound.lua")
 AddCSLuaFile("client/fov.lua")
@@ -51,8 +53,8 @@ Plutonic.Constants.Logo = [[
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 Plutonic is a project built for Landis Games.
-Version: 1.1.0
-Build: 288
+Version: 1.2.0
+Build: 365
 
 ////////////////////////////////////////////////////////]]
 
