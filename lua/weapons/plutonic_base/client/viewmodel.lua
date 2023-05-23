@@ -65,6 +65,8 @@ mat:SetTexture("$basetexture", rtx:GetName())
 mat:SetInt("$translucent", 1)
 mat:Recompute()
 
+local reticule = Material("models/weapons/insurgency_sandstorm/ins2_sandstorm/kobra_reticle")
+
 function SWEP:ViewModelDrawn()
 	if Plutonic.Framework.Overdraw then return end
 
@@ -80,6 +82,11 @@ function SWEP:ViewModelDrawn()
 
 	local boneMatrices = {}
 
+	local drawnNames = {}
+
+	self.EquippedAttachments = self.EquippedAttachments or {}
+	self.AttachmentEntCache = self.AttachmentEntCache or {}
+
 	for attName, _ in pairs(self.EquippedAttachments) do
 
 		local attData = self.Attachments[attName]
@@ -93,19 +100,14 @@ function SWEP:ViewModelDrawn()
 		local att = self.AttachmentEntCache[attName]
 		if (c and not att) then
 			att = ClientsideModel(c.Model, RENDERGROUP_VIEWMODEL)
-			att:SetNoDraw(true)
 			att:SetParent(vm)
-			if (c.BoneMerge == nil and true or c.BoneMerge) then
-				att:AddEffects(EF_BONEMERGE)
-			end
+			att:SetNoDraw(true)
+			att:AddEffects(EF_BONEMERGE)
 			self.AttachmentEntCache[attName] = att
 		end
-		
-		local c = attData.Cosmetic
 		local bone = vm:LookupBone(c.Bone)
 
 		if not bone then
-			print("NO BONE NIGGA")
 			continue
 		end
 
@@ -113,15 +115,38 @@ function SWEP:ViewModelDrawn()
 
 		local pos, ang = m:GetTranslation(), m:GetAngles()
 
-		att:SetPos(pos + ang:Forward() * c.Pos.x + ang:Right() * c.Pos.y + ang:Up() * c.Pos.z)
+		pos = pos + ang:Forward() * c.Pos.x
+		pos = pos + ang:Right() * c.Pos.y
+		pos = pos + ang:Up() * c.Pos.z
+
+		
+
+		att:SetPos(pos)
 		ang:RotateAroundAxis(ang:Up(), c.Ang.y)
 		ang:RotateAroundAxis(ang:Right(), c.Ang.p)
 		ang:RotateAroundAxis(ang:Forward(), c.Ang.r)
 		att:SetAngles(ang)
 		att:DrawModel()
+
+		drawnNames[attName] = true
+
 		if attData.Behavior == "1x_Sight" then
-			-- Deprecated until at least 1.12.1
-			
+			render.SetMaterial(reticule)
+
+			local rpos = attData.Reticule.Pos
+			local pos, ang = m:GetTranslation(), m:GetAngles()
+
+			pos = pos + ang:Forward() * rpos.x
+			pos = pos + ang:Right() * rpos.y
+			pos = pos + ang:Up() * rpos.z
+
+			render.DrawSprite(pos, .5, .5, color_white)
+		end
+	end
+
+	for name, csEnt in pairs(self.AttachmentEntCache) do
+		if (not drawnNames[name]) then
+			csEnt:Remove()
 		end
 	end
 end

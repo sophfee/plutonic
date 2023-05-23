@@ -8,8 +8,11 @@ function SWEP:IdleThink()
 end
 
 function SWEP:Think()
-
+	self.EquippedAttachments = self.EquippedAttachments or {}
+	self.AttachmentEntCache = self.AttachmentEntCache or {}
 	if CLIENT then
+		
+
 		self:ViewmodelThink()
 	end
 
