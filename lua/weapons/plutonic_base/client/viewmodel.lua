@@ -140,8 +140,6 @@ function SWEP:ViewModelDrawn()
 		if attData.Behavior == "1x_Sight" then
 			Plutonic.Framework.Mask(att)
 
-			render.SetMaterial(attData.Reticule.Material or reticule)
-
 			local rpos = attData.Reticule.Pos
 			local pos, ang = m:GetTranslation(), m:GetAngles()
 
@@ -149,9 +147,15 @@ function SWEP:ViewModelDrawn()
 			pos = pos + ang:Right() * rpos.y
 			pos = pos + ang:Up() * rpos.z
 
+			
+			ang:RotateAroundAxis(ang:Right(), 90)
+			ang:RotateAroundAxis(ang:Up(), 180)
+			
 			local size = attData.Reticule.Size or 4
-
-			render.DrawSprite(pos, size, size, color_white)
+			
+			render.SetMaterial(attData.Reticule.Material or reticule)
+			render.DrawQuadEasy(pos, ang:Forward(), size, size, attData.Reticule.Color or color_white, ang.r)
+			--render.DrawSprite(pos, size, size, color_white)
 
 			Plutonic.Framework.UnMask()
 		end
