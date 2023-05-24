@@ -1,3 +1,5 @@
+--- The core level functionality of Plutonic.
+-- @module Framework
 
 --- Starts a mask to draw a model to the stencil buffer, this is used for sights
 -- @param ent The entity to draw to the stencil buffer

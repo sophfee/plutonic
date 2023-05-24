@@ -1,12 +1,15 @@
+--- The core level functionality of Plutonic.
+-- @module Framework
+
 AddCSLuaFile()
 
-Plutonic = Plutonic or {} --- Creates the Plutonic table if it doesn't exist.
-Plutonic.Enum = Plutonic.Enum or {} --- Creates the Plutonic Enum table if it doesn't exist.
-Plutonic.Framework = Plutonic.Framework or {} --- Creates the Plutonic Framework table if it doesn't exist.
-Plutonic.Constants = Plutonic.Constants or {} --- Creates the Plutonic Constants table if it doesn't exist.
-Plutonic.Interpolation = Plutonic.Interpolation or {} --- Creates the Plutonic Interpolation table if it doesn't exist.
-Plutonic.Hooks = Plutonic.Hooks or {} --- Creates the Plutonic Hooks table if it doesn't exist.
-Plutonic.FireRate = Plutonic.FireRate or {} --- Creates the Plutonic FireRate table if it doesn't exist.
+Plutonic = Plutonic or {} -- Creates the Plutonic table if it doesn't exist.
+Plutonic.Enum = Plutonic.Enum or {} -- Creates the Plutonic Enum table if it doesn't exist.
+Plutonic.Framework = Plutonic.Framework or {} -- Creates the Plutonic Framework table if it doesn't exist.
+Plutonic.Constants = Plutonic.Constants or {} -- Creates the Plutonic Constants table if it doesn't exist.
+Plutonic.Interpolation = Plutonic.Interpolation or {} -- Creates the Plutonic Interpolation table if it doesn't exist.
+Plutonic.Hooks = Plutonic.Hooks or {} -- Creates the Plutonic Hooks table if it doesn't exist.
+Plutonic.FireRate = Plutonic.FireRate or {} -- Creates the Plutonic FireRate table if it doesn't exist.
 
 --- Does a fancy print to the console.
 -- @realm shared

@@ -1,3 +1,6 @@
+--- The core level functionality of Plutonic.
+-- @module Framework
+
 local PIERCING_MATS = {
 	[MAT_FLESH] = true,
 	[MAT_BLOODYFLESH] = true,
@@ -22,6 +25,10 @@ local ALWAYS_PIERCE = {
 	[MAT_GRATE] = true
 }
 
+--- Fire a bullet from the weapon. This is a wrapper for the SWEP:FireBullets function.
+-- @realm shared
+-- @param bullet The bullet table to use.
+-- @param SuppressHostEvents Whether or not to suppress the host events.
 Plutonic.Framework.FireBullets = function(self, bullet, SuppressHostEvents)
     bullet.Callback = function(attacker, tr)
         if attacker.IsDeveloper then

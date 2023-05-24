@@ -4,8 +4,13 @@ net.Receive("Plutonic.AttachmentEquip", function()
 
 	if not IsValid(wep) then return end
 	if not wep.IsPlutonic then return end
+	if wep:GetOwner() ~= LocalPlayer() then return end
 
 	wep:Attach(att)
+
+	if IsValid(impulse_modstation) then
+		impulse_modstation:RefreshAttachments(wep)
+	end
 end)
 
 net.Receive("Plutonic.AttachmentRemove", function()
@@ -14,6 +19,11 @@ net.Receive("Plutonic.AttachmentRemove", function()
 
 	if not IsValid(wep) then return end
 	if not wep.IsPlutonic then return end
+	if wep:GetOwner() ~= LocalPlayer() then return end
 
 	wep:Detach(att)
+
+	if IsValid(impulse_modstation) then
+		impulse_modstation:RefreshAttachments(wep)
+	end
 end)
