@@ -133,7 +133,12 @@ function SWEP:ViewModelDrawn()
 		ang:RotateAroundAxis(ang:Right(), c.Ang.p)
 		ang:RotateAroundAxis(ang:Forward(), c.Ang.r)
 		att:SetAngles(ang)
-		att:DrawModel()
+
+		if attData.RenderOverride then
+			attData.RenderOverride(self, vm, att)
+		else
+			att:DrawModel()
+		end
 
 		drawnNames[attName] = true
 

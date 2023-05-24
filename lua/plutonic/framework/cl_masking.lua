@@ -4,7 +4,7 @@
 --- Starts a mask to draw a model to the stencil buffer, this is used for sights
 -- @param ent The entity to draw to the stencil buffer
 -- @realm client
-Plutonic.Framework.Mask = function(ent)
+Plutonic.Framework.Mask = function(...)
 	render.SetStencilReferenceValue( 0 )
 	render.SetStencilPassOperation( STENCIL_KEEP )
 	render.SetStencilZFailOperation( STENCIL_KEEP )
@@ -18,7 +18,10 @@ Plutonic.Framework.Mask = function(ent)
 	render.SetStencilFailOperation( STENCIL_INCR )
 
 	-- Draw the model to the stencil buffer
-	ent:DrawModel()
+	local masks = {...}
+	for _, ent in ipairs(masks) do
+		ent:DrawModel()
+	end
 	
 	render.SetStencilTestMask( 0xFF )
 	render.SetStencilReferenceValue( 0x1F )
