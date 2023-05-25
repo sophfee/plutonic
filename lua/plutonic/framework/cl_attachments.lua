@@ -27,3 +27,11 @@ net.Receive("Plutonic.AttachmentRemove", function()
 		impulse_modstation:RefreshAttachments(wep)
 	end
 end)
+
+Plutonic.RTSight = GetRenderTarget("plutonic_rtsight", ScrW(), ScrH(), false)
+Plutonic.RTMaterial = CreateMaterial("plutonic_rtmaterial", "UnlitGeneric", {
+	["$basetexture"] = Plutonic.RTSight:GetName(),
+	["$translucent"] = 1,
+	["$vertexalpha"] = 1,
+	["$vertexcolor"] = 1,
+})
