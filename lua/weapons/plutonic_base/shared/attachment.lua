@@ -1,5 +1,5 @@
-SWEP.EquippedAttachments = {}
-SWEP.Attachments = {}
+SWEP.EquippedAttachments = SWEP.EquippedAttachments or {}
+SWEP.AttachmentEntCache = SWEP.AttachmentEntCache or {}
 
 function SWEP:HasAttachment(name)
 	return self.EquippedAttachments[name] != nil
