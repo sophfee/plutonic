@@ -60,3 +60,10 @@ Plutonic.Enum.Modification = {
 -- @field Rail
 -- @field Trigger
 -- @table Modification
+
+
+Plutonic.Enum.Sound = {
+	GunShot = 140,
+	GunShotSilence = 85,
+	Generic = 60
+}

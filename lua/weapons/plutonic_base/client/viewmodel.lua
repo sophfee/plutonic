@@ -53,8 +53,6 @@ function SWEP:PreDrawViewModel(vm)
 		self.Owner:GetViewModel():SetMaterial(self.CustomMaterial)
 		self.CustomMatSetup = true
 	end
-	
-
 	if self.scopedIn then
 		return self.scopedIn
 	end
@@ -146,18 +144,20 @@ function SWEP:ViewModelDrawn()
 			Plutonic.Framework.Mask(att)
 
 			local rpos = attData.Reticule.Pos
-			local pos, ang = m:GetTranslation(), m:GetAngles()
+			local pos, ang = EyePos(), m:GetAngles()
+			local eang =  EyeAngles()
 
-			pos = pos + ang:Forward() * rpos.x
-			pos = pos + ang:Right() * rpos.y
-			pos = pos + ang:Up() * rpos.z
+			--ang:RotateAroundAxis(ang:Up(), 180)
+
+			pos = pos + eang:Forward() * rpos.x
+			pos = pos + eang:Right() * rpos.y
+			pos = pos + eang:Up() * rpos.z
 
 			local rang = attData.Reticule.Ang or Angle(90, 180, 90)
-
 			
-			ang:RotateAroundAxis(ang:Right(), rang.p)
-			ang:RotateAroundAxis(ang:Up(), rang.y)
-			ang:RotateAroundAxis(ang:Forward(), rang.r)
+			ang:RotateAroundAxis(ang:Right(), rang[1])
+			ang:RotateAroundAxis(ang:Up(), rang[2])
+			ang:RotateAroundAxis(ang:Forward(), rang[3])
 			
 			local size = attData.Reticule.Size or 4
 			
@@ -722,16 +722,6 @@ function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
 	print("[Plutonic] DrawHoloSight is deprecated!")
 end
 Plutonic.Hooks.Add("PostDrawPlayerHands", function()
-	if LocalPlayer():Alive() and LocalPlayer():GetActiveWeapon():IsValid() then
-		local wep = LocalPlayer():GetActiveWeapon()
-		if wep.IsPlutonic then
-			if wep.VMIronsights < 0.1 then
-				return
-			end
-			render.UpdateRefractTexture()
-			DrawToyTown(4 * wep.VMIronsights, ScrH()*.47)
-		end
-	end
 end)
 function SWEP:ProceduralRecoil(force)
 	--[[self.lastshot = CurTime()

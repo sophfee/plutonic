@@ -114,6 +114,7 @@ function SWEP:DrawHUD()
 		end
 	end
 
+	if self.Attachments then 
 	if self:HasAttachment("") then
 		if self.scopedIn then
 			self.scopedIn = false
@@ -129,6 +130,7 @@ function SWEP:DrawHUD()
 		end
 		return
 	end
+end
 
 	if not self:GetIronsights() then
 		ironFade = 0
