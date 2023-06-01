@@ -144,20 +144,32 @@ function SWEP:ViewModelDrawn()
 			Plutonic.Framework.Mask(att)
 
 			local rpos = attData.Reticule.Pos
-			local pos, ang = EyePos(), m:GetAngles()
+			local pos, ang = EyePos(),m:GetAngles()
 			local eang =  EyeAngles()
+			
+			
 
 			--ang:RotateAroundAxis(ang:Up(), 180)
 
-			pos = pos + eang:Forward() * rpos.x
-			pos = pos + eang:Right() * rpos.y
-			pos = pos + eang:Up() * rpos.z
+			--pos = pos + eang:Forward() * rpos.x
+			--pos = pos + eang:Right() * rpos.y
+			--pos = pos + eang:Up() * rpos.z
 
-			local rang = attData.Reticule.Ang or Angle(90, 180, 90)
-			
-			ang:RotateAroundAxis(ang:Right(), rang[1])
-			ang:RotateAroundAxis(ang:Up(), rang[2])
-			ang:RotateAroundAxis(ang:Forward(), rang[3])
+			local rang = attData.Reticule.Ang or Angle(-0,-90,-90)
+			local ranglf = Angle(rang.p, rang.y, rang.r)
+
+
+
+			local oang = Angle(-90, 0, 0)
+
+			pos, ang = Plutonic.Framework.RotateAroundPoint(
+				m:GetTranslation(), 
+				ang, 
+				Vector(), 
+				rpos, 
+				Angle(self.VMDeltaY * .1, self.VMDeltaX * -.1 + 90, -90)
+			)
+			ang:RotateAroundAxis(ang:Forward(), 180)
 			
 			local size = attData.Reticule.Size or 4
 			
@@ -234,6 +246,9 @@ function SWEP:PostRender()
 	local ftM = self.SwaySpeed or 11
 	self.VMDeltaX = lerp(ft * ftM, self.VMDeltaX or 0, 0)
 	self.VMDeltaY = lerp(ft * ftM, self.VMDeltaY or 0, 0)
+
+	self.VMRecoilAmt = self.VMRecoilAmt or 0
+	self.VMRecoilAmt = lerp(ft * 16, self.VMRecoilAmt, 0)
 
 	--[[if (abs(self.VMLastDeltaXInFrame or 0) < abs(self.VMDeltaX or 0)) then
 		self.VMDeltaXT = Curtime()
@@ -373,6 +388,25 @@ function SWEP:DoIronsights(pos, ang)
 	if self:GetIronsights() then
 		dir = true
 	end
+
+	ang:RotateAroundAxis(EyeAngles():Forward(), sin(Curtime() * (1/self.Primary.Delay)) * 5 * math.min(self.VMRecoilAmt, 1) )
+	-- Idle
+	if (self:GetIronsights()) then
+		ang:RotateAroundAxis(EyeAngles():Right(), cos(Curtime() * .5) * 0.05 )
+		ang:RotateAroundAxis(EyeAngles():Up(), sin(Curtime() * 1) * 0.05)
+	end
+
+	-- fire bump
+	self.lastshot = self.lastshot or 0
+	local ls = self.lastshot
+	local timeSince = math.min((ls + 1)- Curtime(), 1)
+	local fireBump = math.ease.InElastic(math.Clamp(timeSince , 0, 1))
+
+	local timeSince = math.min((ls + 2)- Curtime(), 2) / 2
+	local fireBump2 = math.ease.InBack(math.Clamp(timeSince , 0, 1))
+	pos = pos + ang:Forward() * fireBump * -.4
+
+
 	local alpha = dir and math.ease.OutExpo( self.VMIronsights ) or math.ease.InSine( self.VMIronsights )
 	local ironsightPos = Plutonic.Interpolation.VectorBezierCurve( alpha, Vector(), self.IronsightsMiddlePos, self.IronsightsPos)
 	local ironsightAng = Plutonic.Interpolation.AngleBezierCurve( alpha, Angle(), self.IronsightsMiddleAng, self.IronsightsAng)
@@ -382,6 +416,9 @@ function SWEP:DoIronsights(pos, ang)
 	ang:RotateAroundAxis(ang:Right(), ironsightAng.p * alpha)
 	ang:RotateAroundAxis(ang:Up(), ironsightAng.y * alpha)
 	ang:RotateAroundAxis(ang:Forward(), ironsightAng.r * alpha)
+
+	
+
 	return pos, ang
 end
 
@@ -391,11 +428,22 @@ function SWEP:DoIdle(pos, ang)
 		return pos, ang
 	end
 	local rt = Realtime()
-	local idle = sin(rt * 1.03) * 0.1
-	local idle2 = cos(rt * .84) * 0.1
-	local fidget = sin(rt * 1.03) * cos(rt * .84) * 2
 
-	return Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(self.BarrelLength, 0, 0), Vector(idle * -1, idle2 * -1, idle * -1), Angle(idle * 1, idle2 * 1, fidget * 1))
+	local forwardMotion = sin(rt * .25) * .1
+	local sideMotion = cos(rt * .125) * .1
+
+	local forwardAngle = cos(rt * .5) * 2
+	local sideAngle = sin(rt * .5) * 0.8
+
+	local breath = cos(sin(rt * 4) * .2)
+
+	return Plutonic.Framework.RotateAroundPoint(
+		pos,
+		ang,
+		Vector(self.BarrelLength, 0, 0),
+		Vector(0, forwardMotion * 1,breath * -.4),
+		Angle(sideAngle, sideAngle, 0)
+	)
 end
 
 SWEP.LoweredMidPos = Vector(4,-3,0.4)
@@ -422,6 +470,8 @@ function SWEP:DoSprint(pos, ang)
 	local cs0 = cos(rt * 16.8) * t
 	local sn1 = sin(rt * 8.4)  * t
 	local cs1 = cos(rt * 8.4)  * t
+
+
 
 	return pos, ang
 end
@@ -500,7 +550,25 @@ function SWEP:DoWalkBob(pos, ang)
 		local sn1 = sin(rt * 8.4) * mv;
 		local cs1 = cos(rt * 16.8) * mv;
 		local cs1 = (-.25 * mv) + cos(rt * 16.8) * mv;
-		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(0, 0, 0), Vector(0, sn1 * -.39, cs1 * .2), Angle(0, 0, cos(rt * -12.6) * 2.6 * mv));
+		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(
+			pos, 
+			ang, 
+			Vector(self.BarrelLength, 0, 0), 
+			Vector(0, sn1 * -.39, cs1 * .2), 
+			Angle(0, 0, cos(rt * -12.6) * 2.6 * mv)
+		);
+	end
+
+	do
+		local sn1 = sin(rt * 16.8) * mv;
+		local cs1 = sin(sn1 * 2.1) * mv;
+		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(
+			pos1, 
+			ang1, 
+			Vector(self.BarrelLength, 0, 0), 
+			Vector(0, 0, 0), 
+			Angle(0, 0, cs1 * 3)
+		);
 	end
 
 	local interp = Plutonic.Interpolation.BezierCurve(self.VMSprint, 0, .65, 1);
@@ -638,7 +706,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 		swayXa = swayXa * -1
 		degRoll = degRoll * -1
 	end
-
 	
 	local att = self:GetAttachment(self:LookupAttachment(self.MuzzleFlashAttachment or "muzzle"))
 	local xsn
@@ -652,8 +719,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 		pos, 
 		ang, 
 		xsn, 
-		Vector(0, self.VMDeltaX * .08, (math.abs(self.VMDeltaX) * -.02) ), 
-		Angle(self.VMDeltaY, swayXa *.7, swayXa * .7)
+		Vector(- abs(degRoll  *.1), self.VMDeltaX * -.05, self.VMDeltaY *.1 - abs(degRoll  *.04) ), 
+		Angle(-self.VMDeltaY + (sin(swayXa *  .4) *.2),0, swayXa * 1 + sin(self.VMDeltaX * .2)-degRoll)
 	)
 
 	
@@ -698,7 +765,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		ang, 
 		Vector(), 
 		Vector(0, 0, 0), 
-		-LocalPlayer():GetViewPunchAngles() - Angle(0, 0, degRoll *1)
+		-LocalPlayer():GetViewPunchAngles() - Angle(0, 0, 0)
 	)
 
 	local att = self:GetAttachment(self:LookupAttachment(self.MuzzleFlashAttachment or "muzzle"))
@@ -724,7 +791,7 @@ end
 Plutonic.Hooks.Add("PostDrawPlayerHands", function()
 end)
 function SWEP:ProceduralRecoil(force)
-	--[[self.lastshot = CurTime()
+	self.lastshot = CurTime()
 	if self:GetIronsights() then force = force * 0.08 end
 	force = force 
 	local rPos = self.BlowbackPos + Vector()
@@ -740,7 +807,8 @@ function SWEP:ProceduralRecoil(force)
 	rPos = rPos + (rAng:Right() * (rollKnock / 2))
 	rPos = rPos - (rAng:Forward() * (math.Rand(4,6)) ) * force
 	self.VMRecoil = (self.VMRecoil or Vector()) + (rPos)
-	self.VMRecoilAng = (self.VMRecoilAng or Angle()) + (rAng)]]
+	self.VMRecoilAng = (self.VMRecoilAng or Angle()) + (rAng)
+	self.VMRecoilAmt =  (force * (self:GetIronsights() and 1 or .01))
 end
 
 SWEP.CAM_ReloadAlp = 0
