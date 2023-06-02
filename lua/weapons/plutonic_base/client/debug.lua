@@ -105,32 +105,19 @@ function SWEP:DrawHUD()
 
 		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 225)
 		surface.DrawText("VMRecoilAng: " .. tostring(self.VMRecoilAng))
-
-		local attach = self:GetCurAttachment()
-
-		if attach and attach != "" then
-			surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 180)
-			surface.DrawText("Attachment: "..self:GetCurAttachment())
-		end
 	end
 
 	if self.Attachments then 
-	if self:HasAttachment("") then
-		if self.scopedIn then
-			self.scopedIn = false
+		local hasScope = false
+		for att, _ in pairs(self.EquippedAttachments) do
+			if self.Attachments[att].Behavior == "sniper_scope" then
+				hasScope = true;
+			end
 		end
-		return
-	end
-
-	local attachment = self:GetCurAttachment()
-
-	if not self.Attachments[attachment] or self.Attachments[attachment].Behaviour != "sniper_sight" then
-		if self.scopedIn then
-			self.scopedIn = false
+		if (not hasScope) then
+			return
 		end
-		return
 	end
-end
 
 	if not self:GetIronsights() then
 		ironFade = 0

@@ -138,9 +138,11 @@ function SWEP:Initialize()
 		self.VMBobCycle = 0
 		self.VMSwayX = 0
 		self.VMDeltaX = 0
+		self.VMDeltaXWeighted = 0
 		self.VMRoll = 0
 		self.VMSwayY = 0
-		self.VMDeltaX = 0
+		self.VMDeltaY = 0
+		self.VMDeltaYWeighted = 0
 		self.VMRattle = 0
 		self.VMSprint = 0
 		self.VMVel = 0
@@ -215,6 +217,7 @@ function SWEP:Deploy()
 		self.Owner:GetViewModel():SetPlaybackRate(1)
 	end
 	self:EmitSound(Sound("Plutonic.Draw"), nil, nil, nil, nil, SND_NOFLAGS, 1)
+	self:ViewPunch(Angle())
 
 	return true
 end
@@ -519,11 +522,6 @@ end
 
 function SWEP:CanIronsight()
 	if self.NoIronsights then
-		return false
-	end
-	
-	local att = self:GetCurAttachment()
-	if att != "" and self.Attachments[att] and self.Attachments[att].Behaviour == "sniper_sight" and hook.Run("ShouldDrawLocalPlayer", self.Owner) then
 		return false
 	end
 

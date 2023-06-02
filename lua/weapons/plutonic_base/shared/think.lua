@@ -29,19 +29,6 @@ function SWEP:Think()
 	if not CLIENT then
 		return
 	end
-
-
-
-	local attach = self:GetCurAttachment()
-	self.KnownAttachment = self.KnownAttachment or ""
-	
-	if self.KnownAttachment != attach and attach != "" then
-		self.KnownAttachment = attach
-		self:SetupModifiers(attach)
-	elseif self.KnownAttachment != attach then
-		self:RollbackModifiers(self.KnownAttachment)
-		self.KnownAttachment = attach
-	end
 end
 
 function SWEP:RecoilThink()

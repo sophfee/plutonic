@@ -16,6 +16,9 @@ Plutonic.Hooks.Add(
 
 						wep.VMDeltaX = wep.VMDeltaX + ucmd:GetMouseX() * m
 						wep.VMDeltaY = wep.VMDeltaY + ucmd:GetMouseY() * m
+
+						wep.VMDeltaXWeighted = wep.VMDeltaXWeighted + ucmd:GetMouseX() * .01
+						wep.VMDeltaYWeighted = wep.VMDeltaYWeighted + ucmd:GetMouseY() * .01
 					end
 				end
 			end

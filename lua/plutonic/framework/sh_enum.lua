@@ -67,3 +67,10 @@ Plutonic.Enum.Sound = {
 	GunShotSilence = 85,
 	Generic = 60
 }
+
+Plutonic.Enum.FireMode = {
+	Safety,
+	Semi,
+	Burst,
+	Auto
+}

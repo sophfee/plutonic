@@ -247,8 +247,11 @@ function SWEP:PostRender()
 	self.VMDeltaX = lerp(ft * ftM, self.VMDeltaX or 0, 0)
 	self.VMDeltaY = lerp(ft * ftM, self.VMDeltaY or 0, 0)
 
+	self.VMDeltaXWeighted = approach(self.VMDeltaXWeighted or 0, 0, ft * 32)
+	self.VMDeltaYWeighted = approach(self.VMDeltaYWeighted or 0, 0, ft * 32)
+
 	self.VMRecoilAmt = self.VMRecoilAmt or 0
-	self.VMRecoilAmt = lerp(ft * 16, self.VMRecoilAmt, 0)
+	self.VMRecoilAmt = lerp(ft * 2, self.VMRecoilAmt, 0)
 
 	--[[if (abs(self.VMLastDeltaXInFrame or 0) < abs(self.VMDeltaX or 0)) then
 		self.VMDeltaXT = Curtime()
@@ -389,7 +392,7 @@ function SWEP:DoIronsights(pos, ang)
 		dir = true
 	end
 
-	ang:RotateAroundAxis(EyeAngles():Forward(), sin(Curtime() * (1/self.Primary.Delay)) * 5 * math.min(self.VMRecoilAmt, 1) )
+	ang:RotateAroundAxis(EyeAngles():Forward(), sin(Curtime() * (self.Primary.Delay * (60 * (math.pi * 1)))) * 8 * math.min(self.VMRecoilAmt * 4, 1) )
 	-- Idle
 	if (self:GetIronsights()) then
 		ang:RotateAroundAxis(EyeAngles():Right(), cos(Curtime() * .5) * 0.05 )
@@ -505,7 +508,7 @@ function SWEP:DoWalkBob(pos, ang)
 		WalkingTime = WalkingTime + FrameTime() * 2;
 	end
 
-	local mv = self.Owner:GetVelocity():Length2D() / 200;
+	local mv = clamp(self.Owner:GetVelocity():Length2D() / 200, 0, 1);
 
 	if self:GetIronsights() then
 		mv = mv * 0.25;
@@ -514,9 +517,16 @@ function SWEP:DoWalkBob(pos, ang)
 	local pos0, ang0 = pos + Vector(), ang + Angle();
 	do
 		local sn0 = sin(rt * 12.6) * mv;
-		local cs0 = cos(rt * 25.2) * mv;
+		local cs0 = cos(rt * 12.6) * mv;
+		local zc0 = sin(rt * 6.3) * cs0;
 
-		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(0, 0, 0), Vector(0, sn0 * -.39, cs0 * -.22), Angle(0, 0, sin(rt * 25.2) * 2));
+		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(
+			pos,
+			ang,
+			Vector(-self.BarrelLength, 0, 0),
+			Vector(sin(rt * 25.2) * -.1, sn0 * -.39, cs0 * -.22),
+			Angle(sin(rt * 25.2) * -1, cos(rt * 12.6) * 3, zc0 * -4)
+		);
 	end
 --[[
 	if Plutonic.Framework.IsMoving() then
@@ -548,14 +558,13 @@ function SWEP:DoWalkBob(pos, ang)
 	local pos1, ang1 = pos + Vector(), ang + Angle();
 	do
 		local sn1 = sin(rt * 8.4) * mv;
-		local cs1 = cos(rt * 16.8) * mv;
-		local cs1 = (-.25 * mv) + cos(rt * 16.8) * mv;
+		local cs1 = cos(rt * 12.6) * mv;
 		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(
 			pos, 
 			ang, 
-			Vector(self.BarrelLength, 0, 0), 
-			Vector(0, sn1 * -.39, cs1 * .2), 
-			Angle(0, 0, cos(rt * -12.6) * 2.6 * mv)
+			Vector(-self.BarrelLength, 0, 0), 
+			Vector(-0, sn1 * -.39 , n1), 
+			Angle(abs(cos(rt * 6.3)) * 1.6 * mv, sin(rt * 3.15) * 4.6 * mv, 0)
 		);
 	end
 
@@ -676,7 +685,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local isIronsights = self:GetIronsights()
 	self.VMSwayIronTransform = self.VMSwayIronTransform or 0
 	self.VMSwayIronTransform = approach(self.VMSwayIronTransform, isIronsights and 1 or 0.1, ft * 2)
-	local brl = self.BarrelLength * 2
+	local brl = self.BarrelLength * 1
 
 	--local xsa = 1 - clamp(abs(Curtime()-self.VMDeltaXT) * .7, 0, 1)
 	local xva =self.VMDeltaX --(math.ease.InElastic(xsa)) * self.VMDeltaX
@@ -699,6 +708,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent)
 	local degRoll = deg(self.VMRoll) / 3
 	degRoll = degRoll + ((self.VMWallLean or 0) * 24.4)
+	local degPitch = lerp( math.ease.OutQuint(min(abs(degRoll / 8 ),1)), 0, cos(math.rad(degRoll * 2)))
 
 	local flip = Plutonic.Framework.GetControl_Bool( "vm_flip_lefty", false ) 
 	if flip then
@@ -715,12 +725,32 @@ function SWEP:GetViewModelPosition(pos, ang)
 	else
 		xsn = Vector(0,0,0)
 	end
+
+	local oxc = math.ease.OutCirc(abs(self.VMDeltaX) / 7) * self.VMDeltaX
+	local oxq = math.ease.OutQuad(abs(self.VMDeltaX) / 7) * self.VMDeltaX
+	local oyq = math.ease.OutQuad(abs(self.VMDeltaY) / 7) * self.VMDeltaY
+	local offsetPos = Vector(
+		--[[FORWARD]] degPitch - abs(degRoll  *.1),
+		--[[RIGHT]]   oxq *.0625,--oxq * -.05,
+		--[[UP]]      abs(oxq) * -.08
+	)
+
+	local s0 = (sin(rt * 25.2) * self.VMDeltaXWeighted * .1)
+	local s1 = (cos(rt * 8.4) * self.VMDeltaXWeighted * .2)
+	local x0 =0--==lerp(abs(self.VMDeltaXWeighted / 12) * abs(self.VMDeltaXWeighted), s1, s0)
+
+	local offsetAng = Angle(
+		self.VMDeltaY + (sin(swayXa *  .4) *.2) + degPitch,
+		-(oxc*.25),
+		oxq - degRoll
+	)
+
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
 		xsn, 
-		Vector(- abs(degRoll  *.1), self.VMDeltaX * -.05, self.VMDeltaY *.1 - abs(degRoll  *.04) ), 
-		Angle(-self.VMDeltaY + (sin(swayXa *  .4) *.2),0, swayXa * 1 + sin(self.VMDeltaX * .2)-degRoll)
+		offsetPos,
+		offsetAng
 	)
 
 	
