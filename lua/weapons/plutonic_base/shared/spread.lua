@@ -25,7 +25,7 @@ function SWEP:CalculateSpread()
 
 	spread = math.Clamp( spread, self.Spread.Min, self.Spread.Max )
 
-	if CLIENT then
+	if Plutonic.IsClient then
 		self.LastSpread = Lerp(FrameTime() * 8, self.LastSpread or 0, spread)
 	end
 

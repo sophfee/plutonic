@@ -103,7 +103,7 @@ function SWEP:OnLowered()
 end
 
 function SWEP:Dirty()
-	if CLIENT then
+	if Plutonic.IsClient then
 		self.VMPos = Vector()
 		self.VMAng = Angle()
 		self.VMIronsights = 0
@@ -128,7 +128,10 @@ end
 
 function SWEP:Initialize()
 
-	if CLIENT then
+	Plutonic.IsClient = Plutonic.IsClient or CLIENT
+	Plutonic.IsServer = Plutonic.IsServer or SERVER
+
+	if Plutonic.IsClient then
 		self.VMPos = Vector()
 		self.VMAng = Angle()
 		self.VMIronsights = 0
@@ -161,7 +164,7 @@ function SWEP:Initialize()
 
 	self:SetHoldType(self.HoldType)
 
-	if SERVER and self.CustomMaterial then
+	if Plutonic.IsServer and self.CustomMaterial then
 		self.Weapon:SetMaterial(self.CustomMaterial)
 	end
 end
@@ -184,7 +187,7 @@ function SWEP:Deploy()
 		end
 	end
 
-	if CLIENT then
+	if Plutonic.IsClient then
 		self.VMPos = Vector()
 		self.VMAng = Angle()
 		self.VMIronsights = 0
@@ -206,7 +209,7 @@ function SWEP:Deploy()
 	end
 
 	if self.CustomMaterial then
-		if CLIENT then
+		if Plutonic.IsClient then
 			self.Owner:GetViewModel():SetMaterial(self.CustomMaterial)
 			self.CustomMatSetup = true
 		end
@@ -225,7 +228,7 @@ end
 function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_dir)
 
 	if self.UseBallistics then
-		if CLIENT then return end
+		if Plutonic.IsClient then return end
 		local bulllet = ents.Create("plutonic_ballistic")
 		bulllet:SetPos(self.Owner:GetShootPos())
 		bulllet:SetAngles(self.Owner:GetAimVector():Angle())
@@ -284,7 +287,8 @@ end
 
 
 function SWEP:ShootEffects()
-	if CLIENT then
+	Plutonic.BenchmarkStart("ShootEffects")
+	if Plutonic.IsClient then
 		self.CrosshairGapBoost = 16
 		self.VMRecoilPos = self.BlowbackPos
 		self.VMRecoilAng = self.BlowbackAngle
@@ -322,7 +326,7 @@ function SWEP:ShootEffects()
 		self.CanDecreaseBlowback = CurTime() + 0.1
 	end
 
-	if CLIENT then
+	if Plutonic.IsClient then
 		self.CrosshairGapBoost = 24
 		if !LocalPlayer():ShouldDrawLocalPlayer() and self.Owner == LocalPlayer() then
 			local vm = self.Owner:GetViewModel()
@@ -353,11 +357,13 @@ function SWEP:ShootEffects()
 	self:PlayAnimWorld(ACT_VM_PRIMARYATTACK)
 
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
-	if CLIENT then self:PlayAmmoIndicator() end
+	if Plutonic.IsClient then self:PlayAmmoIndicator() end
 
 	if self.CustomShootEffects then
 		self.CustomShootEffects(self)
 	end
+	
+	Plutonic.BenchmarkEnd("ShootEffects")
 end
 
 function SWEP:IsSprinting()
@@ -394,7 +400,7 @@ function SWEP:PrimaryAttack()
 		self:ViewPunch()
 
 		if self.Primary.Sound_World then
-			if CLIENT then 
+			if Plutonic.IsClient then 
 				local owner = self:GetOwner()
 				if owner == LocalPlayer() then
 					local shouldPlay = impulse and impulse.GetSetting("view_thirdperson", false)
@@ -404,7 +410,7 @@ function SWEP:PrimaryAttack()
 					end
 				end 
 			end
-			if SERVER then self:EmitWorldSound(self.Primary.Sound_World) end
+			if Plutonic.IsServer then self:EmitWorldSound(self.Primary.Sound_World) end
 		else
 			self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_WEAPON, nil, 1)
 		end
@@ -446,7 +452,7 @@ function SWEP:Holster()
 	self:SetRecoil( 0 )
 	self:SetNextIdle( 0 )
 
-	if CLIENT then
+	if Plutonic.IsClient then
 		self.ViewModelPos = Vector( 0, 0, 0 )
 		self.ViewModelAng = Angle( 0, 0, 0 )
 		self.FOV = nil
@@ -463,7 +469,7 @@ function SWEP:Holster()
 	end
 
 	if self.CustomMaterial then
-		if CLIENT then
+		if Plutonic.IsClient then
 			if self.Owner == LocalPlayer() then
 				self.Owner:GetViewModel():SetMaterial("")
 			end
@@ -479,7 +485,7 @@ end
 
 function SWEP:OnRemove()
 	if self.CustomMaterial then
-		if CLIENT then
+		if Plutonic.IsClient then
 			if not self.Owner.GetViewModel then -- disconnect errors
 				return
 			end
@@ -514,7 +520,7 @@ end
 function SWEP:ViewPunch()
 
 	if self.Owner:IsNPC() then return end
-	if IsFirstTimePredicted() and ( CLIENT or game.SinglePlayer() ) then
+	if IsFirstTimePredicted() and ( Plutonic.IsClient or game.SinglePlayer() ) then
 		self.Owner:SetEyeAngles( self.Owner:EyeAngles() -
 			Angle( self.Primary.Recoil * ( self:GetIronsights() and 0.5 or 1 ), 0, 0 ) )
 	end

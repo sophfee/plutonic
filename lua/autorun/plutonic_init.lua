@@ -3,19 +3,23 @@
 
 AddCSLuaFile()
 
-Plutonic = Plutonic or {} -- Creates the Plutonic table if it doesn't exist.
+Plutonic = Plutonic or {
+	IsServer = SERVER, -- Saves interpreter instruction!
+	IsClient = CLIENT  -- Saves interpreter instruction!
+} -- Creates the Plutonic table if it doesn't exist.
 Plutonic.Enum = Plutonic.Enum or {} -- Creates the Plutonic Enum table if it doesn't exist.
 Plutonic.Framework = Plutonic.Framework or {} -- Creates the Plutonic Framework table if it doesn't exist.
 Plutonic.Constants = Plutonic.Constants or {} -- Creates the Plutonic Constants table if it doesn't exist.
 Plutonic.Interpolation = Plutonic.Interpolation or {} -- Creates the Plutonic Interpolation table if it doesn't exist.
 Plutonic.Hooks = Plutonic.Hooks or {} -- Creates the Plutonic Hooks table if it doesn't exist.
 Plutonic.FireRate = Plutonic.FireRate or {} -- Creates the Plutonic FireRate table if it doesn't exist.
+_Plutonic = _Plutonic or {} -- Creates the _Plutonic table if it doesn't exist. This houses the private data
 
 --- Does a fancy print to the console.
 -- @realm shared
 -- @string text The text to print.
 function Plutonic.Framework.Print(text)
-	if SERVER then
+	if Plutonic.IsServer then
 		MsgC(Color(10, 120, 255), "[Plutonic] ", Color(255, 200, 0), text .. "\n")
 	end
 end
@@ -61,19 +65,19 @@ function Plutonic.Framework.Link(path)
 
 	for _, file in pairs(files) do
 		if string.sub(file, 1, 3) == "cl_" then
-			if CLIENT then
+			if Plutonic.IsClient then
 				include(path .. "/" .. file)
 			else
 				AddCSLuaFile(path .. "/" .. file)
 			end
 		elseif string.sub(file, 1, 3) == "sv_" then
-			if SERVER then
+			if Plutonic.IsServer then
 				include(path .. "/" .. file)
 			end
 		elseif string.sub(file, 1, 3) == "sh_" then
 			include(path .. "/" .. file)
 
-			if SERVER then
+			if Plutonic.IsServer then
 				AddCSLuaFile(path .. "/" .. file)
 			end
 		end
@@ -97,19 +101,19 @@ function Plutonic.Framework.LinkByRealm(path, realm)
 	for _, file in pairs(files) do
 		Plutonic.Framework.Print("Including " .. file .. "...")
 		if realm == "CLIENT" then
-			if CLIENT then
+			if Plutonic.IsClient then
 				include(path .. "/" .. file)
 			else
 				AddCSLuaFile(path .. "/" .. file)
 			end
 		elseif realm == "SERVER" then
-			if SERVER then
+			if Plutonic.IsServer then
 				include(path .. "/" .. file)
 			end
 		elseif realm == "SHARED" then
 			include(path .. "/" .. file)
 
-			if SERVER then
+			if Plutonic.IsServer then
 				AddCSLuaFile(path .. "/" .. file)
 			end
 		end

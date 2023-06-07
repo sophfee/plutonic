@@ -74,3 +74,9 @@ Plutonic.Enum.FireMode = {
 	Burst,
 	Auto
 }
+
+
+
+VECTOR_UP = Angle():Up()
+VECTOR_RIGHT = Angle():Right()
+VECTOR_FORWARD = Angle():Forward()

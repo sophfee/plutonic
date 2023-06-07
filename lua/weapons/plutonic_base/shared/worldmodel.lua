@@ -4,7 +4,7 @@ function SWEP:DrawWorldModel()
 	else
 		self:DrawModel()
 	end
-
+--[[
 	local attachment = self:GetCurAttachment()
 
 	if not self.Attachments or not self.Attachments[attachment] or not self.Attachments[attachment].Cosmetic then
@@ -48,6 +48,7 @@ function SWEP:DrawWorldModel()
 	ang:RotateAroundAxis(ang:Forward(), w.Ang.r)
 	att:SetAngles(ang)
 	att:DrawModel()
+	[[]]
 end
 
 hook.Add("PostPlayerDraw", "PlutonicDrawWorldAttachment", function()

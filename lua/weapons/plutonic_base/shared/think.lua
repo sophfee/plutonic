@@ -10,7 +10,7 @@ end
 function SWEP:Think()
 	self.EquippedAttachments = self.EquippedAttachments or {}
 	self.AttachmentEntCache = self.AttachmentEntCache or {}
-	if CLIENT then
+	if Plutonic.IsClient then
 		
 
 		self:ViewmodelThink()
@@ -26,7 +26,7 @@ function SWEP:Think()
 	if self:GetBursting() then self:BurstThink() end
 	if self:GetReloading() then self:ReloadThink() end
 
-	if not CLIENT then
+	if not Plutonic.IsClient then
 		return
 	end
 end
