@@ -14,8 +14,12 @@ function SWEP:Think()
 		
 
 		self:ViewmodelThink()
+
 	end
 
+	if SERVER then
+		self:HolsterThink()
+	end
 	self:IronsightsThink()
 	self:RecoilThink()
 	self:IdleThink()

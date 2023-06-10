@@ -187,6 +187,8 @@ function SWEP:Deploy()
 		end
 	end
 
+	self.IsHolstering = false
+
 	if Plutonic.IsClient then
 		self.VMPos = Vector()
 		self.VMAng = Angle()
@@ -441,7 +443,37 @@ end
 function SWEP:SecondaryAttack() 
 end
 
-function SWEP:Holster()
+function SWEP:VM()
+	return self.Owner:GetViewModel()
+end
+
+function SWEP:HolsterThink()
+	if (self.IsHolstering) then
+		if (self.HolsterTime < CurTime()) then
+			if Plutonic.IsClient then
+				input.SelectWeapon(self.HolsterWep)				
+			else
+				self.Owner:SelectWeapon(self.HolsterWep:GetClass())
+			end
+		end
+	end
+end
+
+function SWEP:Holster( wep )
+
+	if (not self.IsHolstering) then
+		self:PlayAnim(ACT_VM_HOLSTER)
+		self.HolsterTime = CurTime() + self.Owner:GetViewModel():SequenceDuration(  )
+		self.HolsterWep = wep
+		self.IsHolstering = true
+		return false
+	end
+
+	if (self.HolsterTime > CurTime()) then
+		print("KYS")
+		return false
+	end
+
 	-- reset everything when we holster
 	self:SetIronsights( false )
 	self:SetIronsightsRecoil( 0 )
