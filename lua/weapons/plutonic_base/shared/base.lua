@@ -470,7 +470,6 @@ function SWEP:Holster( wep )
 	end
 
 	if (self.HolsterTime > CurTime()) then
-		print("KYS")
 		return false
 	end
 
