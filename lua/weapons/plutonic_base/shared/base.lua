@@ -361,8 +361,7 @@ function SWEP:ShootEffects()
 end
 
 function SWEP:IsSprinting()
-	return ( self.Owner:GetVelocity():Length2D() > self.Owner:GetRunSpeed() - 50 )
-		and self.Owner:IsOnGround()
+	return ( self.Owner:IsSprinting() )
 end
 
 function SWEP:PrimaryAttack()

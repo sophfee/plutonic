@@ -212,6 +212,10 @@ end
 local abs,min,max,clamp,sin,cos,rad,deg,pi,pi2,round,Curtime,Frametime,Realtime,vec,ang,lerp,lerpAngle,lerpVector,approach=math.abs,math.min,math.max,math.Clamp,math.sin,math.cos,math.rad,math.deg,math.pi,math.pi * 2,math.Round,UnPredictedCurTime,RealFrameTime,RealTime,Vector,Angle,Lerp,LerpAngle,LerpVector,math.Approach
 local easeInOutQuad, easeOutElastic, easeInOutQuint = math.ease.InOutQuad, math.ease.OutElastic, math.ease.InOutQuint
 
+function SWEP:OnSprintChanged()
+	
+end
+
 function SWEP:PostRender()
 	self:DoWallLeanThink()
 	self.Ironsights = self:GetIronsights()
@@ -392,8 +396,17 @@ function SWEP:DoIronsights(pos, ang)
 		dir = true
 	end
 
+<<<<<<< Updated upstream
 	ang:RotateAroundAxis(EyeAngles():Forward(), sin(Curtime() * (self.Primary.Delay * (60 * (math.pi * 1)))) * 8 * math.min(self.VMRecoilAmt * 4, 1) )
 	-- Idle
+=======
+	--[[PLUTONIC_SEED8 = PLUTONIC_SEED8 or math.random(1000000, 9999999)
+	PLUTONIC_SEED9 = PLUTONIC_SEED9 or math.random(1000000, 9999999)
+	local n1 = Plutonic.Noise.Perlin(Realtime() * .2 + PLUTONIC_SEED8, (cos(Curtime() * 1.9) * 5) - PLUTONIC_SEED9, 17) * (1* self.VMRecoilAmt)
+	--ang:RotateAroundAxis(VECTOR_FORWARD, sin(Curtime() * (self.Primary.Delay * (self.Primary.Automatic and 240 or 30))) * 1 * math.min(self.VMRecoilAmt * 4, 1) + (n1 * .01))
+	--ang:RotateAroundAxis(VECTOR_RIGHT, cos(Curtime() * (self.Primary.Delay * (self.Primary.Automatic and 240 or 30))) * 1 * math.min(self.VMRecoilAmt * 4, 1) + (n1 * .01))
+
+>>>>>>> Stashed changes
 	if (self:GetIronsights()) then
 		ang:RotateAroundAxis(EyeAngles():Right(), cos(Curtime() * .5) * 0.05 )
 		ang:RotateAroundAxis(EyeAngles():Up(), sin(Curtime() * 1) * 0.05)
@@ -408,7 +421,7 @@ function SWEP:DoIronsights(pos, ang)
 	local timeSince = math.min((ls + 2)- Curtime(), 2) / 2
 	local fireBump2 = math.ease.InBack(math.Clamp(timeSince , 0, 1))
 	pos = pos + ang:Forward() * fireBump * -.4
-
+]]
 
 	local alpha = dir and math.ease.OutExpo( self.VMIronsights ) or math.ease.InSine( self.VMIronsights )
 	local ironsightPos = Plutonic.Interpolation.VectorBezierCurve( alpha, Vector(), self.IronsightsMiddlePos, self.IronsightsPos)
@@ -426,6 +439,7 @@ function SWEP:DoIronsights(pos, ang)
 end
 
 function SWEP:DoIdle(pos, ang)
+<<<<<<< Updated upstream
 	self.VMIdle = self.VMIdle or 0
 	if self:GetIronsights() then
 		return pos, ang
@@ -447,6 +461,9 @@ function SWEP:DoIdle(pos, ang)
 		Vector(0, forwardMotion * 1,breath * -.4),
 		Angle(sideAngle, sideAngle, 0)
 	)
+=======
+	return pos, ang
+>>>>>>> Stashed changes
 end
 
 SWEP.LoweredMidPos = Vector(4,-3,0.4)
@@ -503,10 +520,8 @@ function SWEP:DoWalkBob(pos, ang)
 	if self.DoCustomWalkBob then
 		return self:DoCustomWalkBob(pos, ang);
 	end;
-	local rt = Realtime();
-	if self.Owner:GetVelocity():Length2DSqr() > 60^2 then
-		WalkingTime = WalkingTime + FrameTime() * 2;
-	end
+
+	local rt=CurTime();
 
 	local mv = clamp(self.Owner:GetVelocity():Length2D() / 200, 0, 1);
 
@@ -516,6 +531,7 @@ function SWEP:DoWalkBob(pos, ang)
 
 	local pos0, ang0 = pos + Vector(), ang + Angle();
 	do
+<<<<<<< Updated upstream
 		local sn0 = sin(rt * 12.6) * mv;
 		local cs0 = cos(rt * 12.6) * mv;
 		local zc0 = sin(rt * 6.3) * cs0;
@@ -527,6 +543,44 @@ function SWEP:DoWalkBob(pos, ang)
 			Vector(sin(rt * 25.2) * -.1, sn0 * -.39, cs0 * -.22),
 			Angle(sin(rt * 25.2) * -1, cos(rt * 12.6) * 3, zc0 * -4)
 		);
+=======
+		local roll = -(deg(self.VMRoll) / 3)
+
+		local bobup = (sin(rt * 7.5) ^ 3) * (sin(rt * 7.5) / abs(sin(rt * 7.5))) * 1.4
+		local bobright = (cos(rt * 7.5) ^ 2) * (cos(rt * 7.5) / abs(cos(rt * 7.5))) * 1
+		print(math.Round(bobright))
+		local bobforward = (sin(rt * 7.5) ^ 2) *.5
+
+		local vibrato = (sin(rt * 7.5) ^ 10) * 0.2
+
+		local _sprint_pos = Vector(
+			bobforward,
+			bobright,
+			bobup + vibrato
+		)
+
+		local att = self:GetAttachment(self:LookupAttachment(self.MuzzleFlashAttachment))
+
+		local LT = {
+			[VECTOR_FORWARD] = att.Ang:Forward(),
+			[VECTOR_RIGHT] = att.Ang:Right(),
+			[VECTOR_UP] = att.Ang:Up()
+		}
+
+		pos0 = pos0 + LT[VECTOR_FORWARD] * _sprint_pos.x
+		pos0 = pos0 + LT[VECTOR_RIGHT] * _sprint_pos.y
+		pos0 = pos0 + LT[VECTOR_UP] * _sprint_pos.z
+
+		local _sprint_ang = Angle(
+			-bobup ,
+			-bobright,
+			0
+		)
+
+		ang0:RotateAroundAxis(LT[VECTOR_RIGHT], _sprint_ang.p)
+		ang0:RotateAroundAxis(LT[VECTOR_UP], _sprint_ang.y)
+		ang0:RotateAroundAxis(LT[VECTOR_FORWARD], _sprint_ang.r)
+>>>>>>> Stashed changes
 	end
 --[[
 	if Plutonic.Framework.IsMoving() then
@@ -568,6 +622,7 @@ function SWEP:DoWalkBob(pos, ang)
 		);
 	end
 
+<<<<<<< Updated upstream
 	do
 		local sn1 = sin(rt * 16.8) * mv;
 		local cs1 = sin(sn1 * 2.1) * mv;
@@ -588,8 +643,26 @@ function SWEP:DoWalkBob(pos, ang)
 	else
 		ang:RotateAroundAxis(ang:Forward(), cos(rt * 16.8) * mv * .1)
 	end
+=======
+		local vel = self.Owner:GetVelocity():Length2D() / 200
 
-	return pos, ang;
+		local n = Vector(
+			vel * -1,
+			0,
+			vel * -.4
+		)
+
+		pos1 = pos1 + n
+
+	end
+
+	local interp = self.VMSprint;
+	local _pos_, _ang_ = lerpVector(interp, pos1, pos0), lerpAngle(interp, ang1, ang0);
+
+	Plutonic.BenchmarkEnd("DoWalkBob")
+>>>>>>> Stashed changes
+
+	return _pos_, _ang_;
 end
 
 -- THINK FOR WALL LEANING OUT
@@ -745,6 +818,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		oxq - degRoll
 	)
 
+<<<<<<< Updated upstream
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
@@ -755,12 +829,9 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	
 
+=======
+>>>>>>> Stashed changes
 	self.PointOrigin = xsn
-	
-	
-	
-
-	
 	pos, ang = self:DoCrouch(pos, ang)
 	pos, ang = self:DoBlocked(pos, ang)
 	
@@ -836,7 +907,11 @@ function SWEP:ProceduralRecoil(force)
 	rAng:RotateAroundAxis(rAng:Forward(), rollKnock )
 	rPos = rPos + (rAng:Right() * (rollKnock / 2))
 	rPos = rPos - (rAng:Forward() * (math.Rand(4,6)) ) * force
+<<<<<<< Updated upstream
 	self.VMRecoil = (self.VMRecoil or Vector()) + (rPos)
+=======
+	--self.VMRecoilPos = (self.VMRecoilPos or Vector()) + (rPos)
+>>>>>>> Stashed changes
 	self.VMRecoilAng = (self.VMRecoilAng or Angle()) + (rAng)
 	self.VMRecoilAmt =  (force * (self:GetIronsights() and 1 or .01))
 end
