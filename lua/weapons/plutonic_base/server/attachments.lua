@@ -6,7 +6,7 @@ function SWEP:GiveAttachment(attachment)
 	local AttachmentData = self.Attachments[attachment]
 
 	if not self:CanAttach(attachment) then return end
-
+	
 	self.EquippedAttachments[attachment] = true
 	self:OnAttachmentEquip(attachment)
 
@@ -39,8 +39,16 @@ function SWEP:TakeAttachment(attachment)
 	net.Broadcast()
 end
 
-function SWEP:OnAttachmentEquip(attachment)
+function SWEP:OnAttachmentEquip(attachment, uid)
+	-- for HL2RP & others
+	if impulse then
+		hook.Run("PlayerEquipAttachment", self.Owner, self, attachment)
+	end
 end
 
 function SWEP:OnAttachmentRemove(attachment)
+	-- for HL2RP & others
+	if impulse then
+		hook.Run("PlayerRemoveAttachment", self.Owner, self, attachment)
+	end
 end

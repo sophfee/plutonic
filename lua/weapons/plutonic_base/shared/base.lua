@@ -96,7 +96,46 @@ sound.Add({
 	channel = CHAN_AUTO,
 	pitch = {95,105}
 })
-
+sound.Add(
+	{
+		name = "Plutonic.Sprint",
+		channel = CHAN_USER_BASE,
+		volume = 0.7,
+		level = 45,
+		pitch = {95, 110},
+		sound = {
+			"weapons/movement/weapon_movement_sprint1.wav",
+			"weapons/movement/weapon_movement_sprint2.wav",
+			"weapons/movement/weapon_movement_sprint3.wav",
+			"weapons/movement/weapon_movement_sprint4.wav",
+			"weapons/movement/weapon_movement_sprint5.wav",
+			"weapons/movement/weapon_movement_sprint6.wav",
+			"weapons/movement/weapon_movement_sprint7.wav",
+			"weapons/movement/weapon_movement_sprint8.wav",
+			"weapons/movement/weapon_movement_sprint9.wav"
+		}
+	}
+)
+sound.Add(
+	{
+		name = "Plutonic.Walk",
+		channel = CHAN_USER_BASE,
+		volume = 0.7,
+		level = 45,
+		pitch = {95, 110},
+		sound = {
+			"weapons/movement/weapon_movement_walk1.wav",
+			"weapons/movement/weapon_movement_walk2.wav",
+			"weapons/movement/weapon_movement_walk3.wav",
+			"weapons/movement/weapon_movement_walk4.wav",
+			"weapons/movement/weapon_movement_walk5.wav",
+			"weapons/movement/weapon_movement_walk6.wav",
+			"weapons/movement/weapon_movement_walk7.wav",
+			"weapons/movement/weapon_movement_walk8.wav",
+			"weapons/movement/weapon_movement_walk9.wav"
+		}
+	}
+)
 -- impulse
 function SWEP:OnLowered()
 	self:EmitSound("Plutonic.Raise", nil, nil, nil, nil, SND_NOFLAGS, 1)

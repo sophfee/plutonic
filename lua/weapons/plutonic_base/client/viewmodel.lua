@@ -62,7 +62,7 @@ local mat = Material("!ls2_sight_rt")
 mat:SetTexture("$basetexture", rtx:GetName())
 mat:SetInt("$translucent", 1)
 mat:Recompute()
-
+local blur = Material("pp/blurscreen")
 local reticule = Material("models/weapons/insurgency_sandstorm/ins2_sandstorm/kobra_reticle")
 
 function SWEP:ViewModelDrawn()
@@ -141,10 +141,10 @@ function SWEP:ViewModelDrawn()
 		drawnNames[attName] = true
 
 		if attData.Behavior == "1x_Sight" then
-			--Plutonic.Framework.Mask(att)
+			Plutonic.Framework.Mask(att)
 
 			local rpos = attData.Reticule.Pos
-			local pos, ang = EyePos(),m:GetAngles()
+			local pos, ang = EyePos(),EyeAngles()
 			local eang =  EyeAngles()
 			
 			
@@ -157,27 +157,42 @@ function SWEP:ViewModelDrawn()
 
 			local rang = attData.Reticule.Ang or Angle(-0,-90,-90)
 			local ranglf = Angle(rang.p, rang.y, rang.r)
-
-
-
 			local oang = Angle(-90, 0, 0)
 
-			pos, ang = Plutonic.Framework.RotateAroundPoint(
-				EyePos(), 
-				ang, 
-				Vector(10, 0, 0), 
-				EyePos() - rpos, 
-				Angle(self.VMDeltaY * .1, self.VMDeltaX * -.1 + 90, -90)
-			)
+			pos = pos + (ang:Forward() * attData.Reticule.Pos.x)
+
+			--[[pos, ang = Plutonic.Framework.RotateAroundPoint(
+				pos, 
+				EyeAngles(), 
+				Vector(0, 0, 0), 
+				Vector(), 
+				Angle()--Angle(self.VMDeltaY * .1, self.VMDeltaX * -.1 + 90, -90)
+			)]]
+			ang:RotateAroundAxis(ang:Up(), -180)
+			
 			ang:RotateAroundAxis(ang:Forward(), 180)
 			
 			local size = attData.Reticule.Size or 4
+
+			local dir = (EyePos() - pos):GetNormalized()
+
+			local _p, _a = WorldToLocal(pos, ang, self:DoWalkBob(pos, ang))
+
+			pos, ang = Plutonic.Framework.RotateAroundPoint(
+				pos, 
+				ang, 
+				Vector(0, 0, 0),
+				-_p * 2,
+				-_a * 2	
+			)
+
+			dir[2] = dir[2] - dir[3]
 			
 			render.SetMaterial(attData.Reticule.Material or reticule)
 			render.DrawQuadEasy(pos, ang:Forward(), size, size, attData.Reticule.Color or color_white, ang.r)
 			--render.DrawSprite(pos, size, size, color_white)
 
-			--Plutonic.Framework.UnMask()
+			Plutonic.Framework.UnMask()
 		end
 	end
 
@@ -212,11 +227,24 @@ end
 local abs,min,max,clamp,sin,cos,rad,deg,pi,pi2,round,Curtime,Frametime,Realtime,vec,ang,lerp,lerpAngle,lerpVector,approach=math.abs,math.min,math.max,math.Clamp,math.sin,math.cos,math.rad,math.deg,math.pi,math.pi * 2,math.Round,UnPredictedCurTime,RealFrameTime,RealTime,Vector,Angle,Lerp,LerpAngle,LerpVector,math.Approach
 local easeInOutQuad, easeOutElastic, easeInOutQuint = math.ease.InOutQuad, math.ease.OutElastic, math.ease.InOutQuint
 
+function SWEP:OnSprintStateChanged(sprinting)
+	self.VMSprint = !sprinting and math.ease.OutQuad(self.VMSprint or 0) or math.ease.InQuad(self.VMSprint or 0)
+end
+
 function SWEP:PostRender()
 	self:DoWallLeanThink()
 	self.Ironsights = self:GetIronsights()
+	self._sprinting = self._sprinting or false
 	local sprinting = self:IsSprinting()
-	self.VMSprint = approach(self.VMSprint or 0, sprinting and 1 or 0, sprinting and Frametime() * 1.15 or Frametime() * 2.5)
+	if (sprinting != self._sprinting) then
+		self._sprinting = sprinting
+		if self.OnSprintStateChanged then
+			self:OnSprintStateChanged(sprinting)
+		end
+	end
+
+	self.VMSprint = approach(self.VMSprint or 0, sprinting and 1 or 0, sprinting and Frametime() * 2 or Frametime() * 1.15)
+
 	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 2.4 )
 	self.VMIronsights = self.VMIronsights or 0
 	self.VMIronsightsFinishRattle = self.VMIronsightsFinishRattle or 0
@@ -293,46 +321,7 @@ SWEP.VMRecoilAng = Angle(0, 0, 0)
 SWEP.VMOffsetPos = Vector(0, 0, 0)
 SWEP.VMOffsetAng = Angle(0, 0, 0)
 SWEP.Primary.FirePower = 1
-sound.Add(
-	{
-		name = "Plutonic.Sprint",
-		channel = CHAN_ITEM,
-		volume = 0.7,
-		level = 45,
-		pitch = {95, 110},
-		sound = {
-			"weapons/movement/weapon_movement_sprint1.wav",
-			"weapons/movement/weapon_movement_sprint2.wav",
-			"weapons/movement/weapon_movement_sprint3.wav",
-			"weapons/movement/weapon_movement_sprint4.wav",
-			"weapons/movement/weapon_movement_sprint5.wav",
-			"weapons/movement/weapon_movement_sprint6.wav",
-			"weapons/movement/weapon_movement_sprint7.wav",
-			"weapons/movement/weapon_movement_sprint8.wav",
-			"weapons/movement/weapon_movement_sprint9.wav"
-		}
-	}
-)
-sound.Add(
-	{
-		name = "Plutonic.Walk",
-		channel = CHAN_ITEM,
-		volume = 0.2,
-		level = 45,
-		pitch = {95, 110},
-		sound = {
-			"weapons/movement/weapon_movement_walk1.wav",
-			"weapons/movement/weapon_movement_walk2.wav",
-			"weapons/movement/weapon_movement_walk3.wav",
-			"weapons/movement/weapon_movement_walk4.wav",
-			"weapons/movement/weapon_movement_walk5.wav",
-			"weapons/movement/weapon_movement_walk6.wav",
-			"weapons/movement/weapon_movement_walk7.wav",
-			"weapons/movement/weapon_movement_walk8.wav",
-			"weapons/movement/weapon_movement_walk9.wav"
-		}
-	}
-)
+
 
 function Plutonic.Framework.IsMoving()
 	return LocalPlayer():GetVelocity():Length2DSqr() > 40^2
@@ -460,7 +449,7 @@ end
 function SWEP:DoSprint(pos, ang)
 	if self.CustomSprint then return self:CustomSprint(pos, ang) end
 	if not self.LoweredPos then return pos, ang end
-	local t = self:IsSprinting() and math.ease.OutQuint(self.VMSprint or 0) or math.ease.InSine(self.VMSprint or 0)
+	local t = self:IsSprinting() and math.ease.OutQuad(self.VMSprint or 0) or math.ease.InQuad(self.VMSprint or 0)
 	local loweredPos = Plutonic.Interpolation.VectorBezierCurve( t, Vector(), self.LoweredMidPos, self.LoweredPos)
 	local loweredAng = Plutonic.Interpolation.AngleBezierCurve( t, Angle(), self.LoweredMidAng, self.LoweredAng)
 	ang:RotateAroundAxis(ang:Right(), loweredAng.p)
@@ -531,33 +520,8 @@ function SWEP:DoWalkBob(pos, ang)
 			Angle(sin(rt * 25.2) * -1, cos(rt * 12.6) * 3, zc0 * -4)
 		);
 	end
---[[
-	if Plutonic.Framework.IsMoving() then
-		if self:IsSprinting() then
-			local cosSprint = sin(rt * 25.2);
-			if (math.floor(cosSprint + .5) != 1) then
-				if not hastickedthiscycle then
-					EmitSound("Plutonic.Sprint", self.Owner:GetPos(), self.Owner:EntIndex(), CHAN_AUTO, 0.2, 75, 0, 100)
-					hastickedthiscycle = true
-				end
-			else
-				hastickedthiscycle = false
-			end
-		else
-			local cosSprint = sin(rt * 16.8);
-			if (math.floor(cosSprint + .5) != 1) then
-				if not hastickedthiscycle then
-					EmitSound("Plutonic.Walk", self.Owner:GetPos(), self.Owner:EntIndex(), CHAN_AUTO, 0.2, 75, 0, 100)
-					hastickedthiscycle = true
-				end
-			else
-				hastickedthiscycle = false
-			end
-		end
-	else
-		hastickedthiscycle = false
-	end
-]]
+
+
 	local pos1, ang1 = pos + Vector(), ang + Angle();
 	do
 		local sn1 = sin(rt * 8.4) * mv;
@@ -567,7 +531,7 @@ function SWEP:DoWalkBob(pos, ang)
 			ang, 
 			Vector(-self.BarrelLength, 0, 0), 
 			Vector(-0, sn1 * -.39 , n1), 
-			Angle(abs(cos(rt * 6.3)) * 1.6 * mv, sin(rt * 3.15) * 4.6 * mv, 0)
+			Angle(abs(cos(rt * 8.4)) * 1.6 * mv, sin(rt * 4.2) * 4.2 * mv, 0)
 		);
 	end
 
@@ -583,7 +547,8 @@ function SWEP:DoWalkBob(pos, ang)
 		);
 	end
 
-	local interp = Plutonic.Interpolation.BezierCurve(self.VMSprint, 0, .65, 1);
+	local interp = math.ease.InExpo(self.VMSprint);
+	
 	pos, ang = lerpVector(interp, pos1, pos0), lerpAngle(interp, ang1, ang0);
 
 	if self:IsSprinting() then
@@ -640,14 +605,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local start_ang = ang + Angle(0,0,0)
 	local ironsightPos = self.IronsightsPos
 	local ironsightAng = self.IronsightsAng
-	--[[ang:RotateAroundAxis(ang:Right(), ironsightAng.p)
-	ang:RotateAroundAxis(ang:Up(), -ironsightAng.y)
-	ang:RotateAroundAxis(ang:Forward(), ironsightAng.r)
-	pos = pos + (start_ang:Forward() * ironsightPos.y)
-	pos = pos + (start_ang:Right() * (ironsightPos.x))
-	pos = pos + (start_ang:Up() * ironsightPos.z)
-	pos = pos + (start_ang:Up() * -1.5)
-	pos = pos + (start_ang:Forward() * self.BarrelLength)]]
+
 	self.centeredMode = self.centeredMode or GetConVar("plutonic_centered")
 
 	if self.centeredMode and self.centeredMode:GetBool() then

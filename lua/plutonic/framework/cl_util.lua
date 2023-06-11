@@ -245,3 +245,52 @@ local function Benchmark()
 end
 
 concommand.Add("plutonic_benchmark_print", Benchmark)
+
+Plutonic.Hooks.Remove("PlayerFootstep")
+
+local flipFloppa = 0
+
+Plutonic.Sounds = {
+    ["Plutonic.Sprint"] = {
+        "weapons/movement/weapon_movement_sprint1.wav",
+		"weapons/movement/weapon_movement_sprint2.wav",
+		"weapons/movement/weapon_movement_sprint3.wav",
+		"weapons/movement/weapon_movement_sprint4.wav",
+		"weapons/movement/weapon_movement_sprint5.wav",
+		"weapons/movement/weapon_movement_sprint6.wav",
+		"weapons/movement/weapon_movement_sprint7.wav",
+		"weapons/movement/weapon_movement_sprint8.wav",
+		"weapons/movement/weapon_movement_sprint9.wav"
+    },
+    ["Plutonic.Walk"] = {
+        "weapons/movement/weapon_movement_walk1.wav",
+        "weapons/movement/weapon_movement_walk2.wav",
+		"weapons/movement/weapon_movement_walk3.wav",
+		"weapons/movement/weapon_movement_walk4.wav",
+		"weapons/movement/weapon_movement_walk5.wav",
+		"weapons/movement/weapon_movement_walk6.wav",
+		"weapons/movement/weapon_movement_walk7.wav",
+		"weapons/movement/weapon_movement_walk8.wav",
+		"weapons/movement/weapon_movement_walk9.wav"
+    }
+}
+
+Plutonic.Hooks.Add("PlayerFootstep", function(ply, pos, foot, sound, volume, filter)
+    if (ply == LocalPlayer()) then
+        local wep = ply:GetActiveWeapon()
+        if (!IsValid(wep)) then
+            return
+        end
+
+        if (!wep.IsPlutonic) then
+            return
+        end
+
+        flipFloppa = flipFloppa + 1
+        if (flipFloppa > 8) then
+            flipFloppa = 0
+        end
+        local snd = ply:IsSprinting() and "Plutonic.Sprint" or "Plutonic.Walk"
+        ply:EmitSound(table.Random(Plutonic.Sounds[snd]), 45, math.random(95, 105), math.random(0.4, 0.45), CHAN_USER_BASE + 10 + (flipFloppa), SND_DELAY, 0)
+    end
+end)
