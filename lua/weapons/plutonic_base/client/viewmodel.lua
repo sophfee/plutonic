@@ -693,7 +693,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local offsetPos = Vector(
 		--[[FORWARD]] degPitch - abs(degRoll  *.1),
 		--[[RIGHT]]   oxq *.0625,--oxq * -.05,
-		--[[UP]]      abs(oxq) * -.08
+		--[[UP]]      oxq * -.08
 	)
 
 	local s0 = (sin(rt * 25.2) * self.VMDeltaXWeighted * .1)
@@ -773,6 +773,18 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	return pos, ang
 end
+
+Plutonic.GetViewModelPosition = SWEP.GetViewModelPosition
+Plutonic.DoIronSights = SWEP.DoIronSights
+Plutonic.DoWallLeanThink = SWEP.DoWallLeanThink
+Plutonic.DoSprint = SWEP.DoSprint
+Plutonic.DoCrouch = SWEP.DoCrouch
+Plutonic.DoBlocked = SWEP.DoBlocked
+Plutonic.DoIdle = SWEP.DoIdle
+Plutonic.DoWalkBob = SWEP.DoWalkBob
+Plutonic.DoIronsights = SWEP.DoIronsights
+Plutonic.PostRender = SWEP.PostRender
+
 local aimdot = Material("models/weapons/tfa_ins2/optics/po4x_reticule")
 local aimdot2 = Material("models/weapons/tfa_ins2/optics/aimpoint_reticule_sc")
 local bl = Material("pp/blurscreen")
