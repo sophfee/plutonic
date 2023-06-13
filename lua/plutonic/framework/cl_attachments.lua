@@ -1,10 +1,11 @@
 net.Receive("Plutonic.AttachmentEquip", function()
 	local wep = Entity(net.ReadUInt(16))
+	local own = Entity(net.ReadUInt(16))
 	local att = net.ReadString()
 
 	if not IsValid(wep) then return end
 	if not wep.IsPlutonic then return end
-	if wep:GetOwner() ~= LocalPlayer() then return end
+	if IsValid(own) and own ~= LocalPlayer() then return end
 
 	wep:Attach(att)
 
@@ -14,12 +15,16 @@ net.Receive("Plutonic.AttachmentEquip", function()
 end)
 
 net.Receive("Plutonic.AttachmentRemove", function()
+
 	local wep = Entity(net.ReadUInt(16))
+	local own = Entity(net.ReadUInt(16))
 	local att = net.ReadString()
+
+	print(wep, own, att)
 
 	if not IsValid(wep) then return end
 	if not wep.IsPlutonic then return end
-	if wep:GetOwner() ~= LocalPlayer() then return end
+	if IsValid(own) and own ~= LocalPlayer() then return end
 
 	wep:Detach(att)
 
@@ -27,6 +32,7 @@ net.Receive("Plutonic.AttachmentRemove", function()
 		impulse_modstation:RefreshAttachments(wep)
 	end
 end)
+
 
 Plutonic.RTSight = GetRenderTarget("plutonic_rtsight", ScrW(), ScrH(), false)
 Plutonic.RTMaterial = CreateMaterial("plutonic_rtmaterial", "UnlitGeneric", {

@@ -42,6 +42,7 @@ function SWEP:PlayAnim(act)
 	end
 
 	local vmodel = self.Owner:GetViewModel()
+	if not IsValid(vmodel) then return end
 	local seq = vmodel:SelectWeightedSequence(act)
 
 	vmodel:SendViewModelMatchingSequence(seq)
@@ -119,6 +120,10 @@ function SWEP:ViewModelDrawn()
 		end
 
 		local m = vm:GetBoneMatrix(bone)
+
+		if not m then
+			continue
+		end
 
 		local pos, ang = m:GetTranslation(), m:GetAngles()
 
@@ -274,6 +279,7 @@ function SWEP:PostRender()
 	local ftM = self.SwaySpeed or 11
 	self.VMDeltaX = lerp(ft * ftM, self.VMDeltaX or 0, 0)
 	self.VMDeltaY = lerp(ft * ftM, self.VMDeltaY or 0, 0)
+
 
 	self.VMDeltaXWeighted = approach(self.VMDeltaXWeighted or 0, 0, ft * 32)
 	self.VMDeltaYWeighted = approach(self.VMDeltaYWeighted or 0, 0, ft * 32)
@@ -601,6 +607,11 @@ function SWEP:ViewmodelThink()
 end
 
 function SWEP:GetViewModelPosition(pos, ang)
+
+	if self.PreGetViewModelPosition then
+		pos, ang = self:PreGetViewModelPosition(pos, ang)
+	end
+
 	local start_pos = pos + Vector()
 	local start_ang = ang + Angle(0,0,0)
 	local ironsightPos = self.IronsightsPos
@@ -687,9 +698,9 @@ function SWEP:GetViewModelPosition(pos, ang)
 		xsn = Vector(0,0,0)
 	end
 
-	local oxc = math.ease.OutCirc(abs(self.VMDeltaX) / 7) * self.VMDeltaX
-	local oxq = math.ease.OutQuad(abs(self.VMDeltaX) / 7) * self.VMDeltaX
-	local oyq = math.ease.OutQuad(abs(self.VMDeltaY) / 7) * self.VMDeltaY
+	local oxc = math.ease.OutCirc(min(abs(self.VMDeltaX) / 7, 1)) * self.VMDeltaX
+	local oxq = math.ease.OutQuad(min(abs(self.VMDeltaX) / 7, 1)) * self.VMDeltaX
+	local oyq = math.ease.OutQuad(min(abs(self.VMDeltaY) / 7, 1)) * self.VMDeltaY
 	local offsetPos = Vector(
 		--[[FORWARD]] degPitch - abs(degRoll  *.1),
 		--[[RIGHT]]   oxq *.0625,--oxq * -.05,

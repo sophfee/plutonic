@@ -14,10 +14,16 @@ function SWEP:GiveAttachment(attachment)
 		self.Attachments[attachment].ModSetup(self)
 	end
 
-	net.Start("Plutonic.AttachmentEquip")
-	net.WriteUInt(self:EntIndex(), 16)
-	net.WriteString(attachment)
-	net.Broadcast()
+	if self:IsReliable() then
+		net.Start("Plutonic.AttachmentEquip")
+		net.WriteUInt(self:EntIndex(), 16)
+		net.WriteUInt(self:GetOwner():EntIndex(), 16)
+		net.WriteString(attachment)
+		net.Broadcast()
+	else
+		self.QueuedAttachments = self.QueuedAttachments or {}
+		self.QueuedAttachments[attachment] = true
+	end
 end
 
 function SWEP:TakeAttachment(attachment)
@@ -35,6 +41,7 @@ function SWEP:TakeAttachment(attachment)
 
 	net.Start("Plutonic.AttachmentRemove")
 	net.WriteUInt(self:EntIndex(), 16)
+	net.WriteUInt(self:GetOwner():EntIndex(), 16)
 	net.WriteString(attachment)
 	net.Broadcast()
 end

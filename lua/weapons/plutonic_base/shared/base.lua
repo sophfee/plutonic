@@ -165,6 +165,23 @@ function SWEP:Dirty()
 
 end
 
+function SWEP:IsReliable()
+	return self:GetReliable()
+end
+
+function SWEP:OnReliable()
+	local QueuedAttachments = self.QueuedAttachments or {}
+	if QueuedAttachments then
+		for attachment,v in pairs(QueuedAttachments) do
+			net.Start("Plutonic.AttachmentEquip")
+			net.WriteUInt(self:EntIndex(), 16)
+			net.WriteUInt(self:GetOwner():EntIndex(), 16)
+			net.WriteString(attachment)
+			net.Broadcast()
+		end
+	end
+end
+
 function SWEP:Initialize()
 
 	Plutonic.IsClient = Plutonic.IsClient or CLIENT
@@ -205,6 +222,12 @@ function SWEP:Initialize()
 
 	if Plutonic.IsServer and self.CustomMaterial then
 		self.Weapon:SetMaterial(self.CustomMaterial)
+	end
+
+	if Plutonic.IsClient then
+		net.Start("Plutonic.WeaponIsReliable")
+		net.WriteEntity(self)
+		net.SendToServer()
 	end
 end
 
@@ -502,6 +525,13 @@ function SWEP:Holster( wep )
 
 	if (not self.IsHolstering) then
 		self:PlayAnim(ACT_VM_HOLSTER)
+		local vm = self.Owner:GetViewModel()
+		if not IsValid(vm) then
+			self.HolsterTime = CurTime() + .7
+			self.HolsterWep = wep
+			self.IsHolstering = true 
+			return
+		end
 		self.HolsterTime = CurTime() + self.Owner:GetViewModel():SequenceDuration(  )
 		self.HolsterWep = wep
 		self.IsHolstering = true
