@@ -10,7 +10,9 @@ Plutonic.Hooks.Add(
 			if IsValid(wep) then
 				if wep.IsPlutonic then
 					local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
-					local m = wep:GetIronsights() and 0.001 or 0.0056
+					local i = wep.SwayMultiplier or 0.001
+					local n = wep.SwayMultiplier or 0.0056
+					local m = wep:GetIronsights() and i or n
 
 					if abs(x) > 0 or abs(y) > 0 then
 

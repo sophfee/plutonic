@@ -636,21 +636,7 @@ end
 
 function SWEP:FireAnimationEvent( pos, ang, event, options )
 
-	if event >= 6001 then
 
-		local shell = self.Primary.Shell
-
-		local vm = self.Owner:GetViewModel()
-		local att = vm:GetAttachment(self.Primary.ShellAttachment or 2)
-		local fx = EffectData()
-		fx:SetEntity(self)
-		fx:SetOrigin(att.Pos)
-		fx:SetAngles(att.Ang)
-		fx:SetScale(self.Primary.ShellScale or 1)
-		util.Effect(self.Primary.Shell, fx)
-	end
-	--print(options)
-	-- Disables animation based muzzle event
 	return true
 
 end

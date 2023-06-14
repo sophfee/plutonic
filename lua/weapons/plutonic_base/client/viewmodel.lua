@@ -236,6 +236,7 @@ function SWEP:OnSprintStateChanged(sprinting)
 	self.VMSprint = !sprinting and math.ease.OutQuad(self.VMSprint or 0) or math.ease.InQuad(self.VMSprint or 0)
 end
 
+
 function SWEP:PostRender()
 	self:DoWallLeanThink()
 	self.Ironsights = self:GetIronsights()
@@ -698,9 +699,9 @@ function SWEP:GetViewModelPosition(pos, ang)
 		xsn = Vector(0,0,0)
 	end
 
-	local oxc = math.ease.OutCirc(min(abs(self.VMDeltaX) / 7, 1)) * self.VMDeltaX
-	local oxq = math.ease.OutQuad(min(abs(self.VMDeltaX) / 7, 1)) * self.VMDeltaX
-	local oyq = math.ease.OutQuad(min(abs(self.VMDeltaY) / 7, 1)) * self.VMDeltaY
+	local oxc = math.ease.OutCirc(min(abs(self.VMDeltaX) / (self.SwayMax or 7), 1)) * clamp(self.VMDeltaX, -(self.SwayMax or 7), (self.SwayMax or 7))
+	local oxq = math.ease.OutQuad(min(abs(self.VMDeltaX) / (self.SwayMax or 7), 1)) * clamp(self.VMDeltaX, -(self.SwayMax or 7), (self.SwayMax or 7))
+	local oyq = math.ease.OutQuad(min(abs(self.VMDeltaY) / (self.SwayMax or 7), 1)) * clamp(self.VMDeltaY, -(self.SwayMax or 7), (self.SwayMax or 7))
 	local offsetPos = Vector(
 		--[[FORWARD]] degPitch - abs(degRoll  *.1),
 		--[[RIGHT]]   oxq *.0625,--oxq * -.05,
@@ -712,8 +713,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local x0 =0--==lerp(abs(self.VMDeltaXWeighted / 12) * abs(self.VMDeltaXWeighted), s1, s0)
 
 	local offsetAng = Angle(
-		self.VMDeltaY + (sin(swayXa *  .4) *.2) + degPitch,
-		-(oxc*.25),
+		self.VMDeltaY  + degPitch,
+		-(oxq*.25),
 		oxq - degRoll
 	)
 
