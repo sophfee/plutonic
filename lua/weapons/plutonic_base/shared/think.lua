@@ -3,7 +3,46 @@ function SWEP:IdleThink()
 
 	if CurTime() > self:GetNextIdle() then
 		self:SetNextIdle( 0 )
-		self:SendWeaponAnim( self:Clip1() > 0 and ACT_VM_IDLE or ACT_VM_IDLE_EMPTY )
+		if (self.IdleSequence) then
+			local vm = self:GetOwner():GetViewModel()
+			local transition = vm:FindTransitionSequence(vm:GetSequence(), vm:LookupSequence(self.IdleSequence))
+			if (transition ~= -1) then
+				vm:SetSequence(transition)
+			else
+				vm:SetSequence(self.IdleSequence)
+			end
+		else
+			self:SendWeaponAnim( self:Clip1() > 0 and ACT_VM_IDLE or ACT_VM_IDLE_EMPTY )
+		end
+	end
+end
+
+function SWEP:SprintChanged(is_sprinting)
+
+	if not self.UseSprintSequence then return end
+
+	local vm = self:GetOwner():GetViewModel()
+
+	if (is_sprinting) then
+		
+		local transition = vm:FindTransitionSequence(vm:GetSequence(), vm:LookupSequence(self.SprintSequence))
+		print(transition, vm:GetSequence(), vm:LookupSequence(self.SprintSequence))
+		if (transition ~= -1) then
+			self:PlaySequence(transition)
+		else
+			self:PlaySequence(self.SprintSequence)
+		end
+	else
+		self:PlayAnim(ACT_VM_IDLE)
+	end
+end
+
+SWEP.__sprinting = false
+function SWEP:SprintThink()
+	local sprinting = self:IsSprinting()
+	if (sprinting ~= self.__sprinting) then
+		self:SprintChanged(sprinting)
+		self.__sprinting = sprinting
 	end
 end
 
@@ -16,9 +55,11 @@ function SWEP:Think()
 		self:ViewmodelThink()
 
 	end
-
+	
 	if SERVER then
 		self:HolsterThink()
+		self:SprintThink()
+
 	end
 	self:IronsightsThink()
 	self:RecoilThink()

@@ -286,6 +286,8 @@ function SWEP:Deploy()
 	self:EmitSound(Sound("Plutonic.Draw"), nil, nil, nil, nil, SND_NOFLAGS, 1)
 	self:ViewPunch(Angle())
 
+	self:QueueIdle()
+
 	return true
 end
 

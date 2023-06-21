@@ -36,17 +36,7 @@ SWEP.VMRenderTarget =
 
 
 
-function SWEP:PlayAnim(act)
-	if self.CustomEvents[act] then
-		act = self.CustomEvents[act]
-	end
 
-	local vmodel = self.Owner:GetViewModel()
-	if not IsValid(vmodel) then return end
-	local seq = vmodel:SelectWeightedSequence(act)
-
-	vmodel:SendViewModelMatchingSequence(seq)
-end
 local dofmat = Material("pp/dof")
 local grad = Material("vgui/gradient-d")
 function SWEP:PreDrawViewModel(vm)
@@ -239,6 +229,16 @@ end
 
 function SWEP:PostRender()
 	self:DoWallLeanThink()
+	
+	local oxc = math.ease.OutExpo(min(abs(self.VMDeltaX) / 8, 1)) * clamp(self.VMDeltaX, -8, 8)
+	self.c_oxc = lerp(Frametime() * 4, self.c_oxc or 0, oxc)
+
+	local oxq = math.ease.OutExpo(min(abs(self.VMDeltaX) / 8, 1)) * clamp(self.VMDeltaX, -8, 8) -- math.ease.OutQuad(min(abs(self.VMDeltaX) / 8, 1)) * clamp(self.VMDeltaX, -8, 8)
+	self.c_oxq = lerp(Frametime() * 8, self.c_oxq or 0, oxq)
+
+	local oyq = math.ease.OutQuad(min(abs(self.VMDeltaY) / 8, 1)) * clamp(self.VMDeltaY, -8, 8)
+	self.c_oyq = lerp(Frametime() * 8, self.c_oyq or 0, oyq)
+
 	self.Ironsights = self:GetIronsights()
 	self._sprinting = self._sprinting or false
 	local sprinting = self:IsSprinting()
@@ -249,7 +249,7 @@ function SWEP:PostRender()
 		end
 	end
 
-	self.VMSprint = approach(self.VMSprint or 0, sprinting and 1 or 0, sprinting and Frametime() * 2 or Frametime() * 1.15)
+	self.VMSprint = lerp(Frametime() * 4, self.VMSprint or 0, sprinting and 1 or 0 ) 
 
 	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 2.4 )
 	self.VMIronsights = self.VMIronsights or 0
@@ -343,8 +343,8 @@ function SWEP:IsDucked()
 	return ((self.Owner:KeyDown(IN_DUCK) or self.Owner:Crouching()) and not isIronsights)
 end
 
-SWEP.CrouchPos = Vector(1.5, -2.7, 1.4)
-SWEP.CrouchAng = Angle(0, 0, -12)
+SWEP.CrouchPos = Vector(.7, -0, -.4)
+SWEP.CrouchAng = Angle(0, 0, -0)
 
 function SWEP:DoCrouch(pos, ang)
 	self.VMCrouch = self.VMCrouch or 0
@@ -364,7 +364,7 @@ function SWEP:DoCrouch(pos, ang)
 	return Plutonic.Framework.RotateAroundPoint(
 		pos,
 		ang,
-		Vector(self.BarrelLength, 0, 0),
+		Vector(-9, -2, -3),
 		self.CrouchPos * -alpha,
 		self.CrouchAng * -alpha
 	)
@@ -434,17 +434,17 @@ function SWEP:DoIdle(pos, ang)
 	local forwardMotion = sin(rt * .25) * .1
 	local sideMotion = cos(rt * .125) * .1
 
-	local forwardAngle = cos(rt * .5) * 2
+	local forwardAngle = cos(rt * 2.5) * 8
 	local sideAngle = sin(rt * .5) * 0.8
 
-	local breath = cos(sin(rt * 4) * .2)
+	local breath = cos(sin(rt * .025) ^ 3 * 7.2)
 
 	return Plutonic.Framework.RotateAroundPoint(
 		pos,
 		ang,
-		Vector(self.BarrelLength, 0, 0),
-		Vector(0, forwardMotion * 1,breath * -.4),
-		Angle(sideAngle, sideAngle, 0)
+		Vector(-9, -2, -3),
+		Vector(0, (breath * 1) - forwardMotion * 1,0),
+		Angle(sideAngle, sideAngle + breath * 4, 0)
 	)
 end
 
@@ -515,16 +515,27 @@ function SWEP:DoWalkBob(pos, ang)
 
 	local pos0, ang0 = pos + Vector(), ang + Angle();
 	do
+		local modif = 1;
+		if (self.UseSprintSequence) then
+			modif = 0.1
+		end
+		if (not self.LoweredPos) then
+			modif = 0.7
+		end
 		local sn0 = (sin(rt * 12.6) ) * mv ;
 		local cs0 = (cos(rt * 12.6) ) * mv;
 		local zc0 = sin(rt * 6.3) * cs0;
 
+		local d = -sin(rt * 25.2)
+
+		local ب = sin(rt * 25.2) * cos(rt * 6.3)*-4
+
 		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(
 			pos,
 			ang,
-			Vector(-self.BarrelLength, 0, 0),
-			Vector(sin(rt * 25.2) * -.1, sn0 * -.39, cs0 * -.22),
-			Angle(sin(rt * 25.2) * -1, cos(rt * 12.6) * 3, zc0 * -4)
+			Vector(-9, -2, -3), 
+			Vector(d * -.1 , sn0 * -.0625, (cs0 * -.25 )) * modif,
+			Angle(d * -1 + (abs(sn0) * 2.8), sn0 * 4.8, ب) * modif
 		);
 	end
 
@@ -533,28 +544,21 @@ function SWEP:DoWalkBob(pos, ang)
 	do
 		local sn1 = sin(rt * 8.4) * mv;
 		local cs1 = cos(rt * 12.6) * mv;
+		local sn2 = sin(rt * 4.2)
+		local sz3 = cos(rt * 8.4) * cos(rt * 12.6) * .2
+		local cs2 = abs(cos(rt * 4.2))
+		local ب = sin(rt * 25.2) * cos(rt * 6.3)*(3*mv)
 		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(
 			pos, 
 			ang, 
-			Vector(-self.BarrelLength, 0, 0), 
-			Vector(-0, sn1 * -.39 , n1), 
-			Angle(abs(cos(rt * 8.4)) * 1.6 * mv, sin(rt * 4.2) * 4.2 * mv, 0)
+			Vector(-9, -2, -3), 
+			Vector(-0, sn1 * -.39 + (sn2*-1.2*mv), sz3 * mv), 
+			Angle((cs2 * 2.75 * mv) + (cs2 * -3.39 * mv), sn2 * -5.2 * mv, ب)
 		);
 	end
 
-	do
-		local sn1 = sin(rt * 16.8) * mv;
-		local cs1 = sin(sn1 * 2.1) * mv;
-		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(
-			pos1, 
-			ang1, 
-			Vector(self.BarrelLength, 0, 0), 
-			Vector(0, 0, 0), 
-			Angle(0, 0, cs1 * 3)
-		);
-	end
 
-	local interp = math.ease.InExpo(self.VMSprint);
+	local interp = math.ease.InOutQuart(self.VMSprint);
 	
 	pos, ang = lerpVector(interp, pos1, pos0), lerpAngle(interp, ang1, ang0);
 
@@ -699,29 +703,29 @@ function SWEP:GetViewModelPosition(pos, ang)
 		xsn = Vector(0,0,0)
 	end
 
-	local oxc = math.ease.OutCirc(min(abs(self.VMDeltaX) / (self.SwayMax or 7), 1)) * clamp(self.VMDeltaX, -(self.SwayMax or 7), (self.SwayMax or 7))
-	local oxq = math.ease.OutQuad(min(abs(self.VMDeltaX) / (self.SwayMax or 7), 1)) * clamp(self.VMDeltaX, -(self.SwayMax or 7), (self.SwayMax or 7))
-	local oyq = math.ease.OutQuad(min(abs(self.VMDeltaY) / (self.SwayMax or 7), 1)) * clamp(self.VMDeltaY, -(self.SwayMax or 7), (self.SwayMax or 7))
+	local oxc = self.c_oxc or 0
+	local oxq = self.c_oxq or 0
+	local oyq = self.c_oyq or 0
 	local offsetPos = Vector(
-		--[[FORWARD]] degPitch - abs(degRoll  *.1),
-		--[[RIGHT]]   oxq *.0625,--oxq * -.05,
-		--[[UP]]      oxq * -.08
+		--[[FORWARD]] degPitch - abs(degRoll  *.25),
+		--[[RIGHT]]   oxq *.5,--oxq * -.05,
+		--[[UP]]      oyq * .25--oyq * -.05
 	)
 
 	local s0 = (sin(rt * 25.2) * self.VMDeltaXWeighted * .1)
 	local s1 = (cos(rt * 8.4) * self.VMDeltaXWeighted * .2)
-	local x0 =0--==lerp(abs(self.VMDeltaXWeighted / 12) * abs(self.VMDeltaXWeighted), s1, s0)
+	local x0 = lerp(abs(self.VMDeltaXWeighted / 12) * abs(self.VMDeltaXWeighted), s1, s0)
 
 	local offsetAng = Angle(
-		self.VMDeltaY  + degPitch,
-		-(oxq*.25),
-		oxq - degRoll
+		-oyq  + degPitch,
+		(oxq*2),
+		-oxc - degRoll
 	)
 
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
-		Vector(self.BarrelLength, 0, 0), 
+		Vector(-9, -2, -3), 
 		offsetPos,
 		offsetAng
 	)
@@ -737,7 +741,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos, ang = self:DoCrouch(pos, ang)
 	pos, ang = self:DoBlocked(pos, ang)
 	
-	pos, ang = self:DoIdle(pos, ang)
+	--pos, ang = self:DoIdle(pos, ang)
 	if self.ViewModelOffsetAng then
 		local offsetang = self.ViewModelOffsetAng
 		ang:RotateAroundAxis(ang:Right(), offsetang.p)
@@ -848,7 +852,7 @@ function SWEP:CalcView(ply, pos, ang, fov)
 				n_ang = (aim.Pos - pos):Angle()
 			end
 		else
-			n_ang = self:GetReloadAnimation(pos, ang)
+			n_ang = self:GetReloadAnimation(pos, ang, self.CAM_ReloadAlp)
 		end
 
 		self.CAM_ReloadAlp = Lerp(Frametime(), self.CAM_ReloadAlp, self.ReloadProceduralCameraFrac or .1)

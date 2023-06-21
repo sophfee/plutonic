@@ -33,17 +33,13 @@ function SWEP:PrimaryAttack()
 
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 
-	self:PlayAnim(self.HitAnim or ACT_VM_HITCENTER)
-	--[[
-	-- Commented out until further review
-	-- Justin
+	--[[self:PlayAnim(self.HitAnim or ACT_VM_HITCENTER)
 	if self.DoFireAnim then
 		self:PlayAnim(ACT_VM_PRIMARYATTACK)
 	else
-		--self:PlayAnim(ACT_VM_HITCENTER)
+		self:PlayAnim(ACT_VM_HITCENTER)
 	end
 	]]
-	
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
 end
 
@@ -83,7 +79,7 @@ function SWEP:ClubAttack()
 	end
 
 	if SERVER and tr.Hit then
-		--self:PlayAnim(ACT_VM_HITCENTER)
+		self:PlayAnim(ACT_VM_HITCENTER)
 		hook.Run("LongswordMeleeHit", self.Owner)
 
 		if self.Primary.ImpactSound and not self.Primary.ImpactSoundWorldOnly then
@@ -151,6 +147,6 @@ function SWEP:ClubAttack()
 			self.Owner:EmitSound(self.Primary.ImpactSound)
 		end
 	elseif SERVER then
-		--self:PlayAnim(ACT_VM_MISSCENTER)
+		self:PlayAnim(ACT_VM_MISSCENTER)
 	end
 end

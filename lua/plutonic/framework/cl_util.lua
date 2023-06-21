@@ -246,7 +246,6 @@ end
 
 concommand.Add("plutonic_benchmark_print", Benchmark)
 
-Plutonic.Hooks.Remove("PlayerFootstep")
 
 local flipFloppa = 0
 
