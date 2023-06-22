@@ -27,3 +27,17 @@ Plutonic.Hooks.Add(
 		end
 	end
 )
+Plutonic.Hooks.Add("RenderScreenspaceEffects", function()
+	local lp = LocalPlayer()
+	if not IsValid(lp) then return end
+	local wep = lp:GetActiveWeapon()
+	if not IsValid(wep) then return end
+	if not wep.IsPlutonic then return end
+
+	local ir = wep.VMIronsights or 0
+
+	if ir <= 0 then return end
+	DrawToyTown(12 * ir, ScrH() / 2.2)
+	
+
+end)
