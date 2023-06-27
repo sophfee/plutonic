@@ -10,3 +10,13 @@ Plutonic.Hooks.Add("SetupMove", function(ply, mvData)
 		end
 	end
 end)
+
+Plutonic.Hooks.Add("StartCommand", function(ply, cmd)
+	local wep = ply.GetActiveWeapon and ply:GetActiveWeapon()
+
+	if (wep and IsValid(wep) and wep.IsPlutonic) then
+		if (cmd:KeyDown(IN_SPEED) and wep:GetReloading()) then
+			cmd:RemoveKey(IN_SPEED)
+		end
+	end
+end)

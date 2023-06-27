@@ -9,6 +9,10 @@ function SWEP:CanReload()
 		return
 	end
 
+	if self:IsSprinting() then
+		return false 
+	end
+
 	if (self:GetNextPrimaryFire() > CurTime()) then
 		return
 	end

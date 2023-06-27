@@ -75,7 +75,20 @@ Plutonic.Enum.FireMode = {
 	Auto
 }
 
+Plutonic.Enum.ANIMATION_PROCEDURAL = 0
+Plutonic.Enum.ANIMATION_ACTIVITY = 1
+Plutonic.Enum.ANIMATION_SEQUENCE = 2
 
+Plutonic.Enum.ANIMATION_TYPE = {
+	Procedural = Plutonic.Enum.ANIMATION_PROCEDURAL,
+	Activity = Plutonic.Enum.ANIMATION_ACTIVITY,
+	Sequence = Plutonic.Enum.ANIMATION_SEQUENCE
+}
+
+Plutonic.Enum.Value = 0x1
+Plutonic.Enum.ValueIfEmpty = 0x2
+Plutonic.Enum.ValueIfForegrip = 0x3
+Plutonic.Enum.ValueIfForegripAndEmpty = 0x4
 
 VECTOR_UP = Angle():Up()
 VECTOR_RIGHT = Angle():Right()

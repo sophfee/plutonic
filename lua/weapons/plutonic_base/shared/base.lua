@@ -381,7 +381,11 @@ function SWEP:ShootEffects()
 			vm.SetSequence( vm, self.PrimaryFireSequence )
 			vm:SendViewModelMatchingSequence(vm:LookupSequence(self.PrimaryFireSequence))
 		else
-			self:PlayAnim(ACT_VM_PRIMARYATTACK)
+			if (self:Clip1() <= 0) then
+				self:PlayAnim(ACT_VM_PRIMARYATTACK_EMPTY)
+			else
+				self:PlayAnim(ACT_VM_PRIMARYATTACK)
+			end
 			self:QueueIdle()
 		end
 		

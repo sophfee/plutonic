@@ -3,44 +3,74 @@
 SWEP.CustomEvents = SWEP.CustomEvents or {}
 SWEP.ViewModelPos = Vector(0, 0, 0)
 SWEP.ViewModelAngle = Angle(0, 0, 0)
+SWEP.BarrelLength = 6
+SWEP.c_alpha = 0
+SWEP.c_lang = Angle(0, 0, 0)
+SWEP.c_lpos = Vector(0, 0, 0)
+SWEP.c_oxc = 0
+SWEP.c_oxq = 0
+SWEP.c_oyq = 0
 
-local rtx =
-	GetRenderTargetEx(
-	"ls2_rt",
-	512,
-	512,
-	RT_SIZE_NO_CHANGE,
-	MATERIAL_RT_DEPTH_SHARED,
-	65536,
-	CREATERENDERTARGETFLAGS_HDR,
-	IMAGE_FORMAT_DEFAULT
-)
-
-SWEP.VMRenderTarget =
-	CreateMaterial(
-	"ls2_sight_rt",
-	"UnlitGeneric",
-	{
-		["$model"] = 1,
-		["$basetexture"] = rtx:GetName(),
-		["$phong"] = 1,
-		["$phongexponent"] = 2,
-		["$phongboost"] = 1,
-		["$phongfresnelranges"] = "[0 0.5 1]",
-		["$phongalbedotint"] = "[1 1 1]",
-		["$phongtint"] = "[1 1 1]",
-		["$ignorez"] = 1,
-		["$transparent"] = 1
-	}
-)
-
-
-
+local math = math
+local render = render
+local surface = surface
+local draw = draw
+local cam = cam
 
 local dofmat = Material("pp/dof")
 local grad = Material("vgui/gradient-d")
+local blur = Material("pp/blurscreen")
+local reticule = Material("models/weapons/insurgency_sandstorm/ins2_sandstorm/kobra_reticle")
+local abs = math.abs
+local min = math.min
+local max = math.max
+local clamp = math.Clamp
+local sin = math.sin
+local cos = math.cos
+local rad = math.rad
+local deg = math.deg
+local pi = math.pi
+local pi2 = math.pi * 2
+local round = math.Round
+local Curtime = UnPredictedCurTime
+local Frametime = RealFrameTime
+local Realtime = RealTime
+local vec = Vector
+local ang = Angle
+local lerp = Lerp
+local lerpAngle = LerpAngle
+local lerpVector = LerpVector
+local approach = math.Approach
+
+local easeInQuad = math.ease.InQuad
+local easeOutQuad = math.ease.OutQuad
+local easeInOutQuad = math.ease.InOutQuad
+
+local easeInElastic = math.ease.InElastic
+local easeOutElastic = math.ease.OutElastic
+local easeInOutElastic = math.ease.InOutElastic
+
+local easeInQuint = math.ease.InQuint
+local easeOutQuint = math.ease.OutQuint
+local easeInOutQuint = math.ease.InOutQuint
+
+local easeInSine = math.ease.InSine
+local easeOutSine = math.ease.OutSine
+local easeInOutSine = math.ease.InOutSine
+
+local easeInCirc = math.ease.InCirc
+local easeOutCirc = math.ease.OutCirc
+local easeInOutCirc = math.ease.InOutCirc
+
+local easeInExpo = math.ease.InExpo
+local easeOutExpo = math.ease.OutExpo
+local easeInOutExpo = math.ease.InOutExpo
+
+local VECTOR_ZERO = vec(0, 0, 0)
+local ANGLE_ZERO = ang(0, 0, 0)
+
 function SWEP:PreDrawViewModel(vm)
-	if CLIENT and self.CustomMaterial and not self.CustomMatSetup then
+	if self.CustomMaterial and not self.CustomMatSetup then
 		self.Owner:GetViewModel():SetMaterial(self.CustomMaterial)
 		self.CustomMatSetup = true
 	end
@@ -49,12 +79,7 @@ function SWEP:PreDrawViewModel(vm)
 	end
 end
 
-local mat = Material("!ls2_sight_rt")
-mat:SetTexture("$basetexture", rtx:GetName())
-mat:SetInt("$translucent", 1)
-mat:Recompute()
-local blur = Material("pp/blurscreen")
-local reticule = Material("models/weapons/insurgency_sandstorm/ins2_sandstorm/kobra_reticle")
+
 
 function SWEP:ViewModelDrawn()
 	if Plutonic.Framework.Overdraw then return end
@@ -139,49 +164,15 @@ function SWEP:ViewModelDrawn()
 			Plutonic.Framework.Mask(att)
 
 			local rpos = attData.Reticule.Pos
-			local pos, ang = EyePos(),EyeAngles()
-			local eang =  EyeAngles()
-			
-			
+			local pos, ang = att:GetPos(), att:GetAngles()
 
-			--ang:RotateAroundAxis(ang:Up(), 180)
+			ang:RotateAroundAxis(ang:Forward(), -0)
+			ang:RotateAroundAxis(ang:Up(), -90)
 
-			--pos = pos + eang:Forward() * rpos.x
-			--pos = pos + eang:Right() * rpos.y
-			--pos = pos + eang:Up() * rpos.z
-
-			local rang = attData.Reticule.Ang or Angle(-0,-90,-90)
-			local ranglf = Angle(rang.p, rang.y, rang.r)
-			local oang = Angle(-90, 0, 0)
-
-			pos = pos + (ang:Forward() * attData.Reticule.Pos.x)
-
-			--[[pos, ang = Plutonic.Framework.RotateAroundPoint(
-				pos, 
-				EyeAngles(), 
-				Vector(0, 0, 0), 
-				Vector(), 
-				Angle()--Angle(self.VMDeltaY * .1, self.VMDeltaX * -.1 + 90, -90)
-			)]]
-			ang:RotateAroundAxis(ang:Up(), -180)
-			
-			ang:RotateAroundAxis(ang:Forward(), 180)
-			
-			local size = attData.Reticule.Size or 4
-
-			local dir = (EyePos() - pos):GetNormalized()
-
-			local _p, _a = WorldToLocal(pos, ang, self:DoWalkBob(pos, ang))
-
-			pos, ang = Plutonic.Framework.RotateAroundPoint(
-				pos, 
-				ang, 
-				Vector(0, 0, 0),
-				-_p * 2,
-				-_a * 2	
-			)
-
-			dir[2] = dir[2] - dir[3]
+			pos = pos + ang:Forward() * -rpos.x
+			pos = pos + ang:Right() * rpos.y
+			pos = pos + ang:Up() * rpos.z
+			local size = attData.Reticule.Size or 32
 			
 			render.SetMaterial(attData.Reticule.Material or reticule)
 			render.DrawQuadEasy(pos, ang:Forward(), size, size, attData.Reticule.Color or color_white, ang.r)
@@ -215,15 +206,11 @@ end)
 
 function SWEP:PostDrawViewModel(vm, ply, wep)
 end
-SWEP.BarrelLength = 6
+
 local function LerpC(t, a, b, powa)
 	return a + (b - a) * math.pow(t, powa)
 end
-local abs,min,max,clamp,sin,cos,rad,deg,pi,pi2,round,Curtime,Frametime,Realtime,vec,ang,lerp,lerpAngle,lerpVector,approach=math.abs,math.min,math.max,math.Clamp,math.sin,math.cos,math.rad,math.deg,math.pi,math.pi * 2,math.Round,UnPredictedCurTime,RealFrameTime,RealTime,Vector,Angle,Lerp,LerpAngle,LerpVector,math.Approach
-local easeInOutQuad, easeOutElastic, easeInOutQuint = math.ease.InOutQuad, math.ease.OutElastic, math.ease.InOutQuint
 
-local VECTOR_ZERO = Vector(0, 0, 0)
-local ANGLE_ZERO = Angle(0, 0, 0)
 
 function SWEP:OnSprintStateChanged(sprinting)
 	self.VMSprint = !sprinting and math.ease.OutQuad(self.VMSprint or 0) or math.ease.InQuad(self.VMSprint or 0)
@@ -232,14 +219,20 @@ end
 
 function SWEP:PostRender()
 	self:DoWallLeanThink()
-	
-	local oxc = math.ease.OutExpo(min(abs(self.VMDeltaX) / 16, 1)) * clamp(self.VMDeltaX, -1, 1)
-	self.c_oxc = lerp(Frametime() * 6, self.c_oxc or 0, oxc)
 
-	local oxq = math.ease.OutCirc(min(abs(self.VMDeltaX) / 2, 1)) * clamp(self.VMDeltaX, -1,1) -- math.ease.OutQuad(min(abs(self.VMDeltaX) / 8, 1)) * clamp(self.VMDeltaX, -8, 8)
-	self.c_oxq = lerp(Frametime() * 6, self.c_oxq or 0, oxq)
+	local dx = self.VMDeltaX or 0
+	local dy = self.VMDeltaY or 0
 
-	local oyq = math.ease.OutQuad(min(abs(self.VMDeltaY) / 8, 1)) * clamp(self.VMDeltaY, -16, 16)
+	local oxc_a = min(abs(dx) / 8, 1)
+	local oxc = easeOutQuad(oxc_a) * clamp(dx / -4, -.5, .5)
+	self.c_oxc = lerp(Frametime() * 8, self.c_oxc or 0, oxc)
+
+	local oxq_a = min(abs(dx) / 16, 1)
+	local oxq = easeOutCirc(1- oxq_a) * clamp(dx / 16, -.5,.5) -- math.ease.OutQuad(min(abs(self.VMDeltaX) / 8, 1)) * clamp(self.VMDeltaX, -8, 8)
+	self.c_oxq = lerp(Frametime() * 12, self.c_oxq or 0, oxq)
+
+	local oyq_a = min(abs(dy) / 1, 1)
+	local oyq = easeOutQuad(oyq_a) * clamp(dy, -1, 1)
 	self.c_oyq = lerp(Frametime() * 8, self.c_oyq or 0, oyq)
 
 	self.Ironsights = self:GetIronsights()
@@ -408,6 +401,7 @@ function SWEP:DoIronsights(pos, ang)
 	local fireBump2 = math.ease.InBack(math.Clamp(timeSince , 0, 1))
 	pos = pos + ang:Forward() * fireBump * -.4
 
+	
 
 	local alpha = self.c_alpha or 0
 	local ironsightPos = Plutonic.Interpolation.VectorBezierCurve( alpha, VECTOR_ZERO, self.IronsightsMiddlePos, self.IronsightsPos)
@@ -426,26 +420,17 @@ end
 
 function SWEP:DoIdle(pos, ang)
 	self.VMIdle = self.VMIdle or 0
-	if self:GetIronsights() then
-		return pos, ang
-	end
 	local rt = Realtime()
 
-	local forwardMotion = sin(rt * .25) * .1
-	local sideMotion = cos(rt * .125) * .1
-
-	local forwardAngle = cos(rt * 2.5) * 8
-	local sideAngle = sin(rt * .5) * 0.8
-
-	local breath = cos(sin(rt * .625) ^ 2 * 1.2)
-	local breath2 = sin(cos(rt * .625) ^ 3 * .2)
+	local breath = sin(rt * .625) * .6
+	local breath2 = cos(rt * .625) * 1.6
 
 	return Plutonic.Framework.RotateAroundPoint(
 		pos,
 		ang,
-		Vector(-9, -2, -3),
-		Vector(0,breath2 * -3,breath * -.3),
-		Angle(breath2, breath, 0)
+		Vector(-1, -2, -3),
+		Vector(0,breath2 * -.35,0) * (1- self.VMIronsights),
+		Angle(breath2, 0, 0) * (1- self.VMIronsights)
 	)
 end
 
@@ -473,26 +458,11 @@ function SWEP:DoSprint(pos, ang)
 
 	return pos, ang
 end
-
-SWEP.vBobIn2 = Vector(-1.7, -1.2, -4.8)
-SWEP.vBobMid2 = Vector(0, 0, -1 )
-SWEP.vBobOut2 = Vector(1.7, -4.2, -4.8)
-
-SWEP.aBobIn2 = Angle(0, 3, -3)
-SWEP.aBobMid2 = Angle(0, 0, 0)
-SWEP.aBobOut2 = Angle(0, -3, 3)
-
-SWEP.vBobIn = Vector( -1.6, -1.6, -4.8) 
-SWEP.vBobMid = Vector(  0.2, 0,1) 
-SWEP.vBobOut = Vector( .6, 1.6, -4.8)
-SWEP.aBobIn = Angle()
-SWEP.aBobMid = Angle()
-SWEP.aBobOut = Angle()
-
 lerpSpeed = 0
 
+local walkBobOffsetPos = Vector(0, 0, 0)
+local walkBobOffsetAng = Angle(0, 0, 0)
 local hastickedthiscycle = false
-
 local WalkingTime = 0
 function SWEP:DoWalkBob(pos, ang)
 	if self.DoCustomWalkBob then
@@ -532,7 +502,7 @@ function SWEP:DoWalkBob(pos, ang)
 			pos,
 			ang,
 			Vector(-9, -2, -3), 
-			Vector(d * -.1 , sn0 * -.6, -(abs(cs0) * .145 )- 0.2) * modif,
+			Vector(d * -.1 , sn0 * -.6, -(abs(cs0) * .7145 )- 0.2) * modif,
 			Angle(d * -1 + (abs(sn0) * -.8), sn0 * -2.8, ب) * modif
 		);
 	end
@@ -706,7 +676,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local oyq = self.c_oyq or 0
 	local offsetPos = Vector(
 		--[[FORWARD]] 0,
-		--[[RIGHT]]   oxc * -.01  - oxq * .006 - degRoll  *.0625,--oxq * -.05,
+		--[[RIGHT]]   oxc * -.8 - oxq * 1- degRoll  *.0625,--oxq * -.05,
 		--[[UP]]      oyq * .25 - abs(degRoll)  *.0925 + (abs(oxq) * -.1 + abs(oxc) * .07)--oyq * -.05
 	)
 
@@ -716,14 +686,16 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	local offsetAng = Angle(
 		-oyq  + degPitch,
-		(oxq)-(oxc * 2),
-		(oxq*-1.6) - degRoll + (oxc * 1.4)
+		(oxq)-(oxc * 2.164),
+		(oxq*-2.4) - degRoll + (oxc * 1.1)
 	)
+
+	local yofof = lerp(self.VMIronsights, -3, 0)
 
 	pos, ang = Plutonic.Framework.RotateAroundPoint(
 		pos, 
 		ang, 
-		Vector(-9, -2, -3), 
+		Vector(9, -2.5, yofof), 
 		offsetPos,
 		offsetAng
 	)
