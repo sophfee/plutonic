@@ -137,7 +137,7 @@ function SWEP:DrawHUD()
 	surface.DrawRect(0, 0, scrw - scopew, scrh)
 	surface.DrawRect(scrw - hw, 0, scrw - scopew, scrh)
 	surface.DrawRect(0, hh + scopeh, scrw, scrh)
-	surface.SetDrawColor(self.Attachments[attachment].ScopeColour or color_white)
+	surface.SetDrawColor(self.Attachments[attachment].ScopeColor or color_white)
 	surface.SetMaterial(self.Attachments[attachment].ScopeTexture)
 	surface.DrawTexturedRect(hw, hh, scopew, scopeh)
 	if self.Attachments[attachment].NeedsHDR then

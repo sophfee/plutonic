@@ -102,7 +102,7 @@ function SWEP:ClubAttack()
 			ent:DispatchTraceAttack(dmg, trace.start, trace.endpos)
 			if SERVER and ent:IsPlayer() then
 				if self.Primary.FlashTime then
-					ent:ScreenFade(SCREENFADE.IN, self.Primary.FlashColour or color_white, self.Primary.FlashTime, 0)
+					ent:ScreenFade(SCREENFADE.IN, self.Primary.FlashColor or color_white, self.Primary.FlashTime, 0)
 					ent.StunTime = CurTime() + self.Primary.FlashTime
 					ent.StunStartTime = CurTime()
 				elseif self.Primary.StunTime then
