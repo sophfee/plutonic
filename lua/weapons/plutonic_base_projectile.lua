@@ -1,53 +1,52 @@
 AddCSLuaFile()
-
 SWEP.Base = "plutonic_base"
-
 SWEP.Projectile = {}
-
 function SWEP:PrimaryAttack()
 	if self:Clip1() < 1 then
 		self:SetNextPrimaryFire(CurTime() + 1)
+
 		return
 	end
 
 	if self.Primary.ThrowDelay then
-		timer.Simple(self.Primary.ThrowDelay, function()
-			if IsValid(self) then
-				self:ThrowAttack()
-				self:ViewPunch()
-
-				if self:Clip1() < 1 then
-					self.Owner:StripWeapon(self:GetClass())
+		timer.Simple(
+			self.Primary.ThrowDelay,
+			function()
+				if IsValid(self) then
+					self:ThrowAttack()
+					self:ViewPunch()
+					if self:Clip1() < 1 then
+						self:GetOwner():StripWeapon(self:GetClass())
+					end
 				end
 			end
-		end)
+		)
 	else
 		self:ThrowAttack()
 		self:ViewPunch()
 	end
 
-	if self.Primary.Sound != "" then
+	if self.Primary.Sound ~= "" then
 		self:EmitSound(self.Primary.Sound)
 	end
 
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-
 	if self.DoFireAnim then
 		self:PlayAnim(ACT_VM_PRIMARYATTACK)
-		self.Owner:SetAnimation(PLAYER_ATTACK1)
+		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	else
 		self:SendWeaponAnim(ACT_VM_THROW)
-		self.Owner:SetAnimation(PLAYER_ATTACK1)
+		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 		self:SendWeaponAnim(ACT_VM_DRAW)
 	end
 
 	if self:Clip1() < 1 then
 		if self.PairedItem then
-			if self.Owner:HasInventoryItemSpecific(self.PairedItem) then
-				self.Owner:TakeInventoryItem(self.PairedItem)
+			if self:GetOwner():HasInventoryItemSpecific(self.PairedItem) then
+				self:GetOwner():TakeInventoryItem(self.PairedItem)
 			end
 		else
-			self.Owner:StripWeapon(self:GetClass())
+			self:GetOwner():StripWeapon(self:GetClass())
 		end
 	end
 end
@@ -56,6 +55,7 @@ function SWEP:Think()
 	if CLIENT then
 		self:ViewmodelThink()
 	end
+
 	self:IdleThink()
 end
 
@@ -65,20 +65,15 @@ end
 
 function SWEP:ThrowAttack()
 	if CLIENT then return end
-
 	self:TakePrimaryAmmo(1)
-
 	local projectile = ents.Create("plutonic_projectile")
 	projectile:SetModel(self.Projectile.Model)
-	projectile.Owner = self.Owner
-
-	local pos = self.Owner:GetShootPos()
-	pos = pos + self.Owner:GetForward() * 2
-	pos = pos + self.Owner:GetRight() * 3
-	pos = pos + self.Owner:GetUp() * -3
-
+	projectile.Owner = self:GetOwner()
+	local pos = self:GetOwner():GetShootPos()
+	pos = pos + self:GetOwner():GetForward() * 2
+	pos = pos + self:GetOwner():GetRight() * 3
+	pos = pos + self:GetOwner():GetUp() * -3
 	projectile:SetPos(pos)
-
 	if self.Projectile.Timer then
 		projectile.Timer = CurTime() + self.Projectile.Timer
 	end
@@ -111,14 +106,12 @@ function SWEP:ThrowAttack()
 		projectile.RemoveWait = self.Projectile.RemoveWait
 	end
 
-	projectile:SetOwner(self.Owner)
+	projectile:SetOwner(self:GetOwner())
 	projectile:Spawn()
-
 	local force = 700
-
-	if self.Owner:KeyDown(IN_FORWARD) then
+	if self:GetOwner():KeyDown(IN_FORWARD) then
 		force = 1000
-	elseif self.Owner:KeyDown(IN_BACK) then
+	elseif self:GetOwner():KeyDown(IN_BACK) then
 		force = 600
 	end
 
@@ -127,17 +120,11 @@ function SWEP:ThrowAttack()
 	end
 
 	local phys = projectile:GetPhysicsObject()
-
-	if not IsValid(phys) then
-		return
-	end
-
+	if not IsValid(phys) then return end
 	if self.Projectile.Mass then
-		if IsValid(phys) then
-			phys:SetMass(self.Projectile.Mass)
-		end
+		phys:SetMass(self.Projectile.Mass)
 	end
 
-	phys:ApplyForceCenter(self.Owner:GetAimVector() * force * 2 + Vector(0, 0, 0))
+	phys:ApplyForceCenter(self:GetOwner():GetAimVector() * force * 2 + Vector(0, 0, 0))
 	phys:AddAngleVelocity(Vector(math.random(-500, 500), math.random(-500, 500), math.random(-500, 500)))
 end

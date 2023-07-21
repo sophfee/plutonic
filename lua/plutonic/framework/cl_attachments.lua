@@ -9,8 +9,8 @@ net.Receive("Plutonic.AttachmentEquip", function()
 
 	wep:Attach(att)
 
-	if IsValid(impulse_modstation) then
-		impulse_modstation:RefreshAttachments(wep)
+	if IsValid(Singularity_modstation) then
+		Singularity_modstation:RefreshAttachments(wep)
 	end
 end)
 
@@ -28,8 +28,8 @@ net.Receive("Plutonic.AttachmentRemove", function()
 
 	wep:Detach(att)
 
-	if IsValid(impulse_modstation) then
-		impulse_modstation:RefreshAttachments(wep)
+	if IsValid(Singularity_modstation) then
+		Singularity_modstation:RefreshAttachments(wep)
 	end
 end)
 

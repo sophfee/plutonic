@@ -6,6 +6,7 @@ function Plutonic.Interpolation.BezierCurve(t, p0, p1, p2)
 	local l1 = Plutonic.Interpolation.Lerp(p0, p1, t)
 	local l2 = Plutonic.Interpolation.Lerp(p1, p2, t)
 	local quad = Plutonic.Interpolation.Lerp(l1, l2, t)
+
 	return quad
 end
 

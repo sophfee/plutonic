@@ -1,42 +1,16 @@
 --- The core level functionality of Plutonic.
 -- @module Framework
 
-local PIERCING_MATS = {
-	[MAT_FLESH] = true,
-	[MAT_BLOODYFLESH] = true,
-	[MAT_ALIENFLESH] = true,
-	[MAT_ANTLION] = true,
-	[MAT_DIRT] = true,
-	[MAT_SAND] = true,
-	[MAT_FOLIAGE] = true,
-	[MAT_GRASS] = true,
-	[MAT_SLOSH] = true,
-	[MAT_PLASTIC] = true,
-	[MAT_TILE] = true,
-	[MAT_CONCRETE] = true,
-	[MAT_WOOD] = true,
-	[MAT_GLASS] = true,
-	[MAT_COMPUTER] = true
-}
-
-local ALWAYS_PIERCE = {
-	[MAT_GLASS] = true,
-	[MAT_VENT] = true,
-	[MAT_GRATE] = true
-}
-
 --- Fire a bullet from the weapon. This is a wrapper for the SWEP:FireBullets function.
 -- @realm shared
 -- @param bullet The bullet table to use.
 -- @param SuppressHostEvents Whether or not to suppress the host events.
 Plutonic.Framework.FireBullets = function(self, bullet, SuppressHostEvents)
-    bullet.Callback = function(attacker, tr)
-        if attacker.IsDeveloper then
-            if attacker:IsDeveloper() then
-                debugoverlay.Cross(tr.HitPos, 2, 3, Color(255, 0, 0), true)
-            end
-        end
-    end
+	bullet.Callback = function(attacker, tr)
+		if attacker.IsDeveloper and attacker:IsDeveloper() then
+			debugoverlay.Cross(tr.HitPos, 2, 3, Color(255, 0, 0), true)
+		end
+	end
 
-    self.Owner:FireBullets(bullet, SuppressHostEvents)
+	self:GetOwner():FireBullets(bullet, SuppressHostEvents)
 end

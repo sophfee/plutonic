@@ -4,7 +4,7 @@ function SWEP:DrawWorldModel()
 	else
 		self:DrawModel()
 	end
---[[
+	--[[
 	local attachment = self:GetCurAttachment()
 
 	if not self.Attachments or not self.Attachments[attachment] or not self.Attachments[attachment].Cosmetic then
@@ -51,16 +51,16 @@ function SWEP:DrawWorldModel()
 	[[]]
 end
 
-hook.Add("PostPlayerDraw", "PlutonicDrawWorldAttachment", function()
-	local wep = LocalPlayer():GetActiveWeapon()
-
-	if not IsValid(wep) then
-		return
+hook.Add(
+	"PostPlayerDraw",
+	"PlutonicDrawWorldAttachment",
+	function()
+		local wep = LocalPlayer():GetActiveWeapon()
+		if not IsValid(wep) then return end
+		if IsValid(wep.worldAttachment) then
+			wep.worldAttachment:DrawModel()
+			wep.worldAttachment:SetRenderOrigin()
+			wep.worldAttachment:SetRenderAngles()
+		end
 	end
-
-	if IsValid(wep.worldAttachment) then
-		wep.worldAttachment:DrawModel()
-		wep.worldAttachment:SetRenderOrigin()
-		wep.worldAttachment:SetRenderAngles()
-	end
-end)
+)

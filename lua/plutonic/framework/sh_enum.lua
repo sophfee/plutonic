@@ -1,6 +1,5 @@
 --- Enumerations used throughout Plutonic.
 -- @module Enum
-
 Plutonic.Enum = Plutonic.Enum or {}
 Plutonic.Enum.WeaponType = {
 	SubmachineGun = 1,
@@ -20,16 +19,14 @@ Plutonic.Enum.WeaponType = {
 -- @field Sniper
 -- @field Shotgun
 -- @table WeaponType
-
 Plutonic.Enum.BarrelLength = {
 	Short = 5.04,
 	Medium = 10.16,
 	Long = 15.24,
-	Custom = function( len )
-		return len -- we do this cus it looks cool
-	end
+	Custom = function(len) return len end
 }
 
+-- we do this cus it looks cool
 --- The different barrel lengths. Generally use Custom.
 -- @realm shared
 -- @field Short
@@ -37,7 +34,6 @@ Plutonic.Enum.BarrelLength = {
 -- @field Long
 -- @field Custom
 -- @table BarrelLength
-
 Plutonic.Enum.Modification = {
 	BarrelExtension = "barrel_ext",
 	Barrel = "barrel",
@@ -60,25 +56,16 @@ Plutonic.Enum.Modification = {
 -- @field Rail
 -- @field Trigger
 -- @table Modification
-
-
 Plutonic.Enum.Sound = {
 	GunShot = 140,
 	GunShotSilence = 85,
 	Generic = 60
 }
 
-Plutonic.Enum.FireMode = {
-	Safety,
-	Semi,
-	Burst,
-	Auto
-}
-
+Plutonic.Enum.FireMode = {Safety, Semi, Burst, Auto}
 Plutonic.Enum.ANIMATION_PROCEDURAL = 0
 Plutonic.Enum.ANIMATION_ACTIVITY = 1
 Plutonic.Enum.ANIMATION_SEQUENCE = 2
-
 Plutonic.Enum.ANIMATION_TYPE = {
 	Procedural = Plutonic.Enum.ANIMATION_PROCEDURAL,
 	Activity = Plutonic.Enum.ANIMATION_ACTIVITY,
@@ -89,7 +76,6 @@ Plutonic.Enum.Value = 0x1
 Plutonic.Enum.ValueIfEmpty = 0x2
 Plutonic.Enum.ValueIfForegrip = 0x3
 Plutonic.Enum.ValueIfForegripAndEmpty = 0x4
-
 VECTOR_UP = Angle():Up()
 VECTOR_RIGHT = Angle():Right()
 VECTOR_FORWARD = Angle():Forward()

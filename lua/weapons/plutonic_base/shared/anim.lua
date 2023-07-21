@@ -1,25 +1,16 @@
 function SWEP:PlayAnim(act)
-
-	if self.Owner:IsNPC() then
-
-		return
-
-	end
-
+	if self:GetOwner():IsNPC() then return end
 	if self.CustomEvents[act] then
 		act = self.CustomEvents[act]
 	end
 
-	if (isstring(act)) then
-		
-		local vmodel = self.Owner:GetViewModel()
+	if isstring(act) then
+		local vmodel = self:GetOwner():GetViewModel()
 		local seq = vmodel:LookupSequence(act)
 		vmodel:SendViewModelMatchingSequence(seq)
-
 	else
-		local vmodel = self.Owner:GetViewModel()
+		local vmodel = self:GetOwner():GetViewModel()
 		local seq = vmodel:SelectWeightedSequence(act)
-
 		vmodel:SendViewModelMatchingSequence(seq)
 	end
 end
@@ -27,35 +18,32 @@ end
 function SWEP:PlayAnimWorld(act)
 	local wmodel = self
 	local seq = wmodel:SelectWeightedSequence(act)
-
 	self:ResetSequence(seq)
 end
 
 SWEP.VM_LayeredSequences = {}
-
 function SWEP:PlayViewModelSequence(sqid)
-	local vm = self.Owner:GetViewModel()
-	if (not IsValid(vm)) then return end
-
+	local vm = self:GetOwner():GetViewModel()
+	if not IsValid(vm) then return end
 	vm:SetCycle(0)
-
 	vm:SetPlaybackRate(1)
 	vm:SetSequence(sqid)
 end
 
 function SWEP:PlaySequence(seq)
-	local vm = self.Owner:GetViewModel()
-	if (not IsValid(vm)) then return end
-
+	local vm = self:GetOwner():GetViewModel()
+	if not IsValid(vm) then return end
 	local sqid = isstring(seq) and vm:LookupSequence(seq) or seq
 	local dur = vm:SequenceDuration() --
-
-	if (not vm:IsSequenceFinished()) then
-		timer.Simple(dur, function()
-			if (IsValid(self) and IsValid(vm)) then
-				self:PlayViewModelSequence(sqid)
+	if not vm:IsSequenceFinished() then
+		timer.Simple(
+			dur,
+			function()
+				if IsValid(self) and IsValid(vm) then
+					self:PlayViewModelSequence(sqid)
+				end
 			end
-		end)
+		)
 	else
 		self:PlayViewModelSequence(sqid)
 	end

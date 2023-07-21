@@ -35,7 +35,7 @@ function SWEP:PrimaryAttack()
 			if CLIENT then 
 				local owner = self:GetOwner()
 				if owner == LocalPlayer() then
-					local shouldPlay = impulse and impulse.GetSetting("view_thirdperson", false)
+					local shouldPlay = Singularity and Singularity.GetSetting("view_thirdperson", false)
 
 					if shouldPlay == false then
 						self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_STATIC, SND_NOFLAGS, 0)
