@@ -532,6 +532,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.PointOrigin = xsn;
 	pos, ang = self:DoWalkBob(pos, ang);
 
+	pos = pos + (Vector(0, 0, 1) * ang:Forward()) * -1 * (1 - self.VMIronsights);
+
 	return pos, ang;
 end
 
