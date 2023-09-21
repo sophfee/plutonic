@@ -1,93 +1,94 @@
 function SWEP:IdleThink()
-	if self:GetNextIdle() == 0 then return end
+	if self:GetNextIdle() == 0 then return; end
 	if CurTime() > self:GetNextIdle() then
-		self:SetNextIdle(0)
+		self:SetNextIdle(0);
 		if self.IdleSequence then
-			local vm = self:GetOwner():GetViewModel()
-			local transition = vm:FindTransitionSequence(vm:GetSequence(), vm:LookupSequence(self.IdleSequence))
+			local vm = self:GetOwner():GetViewModel();
+			local transition = vm:FindTransitionSequence(vm:GetSequence(), vm:LookupSequence(self.IdleSequence));
 			if transition ~= -1 then
-				vm:SetSequence(transition)
+				vm:SetSequence(transition);
 			else
-				vm:SetSequence(self.IdleSequence)
+				vm:SetSequence(self.IdleSequence);
 			end
 		else
-			self:SendWeaponAnim(self:Clip1() > 0 and ACT_VM_IDLE or ACT_VM_IDLE_EMPTY)
+			self:SendWeaponAnim(self:Clip1() > 0 and ACT_VM_IDLE or ACT_VM_IDLE_EMPTY);
 		end
 	end
 end
 
 function SWEP:SprintChanged(is_sprinting)
-	if not self.UseSprintSequence then return end
-	local vm = self:GetOwner():GetViewModel()
+	if not self.UseSprintSequence then return; end
+	local vm = self:GetOwner():GetViewModel();
 	if is_sprinting then
-		local transition = vm:FindTransitionSequence(vm:GetSequence(), vm:LookupSequence(self.SprintSequence))
-		print(transition, vm:GetSequence(), vm:LookupSequence(self.SprintSequence))
+		local transition = vm:FindTransitionSequence(vm:GetSequence(), vm:LookupSequence(self.SprintSequence));
+		print(transition, vm:GetSequence(), vm:LookupSequence(self.SprintSequence));
 		if transition ~= -1 then
-			self:PlaySequence(transition)
+			self:PlaySequence(transition);
 		else
-			self:PlaySequence(self.SprintSequence)
+			self:PlaySequence(self.SprintSequence);
 		end
 	else
-		self:PlayAnim(ACT_VM_IDLE)
+		self:PlayAnim(ACT_VM_IDLE);
 	end
 end
 
-SWEP.__sprinting = false
+SWEP.__sprinting = false;
 function SWEP:SprintThink()
-	local sprinting = self:IsSprinting()
+	local sprinting = self:IsSprinting();
 	if sprinting ~= self.__sprinting then
-		self:SprintChanged(sprinting)
-		self.__sprinting = sprinting
+		self:SprintChanged(sprinting);
+		self.__sprinting = sprinting;
 	end
 end
 
 function SWEP:Think()
-	self.EquippedAttachments = self.EquippedAttachments or {}
-	self.AttachmentEntCache = self.AttachmentEntCache or {}
+	self.EquippedAttachments = self.EquippedAttachments or {};
+	self.AttachmentEntCache = self.AttachmentEntCache or {};
 	if Plutonic.IsClient then
-		self:ViewmodelThink()
+		self:ViewmodelThink();
+		self.ViewModelFOV = LocalPlayer():GetFOV();
 	end
 
 	if SERVER then
-		self:HolsterThink()
-		self:SprintThink()
+		self:HolsterThink();
+		self:SprintThink();
 	end
 
-	self:IronsightsThink()
-	self:RecoilThink()
-	self:IdleThink()
+	self:IronsightsThink();
+	self:RecoilThink();
+	self:IdleThink();
 	if self.CustomThink then
-		self.CustomThink(self)
+		self.CustomThink(self);
 	end
 
 	if self:GetBursting() then
-		self:BurstThink()
+		self:BurstThink();
 	end
 
 	if self:GetReloading() then
-		self:ReloadThink()
+		self:ReloadThink();
 	end
 
-	if not Plutonic.IsClient then return end
+	if not Plutonic.IsClient then return; end
 end
 
 function SWEP:RecoilThink()
-	self:SetRecoil(math.Clamp(self:GetRecoil() - FrameTime() * (self.Primary.RecoilRecoveryRate or 1.4), 0, self.Primary.MaxRecoil or 1))
+	self:SetRecoil(math.Clamp(self:GetRecoil() - FrameTime() * (self.Primary.RecoilRecoveryRate or 1.4), 0, self.Primary.MaxRecoil or 1));
 end
 
 function SWEP:BurstThink()
 	if self.Burst and (self.nextBurst or 0) < CurTime() then
-		self:TakePrimaryAmmo(1)
-		self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self:CalculateSpread())
-		self:AddRecoil()
-		self:ViewPunch()
-		self:EmitSound(self.Primary.Sound)
-		self.Burst = self.Burst - 1
+		self:TakePrimaryAmmo(1);
+		self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self:CalculateSpread());
+		self:AddRecoil();
+		self:ViewPunch();
+		self:EmitSound(self.Primary.Sound);
+		self.Burst = self.Burst - 1;
 		if self.Burst < 1 then
-			self:SetBursting(false)
-			self.Burst = nil
+			self:SetBursting(false);
+			self.Burst = nil;
 		else
-			self.nextBurst = CurTime() + self.Primary.Delay
+			self.nextBurst = CurTime() + self.Primary.Delay;
 		end
 	end
 end
@@ -101,7 +102,7 @@ sound.Add(
 		channel = CHAN_AUTO,
 		pitch = {95, 105}
 	}
-)
+);
 
 sound.Add(
 	{
@@ -111,39 +112,38 @@ sound.Add(
 		channel = CHAN_AUTO,
 		pitch = {95, 105}
 	}
-)
-
+);
 
 function SWEP:IronsightsThink()
 	if (self.CanDecreaseBlowback or 0) < CurTime() then
-		self:SetIronsightsRecoil(math.Clamp(self:GetIronsightsRecoil() - (FrameTime() * 600), 0, 1))
+		self:SetIronsightsRecoil(math.Clamp(self:GetIronsightsRecoil() - (FrameTime() * 600), 0, 1));
 	end
 
 	if not self:CanIronsight() then
-		self:SetIronsights(false)
+		self:SetIronsights(false);
 
-		return
+		return;
 	end
 
 	if self:GetOwner():KeyDown(IN_ATTACK2) and not self:GetIronsights() then
-		self:SetIronsights(true)
-		self:EmitSound("Plutonic.ADS.In")
+		self:SetIronsights(true);
+		self:EmitSound("Plutonic.ADS.In");
 		--self:SetHoldType( IronsightsIO[self.HoldType] or "ar2" )
 		if CLIENT then
-			self.VMIronsights = math.ease.InSine(self.VMIronsights or 0)
+			self.VMIronsights = math.ease.InSine(self.VMIronsights or 0);
 		end
 	elseif not self:GetOwner():KeyDown(IN_ATTACK2) and self:GetIronsights() then
-		self:SetIronsights(false)
-		self:EmitSound("Plutonic.ADS.Out")
+		self:SetIronsights(false);
+		self:EmitSound("Plutonic.ADS.Out");
 		--self:SetHoldType( self.HoldType )
 		if CLIENT then
-			self.VMIronsights = math.ease.OutExpo(self.VMIronsights or 0)
+			self.VMIronsights = math.ease.OutExpo(self.VMIronsights or 0);
 		end
 	end
 end
 
 function SWEP:ReloadThink()
 	if self:GetReloadTime() < CurTime() then
-		self:FinishReload()
+		self:FinishReload();
 	end
 end

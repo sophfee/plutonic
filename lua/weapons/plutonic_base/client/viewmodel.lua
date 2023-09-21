@@ -35,8 +35,8 @@ local lerp = Lerp;
 local lerpAngle = LerpAngle;
 local lerpVector = LerpVector;
 local approach = math.Approach;
-local easeOutQuad = math.ease.OutQuad;
-local easeOutCirc = math.ease.OutCirc;
+local easeOutQuad = Plutonic.Ease.OutQuad;
+local easeOutCirc = Plutonic.Ease.OutCirc;
 local VECTOR_ZERO = vec(0, 0, 0);
 local ANGLE_ZERO = Angle(0, 0, 0);
 function SWEP:PreDrawViewModel(vm)
@@ -140,7 +140,7 @@ concommand.Add(
 );
 
 function SWEP:OnSprintStateChanged(sprinting)
-	self.VMSprint = not sprinting and math.ease.OutQuad(self.VMSprint or 0) or math.ease.InQuad(self.VMSprint or 0);
+	self.VMSprint = not sprinting and Plutonic.Ease.OutQuad(self.VMSprint or 0) or Plutonic.Ease.InQuad(self.VMSprint or 0);
 end
 
 function SWEP:PostRender()
@@ -151,7 +151,7 @@ function SWEP:PostRender()
 	local oxc = easeOutQuad(oxc_a) * clamp(dx / -4, -.5, .5);
 	self.c_oxc = lerp(Frametime() * 8, self.c_oxc or 0, oxc);
 	local oxq_a = min(abs(dx) / 16, 1);
-	local oxq = easeOutCirc(1 - oxq_a) * clamp(dx / 16, -.5, .5); -- math.ease.OutQuad(min(abs(self.VMDeltaX) / 8, 1)) * clamp(self.VMDeltaX, -8, 8)
+	local oxq = easeOutCirc(1 - oxq_a) * clamp(dx / 16, -.5, .5); -- Plutonic.Ease.OutQuad(min(abs(self.VMDeltaX) / 8, 1)) * clamp(self.VMDeltaX, -8, 8)
 	self.c_oxq = lerp(Frametime() * 12, self.c_oxq or 0, oxq);
 	local oyq_a = min(abs(dy) / 1, 1);
 	local oyq = easeOutQuad(oyq_a) * clamp(dy, -1, 1);
@@ -197,10 +197,10 @@ function SWEP:PostRender()
 	self.VMDeltaYWeighted = approach(self.VMDeltaYWeighted or 0, 0, ft * 32);
 	self.VMRecoilAmt = self.VMRecoilAmt or 0;
 	self.VMRecoilAmt = lerp(ft * 2, self.VMRecoilAmt, 0);
-	local alpha = isIronsights and math.ease.OutExpo(self.VMIronsights) or math.ease.InSine(self.VMIronsights);
+	local alpha = isIronsights and Plutonic.Ease.OutExpo(self.VMIronsights) or Plutonic.Ease.InSine(self.VMIronsights);
 	self.c_alpha = lerp(FrameTime() * 8, self.c_alpha or 0, alpha);
 	if self.LoweredPos then
-		local t = self:IsSprinting() and math.ease.OutQuad(self.VMSprint or 0) or math.ease.InQuad(self.VMSprint or 0);
+		local t = self:IsSprinting() and Plutonic.Ease.OutQuad(self.VMSprint or 0) or Plutonic.Ease.InQuad(self.VMSprint or 0);
 		local loweredPos = Plutonic.Interpolation.VectorBezierCurve(t, VECTOR_ZERO, self.LoweredMidPos, self.LoweredPos);
 		local loweredAng = Plutonic.Interpolation.AngleBezierCurve(t, ANGLE_ZERO, self.LoweredMidAng, self.LoweredAng);
 		self.c_lpos = lerpVector(Frametime() * 16, self.c_lpos or VECTOR_ZERO, loweredPos);
@@ -240,9 +240,9 @@ function SWEP:DoCrouch(pos, ang)
 	self.VMCrouch = self.VMCrouch or 0;
 	local alpha;
 	if self:IsDucked() then
-		alpha = math.ease.OutQuad(self.VMCrouch);
+		alpha = Plutonic.Ease.OutQuad(self.VMCrouch);
 	else
-		alpha = math.ease.InQuad(self.VMCrouch);
+		alpha = Plutonic.Ease.InQuad(self.VMCrouch);
 	end
 	--pos = pos + ang:Right() * self.CrouchPos.x * alpha
 	--pos = pos + ang:Forward() * self.CrouchPos.y * alpha
@@ -282,7 +282,7 @@ function SWEP:DoIronsights(pos, ang)
 	self.lastshot = self.lastshot or 0;
 	local ls = self.lastshot;
 	local timeSince = math.min((ls + 1) - Curtime(), 1);
-	local fireBump = math.ease.InElastic(math.Clamp(timeSince, 0, 1));
+	local fireBump = Plutonic.Ease.InElastic(math.Clamp(timeSince, 0, 1));
 	pos = pos + ang:Forward() * fireBump * -.4;
 	local alpha = self.c_alpha or 0;
 	local ironsightPos = Plutonic.Interpolation.VectorBezierCurve(alpha, VECTOR_ZERO, self.IronsightsMiddlePos, self.IronsightsPos);
@@ -368,7 +368,7 @@ function SWEP:DoWalkBob(pos, ang)
 		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(-9, -2, -3), Vector(-0, sn1 * -.39 + (sn2 * -1.2 * mv), sz3 * mv - (mv * .5)), Angle((cs2 * 2.75 * mv) + (cs2 * -3.39 * mv), sn2 * -5.2 * mv, ب));
 	end
 
-	local interp = math.ease.InOutQuart(self.VMSprint);
+	local interp = Plutonic.Ease.InOutQuart(self.VMSprint);
 	pos, ang = lerpVector(interp, pos1, pos0), lerpAngle(interp, ang1, ang0);
 	if not self:IsSprinting() then
 		ang:RotateAroundAxis(ang:Forward(), cos(rt * 16.8) * mv * .1);
@@ -455,7 +455,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.VMSwayIronTransform = approach(self.VMSwayIronTransform, isIronsights and 1 or 0.1, ft * 2);
 	local brl = self.BarrelLength * 1;
 	--local xsa = 1 - clamp(abs(Curtime()-self.VMDeltaXT) * .7, 0, 1)
-	local xva = self.VMDeltaX; --(math.ease.InElastic(xsa)) * self.VMDeltaX
+	local xva = self.VMDeltaX; --(Plutonic.Ease.InElastic(xsa)) * self.VMDeltaX
 	--self.xsa = xsa
 	--self.xva = xva
 	pos, ang = self:DoIronsights(pos, ang);
@@ -469,7 +469,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent);
 	local degRoll = deg(self.VMRoll) / 3;
 	degRoll = degRoll + ((self.VMWallLean or 0) * 24.4);
-	local degPitch = lerp(math.ease.OutQuint(min(abs(degRoll / 8), 1)), 0, cos(math.rad(degRoll * 2)));
+	local degPitch = lerp(Plutonic.Ease.OutQuint(min(abs(degRoll / 8), 1)), 0, cos(math.rad(degRoll * 2)));
 	local flip = Plutonic.Framework.GetControl_Bool("vm_flip_lefty", false);
 	if flip then
 		swayXv = swayXv * -1;
@@ -531,7 +531,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	self.PointOrigin = xsn;
 	pos, ang = self:DoWalkBob(pos, ang);
-
 	pos = pos + (Vector(0, 0, 1) * ang:Forward()) * -1 * (1 - self.VMIronsights);
 
 	return pos, ang;
