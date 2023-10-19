@@ -38,14 +38,14 @@ end
 
 function SWEP:OnAttachmentEquip(attachment, uid)
 	-- for HL2RP & others
-	if Singularity then
+	if impulse then
 		hook.Run("PlayerEquipAttachment", self:GetOwner(), self, attachment)
 	end
 end
 
 function SWEP:OnAttachmentRemove(attachment)
 	-- for HL2RP & others
-	if Singularity then
+	if impulse then
 		hook.Run("PlayerRemoveAttachment", self:GetOwner(), self, attachment)
 	end
 end

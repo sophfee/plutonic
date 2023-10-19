@@ -101,7 +101,7 @@ sound.Add(
 	}
 )
 
--- Singularity
+-- impulse
 function SWEP:OnLowered()
 	self:EmitSound("Plutonic.Raise", nil, nil, nil, nil, SND_NOFLAGS, 1)
 end
@@ -170,6 +170,22 @@ function SWEP:Initialize()
 		self.VMIdle = 0
 		self.VMRecoil = Vector()
 		self.VMRecoilAng = Angle()
+	end
+
+	local bInitRT = false
+	if self.Attachments then
+		for k, v in pairs(self.Attachments) do
+			if v.Cosmetic then
+				util.PrecacheModel(v.Cosmetic.Model)
+			end
+			if (v.Behavior == "rt_scope") then
+				bInitRT = true
+			end 
+		end
+	end
+
+	if bInitRT and Plutonic.IsClient then
+		self:InitRT()
 	end
 
 	self:SetIronsights(false)
@@ -326,7 +342,11 @@ function SWEP:ShootEffects()
 			vm:SendViewModelMatchingSequence(vm:LookupSequence(self.PrimaryFireSequence))
 		else
 			if self:Clip1() <= 0 then
-				self:PlayAnim(ACT_VM_PRIMARYATTACK_EMPTY)
+				if not self.Primary.NoEmptyAnimation then
+					self:PlayAnim(ACT_VM_PRIMARYATTACK_EMPTY)
+				else
+					self:PlayAnim(ACT_VM_PRIMARYATTACK)
+				end
 			else
 				self:PlayAnim(ACT_VM_PRIMARYATTACK)
 			end
@@ -381,7 +401,10 @@ function SWEP:IsSprinting()
 end
 
 function SWEP:PrimaryAttack()
-	if not self:CanShoot() then return end
+	if not self:CanShoot() then
+		self:PlayAnim(ACT_VM_DRYFIRE)
+		return
+	end
 	local clip = self:Clip1()
 	if self.Primary.Burst and clip >= 3 then
 		self:SetBursting(true)
@@ -401,11 +424,11 @@ function SWEP:PrimaryAttack()
 		self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self:CalculateSpread())
 		self:AddRecoil()
 		self:ViewPunch()
-		if self.Primary.Sound_World then
+		if false then--self.Primary.Sound_World then
 			if Plutonic.IsClient then
 				local owner = self:GetOwner()
 				if owner == LocalPlayer() then
-					local shouldPlay = Singularity and Singularity.GetSetting("view_thirdperson", false)
+					local shouldPlay = impulse and impulse.GetSetting("view_thirdperson", false)
 					if shouldPlay == false then
 						self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_STATIC, SND_NOFLAGS, 0)
 					end

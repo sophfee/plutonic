@@ -23,6 +23,7 @@ local render = render;
 local reticule = Material("models/weapons/insurgency_sandstorm/ins2_sandstorm/kobra_reticle");
 local abs = math.abs;
 local min = math.min;
+local max = math.max;
 local clamp = math.Clamp;
 local sin = math.sin;
 local cos = math.cos;
@@ -37,6 +38,8 @@ local lerpVector = LerpVector;
 local approach = math.Approach;
 local easeOutQuad = Plutonic.Ease.OutQuad;
 local easeOutCirc = Plutonic.Ease.OutCirc;
+local easeInQuad = Plutonic.Ease.InQuad;
+local easeInCirc = Plutonic.Ease.InSine;
 local VECTOR_ZERO = vec(0, 0, 0);
 local ANGLE_ZERO = Angle(0, 0, 0);
 function SWEP:PreDrawViewModel(vm)
@@ -48,8 +51,86 @@ function SWEP:PreDrawViewModel(vm)
 	if self.scopedIn then return self.scopedIn; end
 end
 
-function SWEP:ViewModelDrawn()
-	if Plutonic.Framework.Overdraw then return; end
+function SWEP:InitRT()
+	self.ScopeTex = Material("ph_scope/ph_scope_lens3")
+	self.ScopeRenderTarget = GetRenderTarget( "plutonic_scope_rt", 512, 512, true )
+	self.ScopeRenderMaterial = CreateMaterial("plutonic_scope_hd", "UnlitGeneric", {
+		["$model"] = 1,
+		["$basetexture"] = self.ScopeRenderTarget:GetName(),
+		["$phong"] = 1,
+		["$phongexponent"] = 128,
+		["$rimlight"] = 1,
+		["$rimlightexponent"] = 32,
+		["$rimlightboost"] = 128
+	})
+
+	local material = Material("!plutonic_scope_hd")
+	material:SetTexture("$basetexture", self.ScopeRenderTarget)
+	material:SetInt("$phong", 1)
+	material:SetFloat("$phongexponent", 128)
+	material:SetFloat( "$pp_colour_addr", 0 )
+	material:SetFloat( "$pp_colour_addg", 0 )
+	material:SetFloat( "$pp_colour_addb", 0 )
+	material:SetFloat( "$pp_colour_mulr", 0 )
+	material:SetFloat( "$pp_colour_mulg", 0 )
+	material:SetFloat( "$pp_colour_mulb", 0 )
+	material:SetFloat( "$pp_colour_brightness", 0 )
+	material:SetInt( "$rimlight", 1 )
+	material:SetFloat( "$rimlightexponent", 20 )
+	material:SetFloat( "$rimlightboost", 100 )
+	material:SetFloat( "$selfillum", 0 )
+	material:Recompute()
+end
+local pp_ca_base, pp_ca_r, pp_ca_g, pp_ca_b = Material("pp/arccw/ca_base"), Material("pp/arccw/ca_r"), Material("pp/arccw/ca_g"), Material("pp/arccw/ca_b")
+local pp_ca_r_thermal, pp_ca_g_thermal, pp_ca_b_thermal = Material("pp/arccw/ca_r_thermal"), Material("pp/arccw/ca_g_thermal"), Material("pp/arccw/ca_b_thermal")
+
+pp_ca_r:SetTexture("$basetexture", render.GetScreenEffectTexture())
+pp_ca_g:SetTexture("$basetexture", render.GetScreenEffectTexture())
+pp_ca_b:SetTexture("$basetexture", render.GetScreenEffectTexture())
+
+pp_ca_r_thermal:SetTexture("$basetexture", render.GetScreenEffectTexture())
+pp_ca_g_thermal:SetTexture("$basetexture", render.GetScreenEffectTexture())
+pp_ca_b_thermal:SetTexture("$basetexture", render.GetScreenEffectTexture())
+
+local greenColor = Color(0, 255, 0)  -- optimized +10000fps
+local whiteColor = Color(255, 255, 255)
+local blackColor = Color(0, 0, 0)
+
+local tex_black = Material("arccw/hud/black.png")
+
+local white_base = Material("models/debug/debugwhite")
+function SWEP:ViewModelDrawn(flags)
+	self.Owner:GetHands():Draw()
+	
+	if Plutonic.Framework.Overdraw then
+		for attName, _ in pairs(self.EquippedAttachments or {}) do
+			local attData = self.Attachments[attName];
+			if not attData then continue; end
+			local c = attData.Cosmetic;
+			local att = self.AttachmentEntCache[attName];
+			if not IsValid(att) then continue; end
+			local ang = att:GetAngles()
+
+			local up = ang:Up()
+			local fw = ang:Forward()
+
+			ang:RotateAroundAxis(up, -180);
+			ang:RotateAroundAxis(ang:Forward(), 180);
+			--ang:RotateAroundAxis(ang:Forward(), -180);
+			local pos = att:GetPos() + (att:GetAngles():Forward() *  1)
+			
+			render.UpdateScreenEffectTexture()
+			--DrawMaterialOverlay("models/props_c17/fisheyelens", -0.1 )
+
+			local scopeTex = attData.ScopeTexture or Material("models/debug/debugwhite")																			;
+			local fw = att:GetAngles():Forward()
+
+			render.SetMaterial(scopeTex)
+			local w = 1024 / 16/9
+			--render.DrawQuadEasy(pos, fw, .16, .16, color_white, -ang.r);
+		end
+		return;
+	end
 	local vm = self:GetOwner():GetViewModel();
 	if not IsValid(vm) then return; end
 	if self.ExtraViewModelRender then
@@ -107,14 +188,170 @@ function SWEP:ViewModelDrawn()
 			pos, ang = att:GetPos(), att:GetAngles();
 			ang:RotateAroundAxis(ang:Forward(), -0);
 			ang:RotateAroundAxis(ang:Up(), -90);
-			pos = pos + ang:Forward() * -rpos.x;
+			ang:RotateAroundAxis(ang:Forward(), 180);
+			
+			pos = pos + ang:Forward() * rpos.x;
 			pos = pos + ang:Right() * rpos.y;
 			pos = pos + ang:Up() * rpos.z;
 			local size = attData.Reticule.Size or 32;
 			render.SetMaterial(attData.Reticule.Material or reticule);
-			render.DrawQuadEasy(pos, ang:Forward(), size, size, attData.Reticule.Color or color_white, ang.r);
-			--render.DrawSprite(pos, size, size, color_white)
+			render.DrawQuadEasy(pos, ang:Forward(), size, size, attData.Reticule.Color or color_white, -ang.r);
+			render.DrawSprite(pos, size, size, color_white)
 			Plutonic.Framework.UnMask();
+		end
+
+		if attData.Behavior == "rt_scope" then
+
+			if att.ProjTexture then
+				att.ProjTexture:Remove()
+			end
+			if not att.RenderTargetSetup then
+				att:SetSubMaterial(0, "")
+				att:SetSubMaterial(1, "!plutonic_scope_hd")
+				att.RTSetup = true
+			end
+
+			local ang = att:GetAngles()
+			ang:RotateAroundAxis(ang:Right(), 180)
+			ang:RotateAroundAxis(ang:Forward(), 180)
+
+			local pos = att:GetPos() + (ang:Forward() *  24)
+			--render.PushRenderTarget(self.ScopeRenderTarget, 0, 0, 512, 512)
+			cam.Start3D(pos, ang, 90, 0, 0, 512, 512, 5, 4096)
+			
+			render.Clear( 50, 50, 50, 255, true, true)
+			if (self.VMIronsights <= 0.05) then 
+				render.UpdateRefractTexture()
+				render.UpdateFullScreenDepthTexture()
+				render.UpdatePowerOfTwoTexture()
+				render.UpdateScreenEffectTexture()
+				--DrawMaterialOverlay("arc9/shadow.png", -.25)
+				
+				cam.End3D()
+				render.PopRenderTarget()
+				return 
+			end
+			Plutonic.Framework.Overdraw = true
+
+			render.SetBlend(1)
+
+			local oang = ang
+
+			local ang = att:GetAngles()
+
+			local up = ang:Up()
+			local fw = ang:Forward()
+
+			ang:RotateAroundAxis(up, -180);
+			ang:RotateAroundAxis(ang:Forward(), 180);
+			--ang:RotateAroundAxis(ang:Forward(), -180);
+			local pos = att:GetPos() + (ang:Forward() *  24)
+			
+			render.UpdateScreenEffectTexture()
+			--DrawMaterialOverlay("models/props_c17/fisheyelens", -0.1 )
+
+			if attData.ScopeTexture then
+				local scopeTex = attData.ScopeTexture;
+				local fw = att:GetAngles():Forward()
+
+				render.SetMaterial(scopeTex)
+				render.DrawQuadEasy(att:GetPos() - pos, att:GetAngles():Forward() - fw, 48, 48, color_white, -ang.r);
+
+				render.DrawScreenQuad()
+			end
+				
+			render.RenderView({
+				origin = pos,
+				angles = oang,
+				fov = 90 / (attData.Magnification or 4),
+				x = 0,
+				y = 0,
+				w = ScrW(),
+				h = ScrH(),
+				drawviewmodel = false,
+				drawhud = false,
+				aspectratio = 1
+			})
+
+			local ang = att:GetAngles()
+
+			local up = ang:Up()
+			local fw = ang:Forward()
+
+			ang:RotateAroundAxis(up, -180);
+			ang:RotateAroundAxis(ang:Forward(), 180);
+			--ang:RotateAroundAxis(ang:Forward(), -180);
+			local pos = att:GetPos() + (ang:Forward() *  24)
+			
+			render.UpdateScreenEffectTexture()
+			--DrawMaterialOverlay("models/props_c17/fisheyelens", -0.1 )
+
+			if attData.ScopeTexture then
+				local scopeTex = attData.ScopeTexture;
+				local fw = att:GetAngles():Forward()
+
+				render.SetMaterial(scopeTex)
+				render.DrawQuadEasy(VECTOR_ZERO + fw * 8, fw, 4, 4, color_white,-ang.r);
+
+				--render.DrawScreenQuad()
+			end
+			local overlay = attData.Overlay;
+			render.SetMaterial(overlay)
+			render.DrawScreenQuad()
+			if attData.Vignette then
+				
+			end
+			cam.End3D()
+			--render.PopRenderTarget()
+			
+
+			--surface.SetMaterial(self.ScopeRenderMaterial)
+			--surface.SetDrawColor(255, 255, 255, 255)
+			--surface.DrawTexturedRect(0, 0, 512, 512)
+			
+			Plutonic.Framework.Overdraw = false
+			Plutonic.Framework.Halfdraw = false
+
+			render.SetStencilReferenceValue(0)
+			render.SetStencilPassOperation(STENCIL_KEEP)
+			render.SetStencilZFailOperation(STENCIL_KEEP)
+			render.ClearStencil()
+			render.SetStencilEnable(true)
+			render.SetStencilWriteMask(0xF0)
+			render.ClearStencilBufferRectangle(0, 0, ScrW(), ScrH(), 0x0F)
+			render.SetStencilCompareFunction(STENCIL_NEVER)
+			render.SetStencilTestMask(0x00)
+			render.SetStencilFailOperation(STENCIL_DECR)
+
+			att:DrawModel()
+
+			render.SetStencilTestMask(0xFF)
+			render.SetStencilReferenceValue(0x1F)
+			render.SetStencilCompareFunction(STENCIL_EQUAL)
+			render.SetStencilTestMask(0xFF)
+			render.SetStencilReferenceValue(0x1F)
+			render.SetStencilCompareFunction(STENCIL_LESSEQUAL)
+			render.SetStencilPassOperation(STENCIL_KEEP)
+			render.SetStencilFailOperation(STENCIL_KEEP)
+			render.SetStencilZFailOperation(STENCIL_KEEP)
+			render.SetStencilCompareFunction(STENCIL_EQUAL)
+			
+			render.UpdateScreenEffectTexture()
+			DrawBokehDOF(self.VMIronsights * 6, 0, 0)
+
+			render.SetStencilCompareFunction(STENCIL_ALWAYS)
+
+			local scopeTex = attData.ScopeTexture;
+				local fw = att:GetAngles():Forward()
+
+				render.SetMaterial(scopeTex)
+				local size = attData.Reticule.Size or 32;
+				local w = 1024 / 16/9
+				render.DrawQuadEasy(pos, fw, 1, 1, color_white, -ang.r);
+
+			Plutonic.Framework.UnMask(att);
+			
+			
 		end
 	end
 
@@ -155,7 +392,7 @@ function SWEP:PostRender()
 	self.c_oxq = lerp(Frametime() * 12, self.c_oxq or 0, oxq);
 	local oyq_a = min(abs(dy) / 1, 1);
 	local oyq = easeOutQuad(oyq_a) * clamp(dy, -1, 1);
-	self.c_oyq = lerp(Frametime() * 8, self.c_oyq or 0, oyq);
+	self.c_oyq = lerp(Frametime() * 7, self.c_oyq or 0, oyq);
 	self.Ironsights = self:GetIronsights();
 	self._sprinting = self._sprinting or false;
 	local sprinting = self:IsSprinting();
@@ -350,12 +587,33 @@ function SWEP:DoWalkBob(pos, ang)
 		if not self.LoweredPos then
 			modif = 0.7;
 		end
+		local rate = 11.2
 
-		local sn0 = sin(rt * 12.6) * mv;
-		local cs0 = cos(rt * 12.6) * mv;
-		local d = -sin(rt * 25.2);
-		local ب = sin(rt * 25.2) * cos(rt * 6.3) * -5.6;
-		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(-9, -2, -3), Vector(d * -.1, sn0 * -.6, -(abs(cs0) * .7145) - 0.2) * modif, Angle(d * -1 + (abs(sn0) * -.8), sn0 * -2.8, ب) * modif);
+		local sn0 = sin(rt * rate) * mv;
+		local cs0 = cos(rt * rate) * mv;
+		local m = cs0 > 0 and 1 or -1;
+		local sweep = easeInCirc(abs(cs0)) * -1 * m;
+		
+		
+		local d = -sin(rt * rate * 2);
+		m = sn0 > 0 and 1 or -1;
+		local sweeph = easeInCirc(abs(sn0)) * 1 * m;
+		local xcz = sin(rt * rate * 2) * cos(rt * rate * .5) * -2.6;
+		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(
+			pos,
+			ang,
+			Vector(-9, -2, -3),
+			Vector(
+				d * -.1, 
+				(sn0 * -.6) - (sweep * .4), 
+				-(abs(cs0) * .175) - 0.2
+			), 
+			Angle(
+				d * -1 + (abs(sn0) * -.8) + (abs(sweeph) * .5),
+				sn0 * -2.8 + (sweep * -.4),
+				0
+			)
+		);
 	end
 
 	local pos1, ang1 = pos + Vector(), ang + Angle();
@@ -364,8 +622,23 @@ function SWEP:DoWalkBob(pos, ang)
 		local sn2 = sin(rt * 4.2);
 		local sz3 = cos(rt * 8.4) * cos(rt * 12.6) * .079;
 		local cs2 = abs(cos(rt * 4.2));
-		local ب = sin(rt * 25.2) * cos(rt * 6.3) * (3 * mv);
-		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(-9, -2, -3), Vector(-0, sn1 * -.39 + (sn2 * -1.2 * mv), sz3 * mv - (mv * .5)), Angle((cs2 * 2.75 * mv) + (cs2 * -3.39 * mv), sn2 * -5.2 * mv, ب));
+		local xcz = sin(rt * 25.2) * cos(rt * 6.3) * (3 * mv);
+		local stride = sin(rt * 7.5) * mv;
+		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(
+			pos, 
+			ang, 
+			Vector(-9, -2, -3), 
+			Vector(
+				-0, 
+				sn1 * -.39 + (sn2 * -1.2 * mv) + (stride), 
+				sz3 * mv - (mv * .5)
+			), 
+			Angle(
+				(cs2 * 2.75 * mv) + (cs2 * -3.39 * mv), 
+				sn2 * -5.2 * mv, 
+				0
+			)
+		);
 	end
 
 	local interp = Plutonic.Ease.InOutQuart(self.VMSprint);
@@ -460,7 +733,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	--self.xva = xva
 	pos, ang = self:DoIronsights(pos, ang);
 	pos, ang = self:DoSprint(pos, ang);
-	local swayXv = -(xva * .25);
+	local swayXv = (xva * .25);
 	local swayXa = -xva * 1;
 	if isIronsights then
 		rd = rd / 2;
@@ -486,13 +759,15 @@ function SWEP:GetViewModelPosition(pos, ang)
 		xsn = Vector(0, 0, 0);
 	end
 
-	local oxc = (self.c_oxc or 0) * 8;
-	local oxq = (self.c_oxq or 0) * 8;
-	local oyq = self.c_oyq or 0;
-	local offsetPos = Vector(0, oxc * -.8 - oxq * 1 - degRoll * .0625, oyq * .25 - abs(degRoll) * .0925 + (abs(oxq) * -.1 + abs(oxc) * .07)); --[[FORWARD]] --[[RIGHT]] --oxq * -.05, --[[UP]] --oyq * -.05
-	local offsetAng = Angle(-oyq + degPitch, oxq - (oxc * 2.164), (oxq * -2.4) - degRoll + (oxc * 1.1));
+	local oxc = -(self.c_oxc or 0) * 8;
+	local oxq = -(self.c_oxq or 0) * 8;
+	local oyq = -self.c_oyq or 0;
+	local offsetPos = Vector(0, (degRoll * -.25) - (oxc * .35 - oxq * -.415) * .2 + degRoll * .2, oyq * .25 + (abs(oxq) * -.0908 -abs(oxc) * .17)); --[[FORWARD]] --[[RIGHT]] --oxq * -.05, --[[UP]] --oyq * -.05
+	local offsetAng = Angle(oyq * -3 + degPitch, oxq + (oxc * .7), (oxq * .5) - (degRoll * 1.6) + (oxc * -3.1));
 	local yofof = lerp(self.VMIronsights, -3, 0);
-	pos, ang = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(9, -2.5, yofof), offsetPos, offsetAng);
+	local corp = self.CenterOfRotationPos or Vector()
+	local cora = self.CenterOfRotationAng or Angle()
+	pos, ang = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(6, -1.5, yofof) + corp, offsetPos, offsetAng);
 	self.PointOrigin = xsn;
 	pos, ang = self:DoCrouch(pos, ang);
 	pos, ang = self:DoBlocked(pos, ang);
@@ -531,7 +806,11 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	self.PointOrigin = xsn;
 	pos, ang = self:DoWalkBob(pos, ang);
-	pos = pos + (Vector(0, 0, 1) * ang:Forward()) * -1 * (1 - self.VMIronsights);
+
+	local lookDown = -1.725 * ang:Forward() + -.185 * ang:Up();
+	local lookUp = 4 * ang:Forward() + .65 * ang:Up();
+
+	pos = pos + lerpVector(EyeAngles().p / 180, lookDown, lookUp) * (1 - self.VMIronsights);
 
 	return pos, ang;
 end

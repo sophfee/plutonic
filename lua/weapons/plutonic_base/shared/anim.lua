@@ -6,10 +6,19 @@ function SWEP:PlayAnim(act)
 
 	if isstring(act) then
 		local vmodel = self:GetOwner():GetViewModel()
+		if not IsValid(vmodel) then return end
+		
 		local seq = vmodel:LookupSequence(act)
-		vmodel:SendViewModelMatchingSequence(seq)
+		vmodel:ResetSequenceInfo()
+		vmodel:ResetSequence(seq)
+		vmodel:SetCycle(0)
+		vmodel:SetSequence(seq)
+		self:QueueIdle()
 	else
 		local vmodel = self:GetOwner():GetViewModel()
+
+		if not IsValid(vmodel) then return end
+
 		local seq = vmodel:SelectWeightedSequence(act)
 		vmodel:SendViewModelMatchingSequence(seq)
 	end

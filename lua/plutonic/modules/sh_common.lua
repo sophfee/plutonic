@@ -18,3 +18,13 @@ Plutonic.AddWeaponSound = function(name, path, type, volume, pitch)
 		}
 	)
 end
+
+Plutonic.LowQualityConvar = CreateClientConVar("plutonic_lowquality", 0, true, false, "Enable low quality mode for Plutonic weapons.")
+Plutonic.IsLowQuality = function()
+	return Plutonic.LowQualityConvar:GetBool()
+end
+
+Plutonic.NoBlurConVar = CreateClientConVar("plutonic_no_blur", 0, true, false, "Disables blurring on RT scopes.")
+Plutonic.NoBlur = function()
+	return Plutonic.NoBlurConVar:GetBool()
+end

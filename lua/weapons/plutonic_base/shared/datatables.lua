@@ -4,7 +4,7 @@
 -- Purpose: Datatables setup, misc.
 function SWEP:SetupDataTables()
 	-- QUESTION:
-	-- Could we migrate to SYNC vars, if Longsword is running in the Singularity Framework (or derived)?
+	-- Could we migrate to SYNC vars, if Longsword is running in the impulse Framework (or derived)?
 	-- Could provide a decent bump in performance. (sophie S.)
 	self:NetworkVar("Bool", 0, "Ironsights")
 	self:NetworkVar("Bool", 1, "Reloading")

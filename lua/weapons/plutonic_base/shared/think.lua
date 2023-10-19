@@ -11,7 +11,7 @@ function SWEP:IdleThink()
 				vm:SetSequence(self.IdleSequence);
 			end
 		else
-			self:SendWeaponAnim(self:Clip1() > 0 and ACT_VM_IDLE or ACT_VM_IDLE_EMPTY);
+			self:PlayAnim(self:Clip1() > 0 and ACT_VM_IDLE or ACT_VM_IDLE_EMPTY);
 		end
 	end
 end
@@ -21,7 +21,7 @@ function SWEP:SprintChanged(is_sprinting)
 	local vm = self:GetOwner():GetViewModel();
 	if is_sprinting then
 		local transition = vm:FindTransitionSequence(vm:GetSequence(), vm:LookupSequence(self.SprintSequence));
-		print(transition, vm:GetSequence(), vm:LookupSequence(self.SprintSequence));
+		--print(transition, vm:GetSequence(), vm:LookupSequence(self.SprintSequence));
 		if transition ~= -1 then
 			self:PlaySequence(transition);
 		else
@@ -46,7 +46,7 @@ function SWEP:Think()
 	self.AttachmentEntCache = self.AttachmentEntCache or {};
 	if Plutonic.IsClient then
 		self:ViewmodelThink();
-		self.ViewModelFOV = LocalPlayer():GetFOV();
+		//self.ViewModelFOV = LocalPlayer():GetFOV();
 	end
 
 	if SERVER then

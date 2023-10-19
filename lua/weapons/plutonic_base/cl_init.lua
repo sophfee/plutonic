@@ -40,3 +40,14 @@ for i, line in ipairs(string.Explode("\n", Plutonic.Constants.Logo)) do
 		MsgC(Plutonic.Constants.LogoColor, line .. "\n")
 	end
 end
+
+function SWEP:OnReloaded()
+	self:Initialize()
+
+	-- Refresh attachments
+	for att, equipped in pairs(self.EquippedAttachments) do
+		if equipped then
+			self.Attachments[att].ModSetup(self, att, true)
+		end
+	end
+end

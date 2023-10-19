@@ -37,7 +37,7 @@ Plutonic.Framework.FireBullets = function(self, bullet, SuppressHostEvents)
 		end
 
 		util.ParticleTracerEx("Tracer", tr.StartPos, tr.HitPos, true, self:EntIndex(), 1)
-		if self.CanBreachDoors and Singularity and IsValid(tr.Entity) and tr.Entity:IsDoor() and tr.Entity:GetClass() == "prop_door_rotating" then
+		if self.CanBreachDoors and (impulse or impulse) and IsValid(tr.Entity) and tr.Entity:IsDoor() and tr.Entity:GetClass() == "prop_door_rotating" then
 			local door = tr.Entity
 			--print("hi smile")
 			--print(door)
@@ -65,7 +65,7 @@ Plutonic.Framework.FireBullets = function(self, bullet, SuppressHostEvents)
 						fakeDoor:Remove()
 					end
 
-					timer.Simple(Singularity.Config.ExplosionDoorRespawnTime, timerCallback)
+					timer.Simple(impulse.Config.ExplosionDoorRespawnTime, timerCallback)
 				end
 
 				local timerCallback = function()
@@ -76,7 +76,7 @@ Plutonic.Framework.FireBullets = function(self, bullet, SuppressHostEvents)
 					door.IsCharged = false
 				end
 
-				timer.Simple(Singularity.Config.ExplosionDoorRespawnTime, timerCallback)
+				timer.Simple(impulse.Config.ExplosionDoorRespawnTime, timerCallback)
 			end
 		end
 	end

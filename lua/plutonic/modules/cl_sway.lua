@@ -30,6 +30,6 @@ Plutonic.Hooks.Add(
 		if not wep.IsPlutonic then return end
 		local ir = wep.VMIronsights or 0
 		if ir <= 0 then return end
-		DrawToyTown(12 * ir, ScrH() / 2.2)
+		//DrawToyTown(12 * ir, ScrH() / 2.2)
 	end
 )

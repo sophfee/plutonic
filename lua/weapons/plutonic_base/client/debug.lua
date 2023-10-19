@@ -31,7 +31,7 @@ local GetConVar = GetConVar
 local LocalPlayer = LocalPlayer
 function SWEP:DrawHUD()
 	local debugMode = GetConVar("plutonic_debug")
-	if Singularity_DevHud or debugMode:GetBool() then
+	if impulse_DevHud or debugMode:GetBool() then
 		local scrW = 68
 		local scrH = 292
 		local dev = GetConVar("developer"):GetInt()
@@ -162,7 +162,7 @@ end
 
 hook.Add(
 	"ShouldDrawHUDBox",
-	"PlutonicSingularityHUDStopDrawing",
+	"PlutonicHUDStopDrawing",
 	function()
 		local v = tonumber(plutonic_debug_StopHUDDraw or 1)
 		plutonic_debug_StopHUDDraw = false
