@@ -1,28 +1,32 @@
---      Copyright (c) 2022-2023, sophie S. All rights reserved      --
--- Plutonic is a project built for Landis Games. --
-CreateClientConVar("plutonic_debug", "0", false, false)
-CreateClientConVar("plutonic_centered", "0", true, false, "Centers the viewmodel, DOOM style.", 0, 1)
-surface.CreateFont(
-	"PlutonicDebugSimple",
-	{
-		font = "Segoe UI Black",
-		size = 14,
-		weight = 1000,
-		antialias = true,
-		shadow = true
-	}
-)
-
-surface.CreateFont(
-	"PlutonicDebugUnSimple",
-	{
-		font = "Segoe UI Black",
-		size = 32,
-		weight = 1000,
-		antialias = true,
-		shadow = true
-	}
-)
+/**************************************************************************/
+/*	client/debug.lua											          s*/
+/**************************************************************************/
+/*                      This file is a part of PLUTONIC                   */
+/*                              (c) 2022-2023                             */
+/*                  Written by Sophie (github.com/sophfee)                */
+/**************************************************************************/
+/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  */
+/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 local debugCol = Color(12, 120, 255, 255)
 local debugValue = Color(200, 200, 200, 255)
@@ -30,65 +34,18 @@ local ironFade = ironFade or 0
 local GetConVar = GetConVar
 local LocalPlayer = LocalPlayer
 function SWEP:DrawHUD()
-	local debugMode = GetConVar("plutonic_debug")
-	if impulse_DevHud or debugMode:GetBool() then
-		local scrW = 68
-		local scrH = 292
-		local dev = GetConVar("developer"):GetInt()
-		if dev == 0 then
-			LocalPlayer():ConCommand("developer 1")
-		end
+	local line = 4
 
-		surface.SetFont("PlutonicDebugUnSimple")
-		surface.SetTextColor(debugCol)
-		surface.SetTextPos(64, 96)
-		surface.DrawText("[PLUTONIC v1.0.0]")
-		surface.SetFont("PlutonicDebugSimple")
-		surface.SetTextPos(64, 128)
-		surface.DrawText("Debug Mode Enabled!")
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) - 0)
-		surface.DrawText((self.PrintName or "PrintName ERROR") .. " [BDMG: " .. (self.Primary.Damage or "?") .. ", RPM: " .. (60 / (self.Primary.Delay or 0)) .. ", SHOTS: " .. (self.Primary.NumShots or "?") .. "]")
-		surface.SetTextColor(debugCol)
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 15)
-		surface.DrawText("Recoil: ")
-		surface.SetTextColor(debugValue)
-		surface.DrawText(tostring(math.Round(self.Recoil or 0, 4)))
-		surface.SetTextColor(debugCol)
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 30)
-		surface.DrawText("Spread: ")
-		surface.SetTextColor(debugValue)
-		surface.DrawText(tostring(math.Round(self.LastSpread or 0, 4)))
-		--surface.DrawText("Last Spread: "..math.Round(self.LastSpread or "[SHOOT WEAPON]", 4))
-		if self.LastSpread then
-			surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 45)
-			surface.SetTextColor(debugCol)
-			surface.DrawText("Cone: ")
-			surface.SetTextColor(debugValue)
-			local perc = self.LastSpread / self.Primary.Cone
-			surface.DrawText(math.floor(perc * 100) .. "% of Base Cone")
-			--
-		end
-
-		local ns = (self:GetNextPrimaryFire() or 0) - CurTime()
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 105)
-		surface.DrawText("Next Shot: " .. (ns > 0 and ns or "CLEAR"))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 120)
-		surface.DrawText("VMBobCycle Oscillation: " .. tostring(self.VMBobCycle))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 135)
-		surface.DrawText("VMBetterVis Oscillation: " .. math.Round(tostring(self.VMRDBEF), 8))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 150)
-		surface.DrawText("VMBlocked: " .. tostring(self.VMBlocked))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 165)
-		surface.DrawText("VMVel: " .. tostring(math.Round(self.VMVel, 4)))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 180)
-		surface.DrawText("VMIronsightsFraction: " .. tostring(self.VMIronsights))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 195)
-		surface.DrawText("VMSprint: " .. tostring(self.VMSprint))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 210)
-		surface.DrawText("Attachments: " .. table.concat(self.AttachmentEntCache, ", "))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 225)
-		surface.DrawText("VMRecoilAng: " .. tostring(self.VMRecoilAng))
-	end
+	Plutonic:DebugText("Plutonic", "Debug", 8, true)
+	Plutonic:DebugText("Class Name", self.ClassName, 10)
+	Plutonic:DebugText("Damage", self.Primary.Damage, 11)
+	Plutonic:DebugText("Recoil", self.Primary.Recoil, 12)
+	Plutonic:DebugText("RT", "Debug", 14, true)
+	Plutonic:DebugText("rendertarget", tostring(self.ScopeRenderTarget), 16)
+	Plutonic:DebugText("scope", tostring(self.ScopeRenderMaterial), 17)
+	Plutonic:DebugText("drawing", tostring(self.VMIronsights >= 0.250), 18)
+	Plutonic:DebugText("attachments", tostring(table.ToString(self.EquippedAttachments, nil, false)), 19)
+	
 
 	if self.Attachments then
 		local hasScope = false

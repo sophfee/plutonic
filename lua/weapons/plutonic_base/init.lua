@@ -1,8 +1,34 @@
+/**************************************************************************/
+/*	shared/anim.lua											      		  */
+/**************************************************************************/
+/*                      This file is a part of PLUTONIC                   */
+/*                              (c) 2022-2023                             */
+/*                  Written by Sophie (github.com/sophfee)                */
+/**************************************************************************/
+/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  */
+/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 AddCSLuaFile()
---      Copyright (c) 2022-2023, sophie S. All rights reserved      --
--- Plutonic is a project built for Landis Games. --
--- We cannot Link, we have to copy the code. --
--- Shared Files (for Server)
 include("shared/base.lua")
 include("shared/datatables.lua")
 include("shared/anim.lua")
@@ -11,11 +37,8 @@ include("shared/spread.lua")
 include("shared/think.lua")
 include("shared/worldmodel.lua")
 include("shared/reload.lua")
--- ServerSide Files
 include("server/sound.lua")
-include("server/echo.lua")
 include("server/attachments.lua")
--- Shared Files (for Client)
 AddCSLuaFile("shared/base.lua")
 AddCSLuaFile("shared/datatables.lua")
 AddCSLuaFile("shared/anim.lua")
@@ -24,15 +47,12 @@ AddCSLuaFile("shared/spread.lua")
 AddCSLuaFile("shared/think.lua")
 AddCSLuaFile("shared/worldmodel.lua")
 AddCSLuaFile("shared/reload.lua")
--- ClientSide Files
 AddCSLuaFile("client/attachment.lua")
 AddCSLuaFile("client/viewmodel.lua")
 AddCSLuaFile("client/sound.lua")
 AddCSLuaFile("client/fov.lua")
-AddCSLuaFile("client/replacement.lua")
 AddCSLuaFile("client/debug.lua")
 AddCSLuaFile("client/crosshair.lua")
-AddCSLuaFile("client/echo.lua")
 AddCSLuaFile("client/ammoindicator.lua")
 Plutonic.Constants.Logo = [[
 ////////////////////[ Powered By ]//////////////////////

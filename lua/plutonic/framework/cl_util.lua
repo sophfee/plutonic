@@ -1,5 +1,37 @@
+/**************************************************************************/
+/*	cl_util.lua 											              */
+/**************************************************************************/
+/*                      This file is a part of PLUTONIC                   */
+/*                              (c) 2022-2023                             */
+/*                  Written by Sophie (github.com/sophfee)                */
+/**************************************************************************/
+/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  */
+/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+
 --- The core level functionality of Plutonic.
 -- @perlin Framework
+
 --- Rotates a point around another point.
 -- @realm client
 -- @vector pos The position of the point to rotate.
@@ -220,3 +252,69 @@ Plutonic.Hooks.Add(
         end
     end
 )
+
+Plutonic.DebugConvar = CreateClientConVar("plutonic_debug", "0", false, false)
+Plutonic.CenterCovnar = CreateClientConVar("plutonic_centered", "0", true, false, "Centers the viewmodel, DOOM style.", 0, 1)
+
+
+function Plutonic:IsDebug()
+    return self.DebugConvar:GetBool()
+end
+
+function Plutonic:IsCentered()
+    return self.CenterCovnar:GetBool()
+end
+
+surface.CreateFont(
+	"PlutonicDebugMain",
+	{
+		font = "Agency FB",
+		size = 26,
+		weight = 200,
+		antialias = true,
+		shadow = true
+	}
+)
+
+surface.CreateFont(
+	"PlutonicDebugStrong",
+	{
+		font = "Agency FB",
+		size = 48,
+		weight = 400,
+		antialias = true,
+		shadow = true
+	}
+)
+
+function Plutonic:DebugText(label, text, line, use_strong)
+    use_strong = use_strong or false
+
+    local font = use_strong and "PlutonicDebugStrong" or "PlutonicDebugMain"
+
+    surface.SetFont(font)
+    surface.SetTextColor(255, 58, 49, 180)
+    surface.SetTextPos(10, 10 + (line * 22))
+    surface.DrawText(label)
+
+    surface.DrawText(" ")
+
+    surface.SetTextColor(220, 220, 220, 180)
+    surface.DrawText(text)
+end
+
+function Plutonic:DebugStrong(label, text, line, use_strong)
+    use_strong = use_strong or false
+
+    local font = use_strong and "PlutonicDebugStrong" or "PlutonicDebugMain"
+
+    surface.SetFont(font)
+    surface.SetTextColor(255, 58, 49, 180)
+    surface.SetTextPos(10, 10 + (line * 22))
+    surface.DrawText(label)
+
+    surface.DrawText(" ")
+
+    surface.SetTextColor(220, 220, 220, 180)
+    surface.DrawText(text)
+end
