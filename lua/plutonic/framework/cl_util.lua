@@ -56,6 +56,31 @@ function Plutonic.Framework.RotateAroundPoint(pos, ang, point, offset, offset_an
     return mat:GetTranslation(), mat:GetAngles()
 end
 
+
+--- Rotates a point around another point.
+-- @realm client
+-- @vector pos The position of the point to rotate.
+-- @angle ang The angle of the point to rotate.
+-- @vector point The point to rotate around.
+-- @vector offset The offset of the point to rotate.
+-- @angle offset_ang The angle of the offset of the point to rotate.
+-- @treturn vector The rotated position.
+-- @treturn angle The rotated angle.
+function Plutonic:RotateAroundPoint(pos, ang, point, offset, offset_ang)
+    local mat = Matrix()
+    mat:SetTranslation(pos)
+    mat:SetAngles(ang)
+    mat:Translate(point)
+    local rot_mat = Matrix()
+    rot_mat:SetAngles(offset_ang)
+    rot_mat:Invert()
+    mat:Mul(rot_mat)
+    mat:Translate(-point)
+    mat:Translate(offset)
+
+    return mat:GetTranslation(), mat:GetAngles()
+end
+
 Plutonic.Noise = Plutonic.Noise or {}
 --- Generates a 2D simplex noise value.
 -- @realm client
@@ -235,7 +260,7 @@ Plutonic.Sounds = {
     ["Plutonic.Walk"] = {"weapons/movement/weapon_movement_walk1.wav", "weapons/movement/weapon_movement_walk2.wav", "weapons/movement/weapon_movement_walk3.wav", "weapons/movement/weapon_movement_walk4.wav", "weapons/movement/weapon_movement_walk5.wav", "weapons/movement/weapon_movement_walk6.wav", "weapons/movement/weapon_movement_walk7.wav", "weapons/movement/weapon_movement_walk8.wav", "weapons/movement/weapon_movement_walk9.wav"}
 }
 
-Plutonic.Hooks.Add(
+Plutonic:Hook(
     "PlayerFootstep",
     function(ply, pos, foot, sound, volume, filter)
         if ply == LocalPlayer() then
@@ -253,8 +278,19 @@ Plutonic.Hooks.Add(
     end
 )
 
-Plutonic.DebugConvar = CreateClientConVar("plutonic_debug", "0", false, false)
-Plutonic.CenterCovnar = CreateClientConVar("plutonic_centered", "0", true, false, "Centers the viewmodel, DOOM style.", 0, 1)
+function Plutonic:ConVar(name, default, flags, desc, min, max)
+    flags = flags or FCVAR_ARCHIVE
+    desc = desc or ""
+    min = min or 0
+    max = max or 1
+    local cvar = CreateClientConVar(name, default, flags, desc, min, max)
+    self.CVars = self.CVars or {}
+    self.CVars[name] = cvar
+    return cvar
+end
+
+Plutonic.DebugConvar = Plutonic:ConVar("plutonic_debug", "0", false, false)
+Plutonic.CenterCovnar = Plutonic:ConVar("plutonic_centered", "0", true, false, "Centers the viewmodel, DOOM style.", 0, 1)
 
 
 function Plutonic:IsDebug()

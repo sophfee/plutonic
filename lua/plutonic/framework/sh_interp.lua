@@ -47,3 +47,21 @@ end
 function Plutonic.Interpolation.AngleBezierCurve(t, a0, a1, a2)
 	return Angle(Plutonic.Interpolation.BezierCurve(t, a0.p, a1.p, a2.p), Plutonic.Interpolation.BezierCurve(t, a0.y, a1.y, a2.y), Plutonic.Interpolation.BezierCurve(t, a0.r, a1.r, a2.r))
 end
+
+-- Shorthands
+
+function Plutonic:Lerp(a, b, c)
+	return Plutonic.Interpolation.Lerp(a, b, c)
+end
+
+function Plutonic:BezierCurve(t, p0, p1, p2)
+	if (isvector(p0) and isvector(p1) and isvector(p2)) then
+		return Plutonic.Interpolation.VectorBezierCurve(t, p0, p1, p2)
+	end
+
+	if (isangle(p0) and isangle(p1) and isangle(p2)) then
+		return Plutonic.Interpolation.AngleBezierCurve(t, p0, p1, p2)
+	end
+
+	return Plutonic.Interpolation.BezierCurve(t, p0, p1, p2)
+end

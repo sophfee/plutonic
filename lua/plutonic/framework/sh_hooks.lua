@@ -41,6 +41,10 @@ Plutonic.Hooks.Add = function(hookName, callback)
 	hook.Add(hookName, "Plutonic.Hooks." .. hookName, callback)
 end
 
+function Plutonic:Hook(hookName, callback)
+	Plutonic.Hooks.Add(hookName, callback)
+end
+
 Plutonic.Hooks.Remove = function(hookName)
 	if not Plutonic.Hooks.Data[hookName] then
 		Plutonic.Framework.Print("Hook: " .. hookName .. " does not exist!")
@@ -50,4 +54,8 @@ Plutonic.Hooks.Remove = function(hookName)
 
 	Plutonic.Framework.Print("Hook: " .. hookName .. " removed.")
 	hook.Remove(hookName, "Plutonic.Hooks." .. hookName)
+end
+
+function Plutonic:Unhook(hookName)
+	Plutonic.Hooks.Remove(hookName)
 end

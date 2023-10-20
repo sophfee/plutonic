@@ -77,7 +77,66 @@ function SWEP:PreDrawViewModel(vm)
 		self.CustomMatSetup = true;
 	end
 
-	if self.scopedIn then return self.scopedIn; end
+	if Plutonic.Framework.Overdraw then
+		
+		return;
+	end
+
+	local drawnNames = {};
+	self.EquippedAttachments = self.EquippedAttachments or {};
+	self.AttachmentEntCache = self.AttachmentEntCache or {};
+	for attName, _ in pairs(self.EquippedAttachments) do
+		local attData = self.Attachments[attName];
+		if not attData then continue; end
+		local c = attData.Cosmetic;
+		local att = self.AttachmentEntCache[attName];
+		if not IsValid(att) then
+			att = ClientsideModel(c.Model, RENDERGROUP_VIEWMODEL);
+			att:SetParent(vm);
+			att:SetNoDraw(true);
+			att:AddEffects(EF_BONEMERGE);
+			if c.Scale then
+				if c.BoneScale then
+					att:ManipulateBoneScale(0, Vector(c.Scale, c.Scale, c.Scale));
+				else
+					att:SetModelScale(c.Scale);
+				end
+			end
+
+			self.AttachmentEntCache[attName] = att;
+		end
+
+		local bone = vm:LookupBone(c.Bone);
+		if not bone then continue; end
+		local m = vm:GetBoneMatrix(bone);
+		if not m then continue; end
+		local pos = m:GetTranslation();
+		local ang = m:GetAngles();
+		pos = pos + ang:Forward() * c.Pos.x;
+		pos = pos + ang:Right() * c.Pos.y;
+		pos = pos + ang:Up() * c.Pos.z;
+		att:SetPos(pos);
+		ang:RotateAroundAxis(ang:Up(), c.Ang.y);
+		ang:RotateAroundAxis(ang:Right(), c.Ang.p);
+		ang:RotateAroundAxis(ang:Forward(), c.Ang.r);
+		att:SetAngles(ang);
+		if attData.RenderOverride then
+			attData.RenderOverride(self, vm, att);
+		else
+			--att:DrawModel();
+		end
+
+		drawnNames[attName] = true;
+		if (Plutonic.Behaviors[attData.Behavior] and Plutonic.Behaviors[attData.Behavior].onFrame) then
+			--Plutonic.Behaviors[attData.Behavior].onFrame(self, vm, attData, att);
+		end
+	end
+
+	for name, csEnt in pairs(self.AttachmentEntCache) do
+		if not drawnNames[name] then
+			csEnt:Remove();
+		end
+	end
 end
 
 function SWEP:InitRT()
@@ -172,6 +231,9 @@ function SWEP:ViewModelDrawn(flags)
 		if (Plutonic.Behaviors[attData.Behavior] and Plutonic.Behaviors[attData.Behavior].onFrame) then
 			Plutonic.Behaviors[attData.Behavior].onFrame(self, vm, attData, att);
 		end
+		
+
+		
 	end
 
 	for name, csEnt in pairs(self.AttachmentEntCache) do
