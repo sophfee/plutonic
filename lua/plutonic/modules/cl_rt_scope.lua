@@ -74,15 +74,15 @@ local scope_rt = GetRenderTarget(
     512
 )
 
-local scope_material = CreateMaterial("plutonic_optic", "VertexLitGeneric", {
+local scope_material = CreateMaterial("plutonic_scope", "VertexLitGeneric", {
     ["$basetexture"]        = scope_rt:GetName(),
 	["$bumpmap"]            = "effects/arc9/glass_nm",
-	["$translucent"]        = 1,
+	["$translucent"]        = 0,
 	["$phong"]              = 1,
 	["$phongboost"]         = 8,
 	["$phongexponent"]      = 0,
 	["$envmap"]             = "env_cubemap",
-	["$envmapfresnel"]      = -200.0,
+	["$envmapfresnel"]      = 4.0,
 	["$phongfresnelranges"] = "[0.01 0.35 3.0]"
 })
 
@@ -92,8 +92,8 @@ scope_material:SetInt("$translucent", 1)
 scope_material:SetFloat("$phong", 1)
 scope_material:SetFloat("$phongboost", 64)
 scope_material:SetFloat("$phongexponent", 512)
-scope_material:SetTexture("$envmap", "")
-scope_material:SetFloat("$envmapfresnel", 1.5)
+scope_material:SetTexture("$envmap", "env_cubemap")
+scope_material:SetFloat("$envmapfresnel", 0)
 scope_material:SetVector("$phongfresnelranges", Vector(1, 1, 1))
 scope_material:SetVector("$envmaptint", Vector(0, 0,0))
 scope_material:SetInt("$ignorez", 1)
@@ -170,10 +170,10 @@ function Plutonic:RenderScope(Weapon, ViewModel, AttachmentData, Attachment)
         return
     end
 
-    if not Attachment.plutonic_optic then
+    if not Attachment.plutonic_scope then
         Attachment:SetSubMaterial(0, "")
-        Attachment:SetSubMaterial(1, "!plutonic_optic")
-        Attachment.plutonic_optic = true
+        Attachment:SetSubMaterial(1, "!plutonic_scope")
+        Attachment.plutonic_scope = true
     end
 
     local AVDir = Attachment:GetAngles()
