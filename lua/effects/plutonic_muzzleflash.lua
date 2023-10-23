@@ -91,6 +91,11 @@ function EFFECT:Think()
     if not IsValid(wpn) then return end
     local att = wpn.MuzzleAttachment or 1
 
+    if (isstring(att)) then
+        self.AttLookup = self.AttLookup or wpn:LookupAttachment(att)
+        att = self.AttLookup or 1
+    end 
+
     pos = (wpn:GetAttachment(att) or {}).Pos
     ang = (wpn:GetAttachment(att) or {}).Ang
 
