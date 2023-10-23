@@ -284,7 +284,7 @@ function SWEP:PostRender()
 		end
 	end
 
-	self.VMSprint = lerp(Frametime() * 4, self.VMSprint or 0, sprinting and 1 or 0);
+	self.VMSprint = lerp(Frametime() * 2, self.VMSprint or 0, sprinting and 1 or 0);
 	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 1.7);
 	local tr = util.TraceLine(
 		{
@@ -449,13 +449,16 @@ local WalkingTime = 0;
 function SWEP:DoWalkBob(pos, ang)
 	if self.DoCustomWalkBob then return self:DoCustomWalkBob(pos, ang); end
 	local rt = Realtime();
+	local corp = self.CenterOfRotationPos or VECTOR_ZERO
+	local cora = self.CenterOfRotationAng or ANGLE_ZERO
+
 	if self:GetOwner():GetVelocity():Length2DSqr() > 60 ^ 2 then
 		WalkingTime = WalkingTime + FrameTime() * 2;
 	end
 
 	local mv = clamp(self:GetOwner():GetVelocity():Length2D() / 200, 0, 1);
 	if self:GetIronsights() then
-		mv = mv * 0.25;
+		mv = mv * 0.15;
 	end
 
 	local pos0, ang0 = pos + Vector(), ang + Angle();
@@ -476,49 +479,56 @@ function SWEP:DoWalkBob(pos, ang)
 		local sweep = easeInCirc(abs(cs0)) * -1 * m;
 		
 		
-		local d = -sin(rt * rate * 2);
+		local d = -sin(rt * rate * 2) * mv;
+		
+		local l = cos(rt * rate * 2);
 		m = sn0 > 0 and 1 or -1;
 		local sweeph = easeInCirc(abs(sn0)) * 1 * m;
-		local xcz = sin(rt * rate * 2) * cos(rt * rate * .5) * -2.6;
 		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(
 			pos,
 			ang,
-			Vector(-9, -2, -3),
+			corp,
 			Vector(
-				d * -.1, 
-				(sn0 * -.6) - (sweep * .4), 
-				-(abs(cs0) * .175) - 0.2
+				d * .025, 
+				(sn0 * -.1) - (sweep * .4), 
+				max(cs0 * .375, 0)
 			), 
 			Angle(
-				d * -1 + (abs(sn0) * -.8) + (abs(sweeph) * .5),
-				sn0 * -2.8 + (sweep * -.4),
-				0
+				d * 1 + (abs(sn0) * -1.8) - (abs(sweeph) * .5),
+				sn0 * -2.8 + (sweep * .9),
+				l
 			)
 		);
 	end
 
 	local pos1, ang1 = pos + Vector(), ang + Angle();
 	do
-		local sn1 = sin(rt * 8.4) * mv;
-		local sn2 = sin(rt * 4.2);
-		local sz3 = cos(rt * 8.4) * cos(rt * 12.6) * .079;
-		local cs2 = abs(cos(rt * 4.2));
-		local xcz = sin(rt * 25.2) * cos(rt * 6.3) * (3 * mv);
-		local stride = sin(rt * 7.5) * mv;
+		local rate = 11.2 / 1.25
+
+		local sn0 = sin(rt * rate);
+		local cs0 = cos(rt * rate);
+		local m = cs0 > 0 and 1 or -1;
+		local sweep = easeInCirc(abs(cs0)) * -1 * m;
+		
+		
+		local d = -sin(rt * rate * 2);
+		local l = cos(rt * rate * 2);
+		m = sn0 > 0 and 1 or -1;
+		local sweeph = easeInCirc(abs(sn0)) * 1 * m;
 		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(
-			pos, 
-			ang, 
-			Vector(-9, -2, -3), 
+			pos,
+			ang,
+			corp,
 			Vector(
-				-0, 
-				sn1 * -.39 + (sn2 * -1.2 * mv) + (stride), 
-				sz3 * mv - (mv * .5)
-			), 
+				d * .1, 
+				(sn0 * -.2) - (sweep * .1), 
+				-(abs(cs0) * .175) - 0.2
+			) * mv, 
 			Angle(
-				(cs2 * 2.75 * mv) + (cs2 * -3.39 * mv), 
-				sn2 * -5.2 * mv, 
-				0
-			)
+				d * -1.25 + (abs(sn0) * 1.8) + (abs(sweeph) * .5),
+				sn0 * 1.75 + (sweep * .125),
+				l * 1.25 
+			) * mv
 		);
 	end
 
@@ -649,15 +659,15 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local corp = self.CenterOfRotationPos or VECTOR_ZERO
 	local cora = self.CenterOfRotationAng or ANGLE_ZERO
 	local vm = self:GetOwner():GetViewModel();
-	local bpn_weapon = vm:LookupBone("b_wpn");
-	local point = WorldToLocal(EyePos(), EyeAngles(), vm:GetBonePosition(bpn_weapon), EyeAngles());
+	--local bpn_weapon = vm:LookupBone("b_wpn");
+	--local point = WorldToLocal(EyePos(), EyeAngles(), vm:GetBonePosition(bpn_weapon), EyeAngles());
 	pos, ang = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(6, -1.5, yofof) + corp, offsetPos, offsetAng);
 	self.PointOrigin = xsn;
 	pos, ang = self:DoCrouch(pos, ang);
 	pos, ang = self:DoBlocked(pos, ang);
 
 	local diffp, diffa = pos + Vector(), ang + Angle();
-	--pos, ang = self:DoIdle(pos, ang);
+	pos, ang = self:DoIdle(pos, ang);
 	diffp, diffa = diffp - pos, diffa - ang;
 	--print(impulse.PosToCode(point))
 	if self.ViewModelOffsetAng then
