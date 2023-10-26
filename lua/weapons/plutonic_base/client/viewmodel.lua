@@ -321,9 +321,13 @@ function SWEP:PostRender()
 		local t = self:IsSprinting() and Plutonic.Ease.OutQuad(self.VMSprint or 0) or Plutonic.Ease.InQuad(self.VMSprint or 0);
 		local loweredPos = Plutonic.Interpolation.VectorBezierCurve(t, VECTOR_ZERO, self.LoweredMidPos, self.LoweredPos);
 		local loweredAng = Plutonic.Interpolation.AngleBezierCurve(t, ANGLE_ZERO, self.LoweredMidAng, self.LoweredAng);
-		self.c_lpos = lerpVector(Frametime() * 16, self.c_lpos or VECTOR_ZERO, loweredPos);
-		self.c_lang = lerpAngle(Frametime() * 16, self.c_lang or ANGLE_ZERO, loweredAng);
+		self.c_lpos = lerpVector(Frametime() * 6, self.c_lpos or VECTOR_ZERO, loweredPos);
+		self.c_lang = lerpAngle(Frametime() * 8 * 12, self.c_lang or ANGLE_ZERO, loweredAng);
 	end
+
+	
+	self.VMRecoilPos = lerpVector(ft * 9.8, self.VMRecoilPos, VECTOR_ZERO);
+	self.VMRecoilAng = lerpAngle(ft * 9.8, self.VMRecoilAng, ANGLE_ZERO);
 end
 
 Plutonic.Hooks.Add(
@@ -418,9 +422,14 @@ end
 function SWEP:DoIdle(pos, ang)
 	self.VMIdle = self.VMIdle or 0;
 	local rt = Realtime();
-	local breath2 = cos(rt * .625) * 1.6;
+	
+	local breath0 = sin(rt * .495) * cos(rt * 1.6) * 1.0;
+	local breath1 = cos(rt * 1.625) * 9.6;
+	local breath2 = sin(rt * .95) * cos(rt * .6) * -3.4;
 
-	return Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(-1, -2, -3), Vector(0, breath2 * -.35, 0) * (1 - self.VMIronsights), Angle(breath2, 0, 0) * (1 - self.VMIronsights));
+	local corp = self.CenterOfRotationPos or VECTOR_ZERO
+
+	return Plutonic.Framework.RotateAroundPoint(pos, ang, corp, Vector(0, 0, 0), Angle(breath0, breaht1, breath2) * (.75 - self.VMIronsights));
 end
 
 SWEP.LoweredMidPos = Vector(4, -3, 0.4);
@@ -458,7 +467,7 @@ function SWEP:DoWalkBob(pos, ang)
 
 	local mv = clamp(self:GetOwner():GetVelocity():Length2D() / 200, 0, 1);
 	if self:GetIronsights() then
-		mv = mv * 0.15;
+		mv = mv * 0.4;
 	end
 
 	local pos0, ang0 = pos + Vector(), ang + Angle();
@@ -589,6 +598,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 		pos, ang = self:PreGetViewModelPosition(pos, ang);
 	end
 
+	
+	local ply = self:GetOwner();
+	--pos, ang = pos, ang + ply.offset_ang
+
 	self.centeredMode = self.centeredMode or GetConVar("plutonic_centered");
 	if self.centeredMode and self.centeredMode:GetBool() then
 		self.VMCenter = self.VMCenter or 0;
@@ -654,8 +667,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local oxq = -(self.c_oxq or 0) * 8;
 	local oyq = -self.c_oyq or 0;
 	local offsetPos = Vector(0, (degRoll * -.25) - (oxc * .35 - oxq * -.415) * .2 + degRoll * .2, oyq * .25 + (abs(oxq) * -.0908 -abs(oxc) * .17)); --[[FORWARD]] --[[RIGHT]] --oxq * -.05, --[[UP]] --oyq * -.05
-	local offsetAng = Angle(oyq * -3 + degPitch, oxq + (oxc * .7), (oxq * .5) - (degRoll * 1.6) + (oxc * -3.1));
-	local yofof = lerp(self.VMIronsights, -3, 0);
+	local offsetAng = Angle(0 - oyq *-3, oxq + (oxc * .7), (oxq * .5) - (degRoll * 1.6) + (oxc * -3.1));
+	local yofof = lerp(self.VMIronsights, -3, 1);
 	local corp = self.CenterOfRotationPos or VECTOR_ZERO
 	local cora = self.CenterOfRotationAng or ANGLE_ZERO
 	local vm = self:GetOwner():GetViewModel();
@@ -690,8 +703,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (ang:Right() * self.VMRecoilPos.x);
 	pos = pos + (ang:Forward() * self.VMRecoilPos.y);
 	pos = pos + (ang:Up() * self.VMRecoilPos.z);
-	self.VMRecoilPos = lerpVector(ft * 2, self.VMRecoilPos, VECTOR_ZERO);
-	self.VMRecoilAng = lerpAngle(ft * 2, self.VMRecoilAng, ANGLE_ZERO);
 	pos, ang = Plutonic.Framework.RotateAroundPoint(LocalToWorld(VECTOR_ZERO, ANGLE_ZERO, pos, ang), ang, VECTOR_ZERO, VECTOR_ZERO, -LocalPlayer():GetViewPunchAngles() - ANGLE_ZERO);
 	att = self:GetAttachment(self:LookupAttachment(self.MuzzleFlashAttachment or "muzzle"));
 	xsn = VECTOR_ZERO;
