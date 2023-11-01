@@ -34,6 +34,11 @@ local ironFade = ironFade or 0
 local GetConVar = GetConVar
 local LocalPlayer = LocalPlayer
 function SWEP:DrawHUD()
+
+    if not Plutonic.DebugConvar:GetBool() then
+        return
+    end
+
 	local line = 4
 
 	Plutonic:DebugText("Plutonic", "Debug", 8, true)

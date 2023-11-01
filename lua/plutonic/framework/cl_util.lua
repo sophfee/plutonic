@@ -278,18 +278,14 @@ Plutonic:Hook(
     end
 )
 
-function Plutonic:ConVar(name, default, flags, desc, min, max)
-    flags = flags or FCVAR_ARCHIVE
-    desc = desc or ""
-    min = min or 0
-    max = max or 1
-    local cvar = CreateClientConVar(name, default, flags, desc, min, max)
+function Plutonic:ConVar(name, default, shouldSave, userInfo, helpText, _min, _max)
+    local cvar = CreateClientConVar(name, default, shouldSave, userInfo, helpText, _min, _max);
     self.CVars = self.CVars or {}
     self.CVars[name] = cvar
     return cvar
 end
 
-Plutonic.DebugConvar = Plutonic:ConVar("plutonic_debug", "0", false, false)
+Plutonic.DebugConvar = CreateClientConVar("plutonic_debug", 0, true, false, "Enables debugging tools that are useful for people who are developing Plutonic.", 0, 1);
 Plutonic.CenterCovnar = Plutonic:ConVar("plutonic_centered", "0", true, false, "Centers the viewmodel, DOOM style.", 0, 1)
 
 
