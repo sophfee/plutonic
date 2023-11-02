@@ -60,9 +60,7 @@ function Plutonic.Ease.OutQuart(x)
 	return 1 - ((1 - x) ^ 4)
 end
 
-function Plutonic.Ease.InOutQuart(x)
-	return x < 0.5 && 8 * x ^ 4 || 1 - ((-2 * x + 2) ^ 4) / 2
-end
+Plutonic.Ease.InOutQuart = math.ease.InOutQuart;
 
 function Plutonic.Ease.InQuint(x)
 	return x ^ 5

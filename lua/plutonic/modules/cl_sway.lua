@@ -36,14 +36,14 @@ Plutonic.Hooks.Add(
 			local wep = ply:GetActiveWeapon()
 			if IsValid(wep) and wep.IsPlutonic then
 				local x, y = ucmd:GetMouseX(), ucmd:GetMouseY()
-				local i = wep.SwayMultiplier or 0.0004
+				local i = wep.SwayMultiplier or 0.0011
 				local n = wep.SwayMultiplier or 0.0056
 				local m = wep:GetIronsights() and i or n
 				if abs(x) > 0 or abs(y) > 0 then
 					wep.VMDeltaX = wep.VMDeltaX + ucmd:GetMouseX() * m
 					wep.VMDeltaY = wep.VMDeltaY + ucmd:GetMouseY() * m
-					wep.VMDeltaXWeighted = wep.VMDeltaXWeighted + ucmd:GetMouseX() * .01
-					wep.VMDeltaYWeighted = wep.VMDeltaYWeighted + ucmd:GetMouseY() * .01
+					--wep.VMDeltaXWeighted = wep.VMDeltaXWeighted + ucmd:GetMouseX() * .01
+					--wep.VMDeltaYWeighted = wep.VMDeltaYWeighted + ucmd:GetMouseY() * .01
 				end
 			end
 		end

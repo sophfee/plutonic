@@ -272,8 +272,8 @@ function SWEP:PostRender()
 	local oxq = easeOutCirc(1 - oxq_a) * clamp(dx / 16, -.5, .5); -- Plutonic.Ease.OutQuad(min(abs(self.VMDeltaX) / 8, 1)) * clamp(self.VMDeltaX, -8, 8)
 	self.c_oxq = lerp(Frametime() * 12, self.c_oxq or 0, oxq);
 	local oyq_a = min(abs(dy) / 1, 1);
-	local oyq = easeOutQuad(oyq_a) * clamp(dy, -1, 1);
-	self.c_oyq = lerp(Frametime() * 7, self.c_oyq or 0, oyq);
+	local oyq = math.ease.OutCubic(oyq_a) * clamp(dy, -8, 8);
+	self.c_oyq = lerp(Frametime() * 17, self.c_oyq or 0, oyq);
 	self.Ironsights = self:GetIronsights();
 	self._sprinting = self._sprinting or false;
 	local sprinting = self:IsSprinting();
@@ -321,8 +321,8 @@ function SWEP:PostRender()
 		local t = self:IsSprinting() and Plutonic.Ease.OutQuad(self.VMSprint or 0) or Plutonic.Ease.InQuad(self.VMSprint or 0);
 		local loweredPos = Plutonic.Interpolation.VectorBezierCurve(t, VECTOR_ZERO, self.LoweredMidPos, self.LoweredPos);
 		local loweredAng = Plutonic.Interpolation.AngleBezierCurve(t, ANGLE_ZERO, self.LoweredMidAng, self.LoweredAng);
-		self.c_lpos = lerpVector(Frametime() * 6, self.c_lpos or VECTOR_ZERO, loweredPos);
-		self.c_lang = lerpAngle(Frametime() * 8 * 12, self.c_lang or ANGLE_ZERO, loweredAng);
+		self.c_lpos = lerpVector(Frametime() * 4, self.c_lpos or VECTOR_ZERO, loweredPos);
+		self.c_lang = lerpAngle(Frametime() * 9, self.c_lang or ANGLE_ZERO, loweredAng);
 	end
 
 	
@@ -645,7 +645,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	self.VMRoll = lerp(ft * 3, self.VMRoll, rd * movepercent);
 	local degRoll = deg(self.VMRoll) / 3;
-	degRoll = degRoll + ((self.VMWallLean or 0) * 24.4);
+	degRoll = degRoll + ((self.VMWallLean or 0) * 10.4);
 	local degPitch = lerp(Plutonic.Ease.OutQuint(min(abs(degRoll / 8), 1)), 0, cos(math.rad(degRoll * 2)));
 	local flip = Plutonic.Framework.GetControl_Bool("vm_flip_lefty", false);
 	if flip then
@@ -665,10 +665,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	local oxc = -(self.c_oxc or 0) * 8;
 	local oxq = -(self.c_oxq or 0) * 8;
-	local oyq = -self.c_oyq or 0;
-	local offsetPos = Vector(0, (degRoll * -.25) - (oxc * .35 - oxq * -.415) * .2 + degRoll * .2, oyq * .25 + (abs(oxq) * -.0908 -abs(oxc) * .17)); --[[FORWARD]] --[[RIGHT]] --oxq * -.05, --[[UP]] --oyq * -.05
-	local offsetAng = Angle(0 - oyq *-3, oxq + (oxc * .7), (oxq * .5) - (degRoll * 1.6) + (oxc * -3.1));
-	local yofof = lerp(self.VMIronsights, -3, 1);
+	local oyq = self.c_oyq or 0;
+	local offsetPos = Vector(0, (degRoll * -.065) - (oxc * .35 - oxq * .415) * .2 + degRoll * .0, max(degRoll, 0) * .025); --[[FORWARD]] --[[RIGHT]] --oxq * -.05, --[[UP]] --oyq * -.05
+	local offsetAng = Angle(oyq * 1.75, (oxq * 1.0) - (oxc * 2.65), (oxq * 2.15) + (oxc * -.1) - (degRoll));
+	local yofof = lerp(self.VMIronsights, -3, 3);
 	local corp = self.CenterOfRotationPos or VECTOR_ZERO
 	local cora = self.CenterOfRotationAng or ANGLE_ZERO
 	local vm = self:GetOwner():GetViewModel();
