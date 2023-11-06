@@ -479,6 +479,8 @@ function SWEP:PrimaryAttack()
 			curatt = curtime
 		end
 
+		self.LastPrimaryAttack = CurTime()
+
 		self:SetNextPrimaryFire(curatt + self.Primary.Delay)
 	else
 		self:EmitSound(self.EmptySound)

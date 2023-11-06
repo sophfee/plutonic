@@ -47,6 +47,15 @@ function SWEP:IdleThink()
 end
 
 function SWEP:SprintChanged(is_sprinting)
+
+	self.__cpyHoldType = self.__cpyHoldType or self.HoldType;
+
+	if is_sprinting then
+		self:SetHoldType("passive");
+	else
+		self:SetHoldType(self.__cpyHoldType);
+	end
+
 	if not self.UseSprintSequence then return; end
 	local vm = self:GetOwner():GetViewModel();
 	if is_sprinting then
