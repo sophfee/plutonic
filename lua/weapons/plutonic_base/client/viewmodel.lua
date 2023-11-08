@@ -299,7 +299,7 @@ function SWEP:PostRender()
 	local isIronsights = self:GetIronsights();
 	local isDuck = (self:GetOwner():KeyDown(IN_DUCK) or self:GetOwner():Crouching()) and not isIronsights;
 	self.VMCrouch = approach(self.VMCrouch, isDuck and 1 or 0, Frametime() * 2.5);
-	self.VMBobCycle = lerp(Frametime() * 6, self.VMBobCycle, Plutonic.Framework.IsMoving() and 1 or 0);
+	self.VMBobCycle = lerp(Frametime() * 6, self.VMBobCycle or 0, Plutonic.Framework.IsMoving() and 1 or 0);
 	local l = self:IsSprinting() and 1 or 0;
 	lerpSpeed = lerp(Frametime() * 5, lerpSpeed, l);
 	local onvel = self:GetOwner():GetVelocity();

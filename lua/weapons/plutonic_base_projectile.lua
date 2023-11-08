@@ -32,7 +32,82 @@ AddCSLuaFile()
 
 SWEP.Base = "plutonic_base"
 SWEP.Projectile = {}
+SWEP.IsChargeUp = true
+SWEP.ChargingShot = false
+SWEP.Primary.ChargeTime = 0
+SWEP.PlayedAnimCharge = false;
+SWEP.Primary.ChargeNoReturnTime = 0.95;
+
+function SWEP:CanShoot()
+	return self:CanPrimaryAttack() and 
+	not self:GetBursting() and 
+	not (self.LoweredPos and self:IsSprinting()) and 
+	self:GetReloadTime() < CurTime() and 
+	self.Charged
+end
+
+function SWEP:ChargeThink()
+	if not self.IsChargeUp then return end
+
+	if self.ChargingShot then
+		local charge = math.Clamp((CurTime() - self.ChargeTime) / self.Primary.ChargeTime, 0, 1)
+		self.Charged = charge >= 1
+		self.Charge = charge
+    end
+end
+
+function SWEP:OnStartCharging()
+    local vm = self.Owner:GetViewModel();
+    if not IsValid(vm) or not self.Primary.ChargeAnimation then return end
+
+    local chargeAnim = self.Primary.ChargeAnimation;
+    local abortAnim = self.Primary.AbortAnimation;
+
+    if isstring(self.Primary.ChargeAnimation) then
+        local seqidCharge = vm:LookupSequence(chargeAnim);
+        local seqidAbort = vm:LookupSequence(abortAnim)
+
+        if vm:GetSequence() == seqidAbort then
+            local cycle = vm:GetCycle();
+            vm:SetSequence(seqidCharge);
+            vm:SetCycle(1 - cycle);
+        else
+            vm:SetSequence(seqidCharge);
+        end
+    end
+end
+
+function SWEP:OnAbortCharging()
+    local vm = self.Owner:GetViewModel();
+    if not IsValid(vm) or not self.Primary.ChargeAnimation then return end
+
+    local chargeAnim = self.Primary.ChargeAnimation;
+    local abortAnim = self.Primary.AbortAnimation;
+
+    if isstring(self.Primary.ChargeAnimation) then
+        local seqidCharge = vm:LookupSequence(chargeAnim);
+        local seqidAbort = vm:LookupSequence(abortAnim)
+
+        if vm:GetSequence() == seqidCharge then
+            local cycle = vm:GetCycle();
+            vm:SetSequence(seqidAbort);
+            vm:SetCycle(1 - cycle);
+        else
+            vm:SetSequence(seqidAbort);
+        end
+    end
+end
+
+function SWEP:OnChargeStateChanged(state)
+    if state then
+        self:OnStartCharging();
+    else
+        self:OnAbortCharging();
+    end;
+end;
+
 function SWEP:PrimaryAttack()
+    if not self:CanShoot() then return end
 	if self:Clip1() < 1 then
 		self:SetNextPrimaryFire(CurTime() + 1)
 
@@ -40,14 +115,15 @@ function SWEP:PrimaryAttack()
 	end
 
 	if self.Primary.ThrowDelay then
+        self:PlayAnim(self.Primary.ThrowAnimation or ACT_VM_THROW)
 		timer.Simple(
 			self.Primary.ThrowDelay,
 			function()
-				if IsValid(self) then
+				if IsValid(self) and self:CanShoot() then
 					self:ThrowAttack()
 					self:ViewPunch()
 					if self:Clip1() < 1 then
-						self:GetOwner():StripWeapon(self:GetClass())
+						--self:GetOwner():StripWeapon(self:GetClass())
 					end
 				end
 			end
@@ -77,7 +153,7 @@ function SWEP:PrimaryAttack()
 				self:GetOwner():TakeInventoryItem(self.PairedItem)
 			end
 		else
-			self:GetOwner():StripWeapon(self:GetClass())
+			--self:GetOwner():StripWeapon(self:GetClass())
 		end
 	end
 end
@@ -88,6 +164,7 @@ function SWEP:Think()
 	end
 
 	self:IdleThink()
+    self:ChargeThink()
 end
 
 function SWEP:Reload()
@@ -157,5 +234,5 @@ function SWEP:ThrowAttack()
 	end
 
 	phys:ApplyForceCenter(self:GetOwner():GetAimVector() * force * 2 + Vector(0, 0, 0))
-	phys:AddAngleVelocity(Vector(math.random(-500, 500), math.random(-500, 500), math.random(-500, 500)))
+	phys:AddAngleVelocity(Vector(math.Rand(-500, 500), math.Rand(-500, 500), math.Rand(-500, 500)))
 end

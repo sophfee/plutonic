@@ -35,7 +35,13 @@ function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
-	self:DrawShadow(false)
+	self:DrawShadow(true)
+
+    self.m_fCreationTime = CurTime();
+end
+
+function ENT:GetCreationTime()
+    return self.m_fCreationTime;
 end
 
 function ENT:DoFire(hit)

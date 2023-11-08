@@ -149,3 +149,32 @@ concommand.Add(
 		PrintTable(ply:GetViewModel():GetAttachments())
 	end
 )
+
+concommand.Add("plutonic_debug_vm_sequences", function(ply, cmd, args)
+    print("\n--- SEQUENCE RAW DUMP ---")
+    PrintTable(ply:GetViewModel():GetSequenceList())
+
+    print("\n--- ACTIVITY NUM TO SEQUENCE DUMP ---")
+    local vm = ply:GetViewModel()
+    for i = 0, vm:GetSequenceCount() - 1 do
+        local seq = vm:GetSequenceName(i)
+        local act = vm:GetSequenceActivity(i)
+        print(act, seq)
+    end
+
+    print("\n--- SEQUENCE LENGTHS ---")
+    local data = {};
+    local longest_name = 0;
+    for i = 0, vm:GetSequenceCount() - 1 do
+        local seq = vm:GetSequenceName(i)
+        if #seq > longest_name then longest_name = #seq; end
+        local len = vm:SequenceDuration(i);
+        local set = {i, seq, len};
+        table.insert(data, set);
+    end
+
+    for index, d in ipairs(data) do
+        local fml = string.format("%.4f", d[3]);
+        MsgC(d[2], string.rep(" ", longest_name - #d[2] + 1), fml, "\n")    
+    end
+end)

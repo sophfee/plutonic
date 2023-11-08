@@ -88,7 +88,8 @@ end
 SWEP.IsChargeUp = true
 SWEP.ChargingShot = false
 SWEP.Primary.ChargeTime = 1
-
+SWEP.Primary.ChargeNoReturnTime = 0.95;
+SWEP.Charge = 0
 
 function SWEP:OnChargeStateChanged(state)
 end
@@ -101,10 +102,22 @@ hook.Add("StartCommand", "Plutonic_StartCommand", function(ply, cmd)
 
 	if wep.IsChargeUp then
 		if cmd:KeyDown(IN_SPEED) then
-			wep.ChargeTime = 0
-			wep.ChargingShot = false
+            if (wep.Charge or 0) >= wep.Primary.ChargeNoReturnTime then
+                if wep.LoweredPos then -- no run & gun
+                    cmd:KeyDown(IN_SPEED);
+                end
+            else
+			    wep.ChargeTime = 0
+			    wep.ChargingShot = false
+            end
 			return
-		end
+        end
+
+        if (wep.Charge or 0) >= wep.Primary.ChargeNoReturnTime then
+            cmd:AddKey(IN_ATTACK);
+            wep:PrimaryAttack();
+        end;
+
 		if cmd:KeyDown(IN_ATTACK) and not wep.ChargingShot then
 			wep.ChargeTime = CurTime()
 			wep.ChargingShot = true
@@ -112,7 +125,7 @@ hook.Add("StartCommand", "Plutonic_StartCommand", function(ply, cmd)
 			if not wep.Primary.Automatic then
 				cmd:RemoveKey(IN_ATTACK)
 			end
-		elseif not cmd:KeyDown(IN_ATTACK) and wep.ChargingShot then
+		elseif (not cmd:KeyDown(IN_ATTACK) and wep.ChargingShot) then
 			wep.ChargeTime = 0
 			wep.ChargingShot = false
 			wep:OnChargeStateChanged(false)
