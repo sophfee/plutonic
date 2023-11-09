@@ -430,9 +430,17 @@ function SWEP:IsSprinting()
 	return (self:GetOwner():GetVelocity():Length2D() > self:GetOwner():GetRunSpeed() - 50) and self:GetOwner():IsOnGround()
 end
 
+function SWEP:ShouldDryFire()
+	if self.m_bDryFired then return false end;
+	self.m_bDryFired = true
+	return true;
+end
+
 function SWEP:PrimaryAttack()
 	if not self:CanShoot() then
-		self:PlayAnim(ACT_VM_DRYFIRE)
+		if self:ShouldDryFire() then
+			self:PlayAnim(ACT_VM_DRYFIRE)
+		end
 		return
 	end
 	local clip = self:Clip1()
@@ -460,7 +468,7 @@ function SWEP:PrimaryAttack()
 				if owner == LocalPlayer() then
 					local shouldPlay = impulse and impulse.GetSetting("view_thirdperson", false)
 					if shouldPlay == false then
-						self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_STATIC, SND_NOFLAGS, 0)
+						self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_STATIC, SND_NOFLAGS, nil)
 					end
 				end
 			end

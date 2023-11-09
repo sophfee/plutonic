@@ -71,6 +71,7 @@ end
 
 function SWEP:FinishReload()
 	self:SetReloading(false)
+	self.m_bDryFired = false;
 	local amount
 	-- one in the chamber
 	if self.CannotChamber then

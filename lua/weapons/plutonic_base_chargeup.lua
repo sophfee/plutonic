@@ -33,6 +33,7 @@ AddCSLuaFile()
 SWEP.Base = "plutonic_base"
 SWEP.Charged = false
 
+
 function SWEP:CanShoot()
 	return self:CanPrimaryAttack() and 
 	not self:GetBursting() and 
@@ -113,8 +114,9 @@ hook.Add("StartCommand", "Plutonic_StartCommand", function(ply, cmd)
 			return
         end
 
-        if (wep.Charge or 0) >= wep.Primary.ChargeNoReturnTime then
+        if (wep.Charge or 0) >= wep.Primary.ChargeNoReturnTime and not cmd:KeyDown(IN_ATTACK) then
             cmd:AddKey(IN_ATTACK);
+
             wep:PrimaryAttack();
         end;
 

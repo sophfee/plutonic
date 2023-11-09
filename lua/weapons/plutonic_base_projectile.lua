@@ -37,6 +37,7 @@ SWEP.ChargingShot = false
 SWEP.Primary.ChargeTime = 0
 SWEP.PlayedAnimCharge = false;
 SWEP.Primary.ChargeNoReturnTime = 0.95;
+SWEP.Primary.EmptySound = ""
 
 function SWEP:CanShoot()
 	return self:CanPrimaryAttack() and 
@@ -123,7 +124,12 @@ function SWEP:PrimaryAttack()
 					self:ThrowAttack()
 					self:ViewPunch()
 					if self:Clip1() < 1 then
-						--self:GetOwner():StripWeapon(self:GetClass())
+						local time_left = self:SequenceDuration() * (1 - self:GetCycle())
+						timer.Simple(time_left, function()
+							if IsValid(self) and IsValid(self:GetOwner()) then
+								self:GetOwner():StripWeapon(self:GetClass())		
+							end
+						end)
 					end
 				end
 			end
@@ -153,6 +159,12 @@ function SWEP:PrimaryAttack()
 				self:GetOwner():TakeInventoryItem(self.PairedItem)
 			end
 		else
+			local time_left = self:SequenceDuration() * (1 - self:GetCycle())
+			timer.Simple(time_left, function()
+				if IsValid(self) and IsValid(self:GetOwner()) then
+					self:GetOwner():StripWeapon(self:GetClass())		
+				end
+			end)
 			--self:GetOwner():StripWeapon(self:GetClass())
 		end
 	end
