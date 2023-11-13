@@ -498,12 +498,12 @@ function SWEP:DoWalkBob(pos, ang)
 			ang,
 			corp,
 			Vector(
-				d * .025, 
-				(sn0 * -.1) - (sweep * .4), 
-				max(cs0 * .375, 0)
+				d * .125, 
+				(sn0 * .01) - (sweep * .4), 
+				max(cs0 * .375, l * .5)
 			), 
 			Angle(
-				d * 1 + (abs(sn0) * -1.8) - (abs(sweeph) * .5),
+				d * 1 + (abs(sn0) * 1.8) - (sweeph * .15),
 				sn0 * -2.8 + (sweep * .9),
 				l
 			)
