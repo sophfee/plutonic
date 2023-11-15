@@ -294,18 +294,6 @@ function SWEP:Deploy()
 end
 
 function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_dir)
-	if self.UseBallistics then
-		if Plutonic.IsClient then return end
-		local bulllet = ents.Create("plutonic_ballistic")
-		bulllet:SetPos(self:GetOwner():GetShootPos())
-		bulllet:SetAngles(self:GetOwner():GetAimVector():Angle())
-		bulllet:SetOwner(self:GetOwner())
-		bulllet:Spawn()
-		bulllet:Launch()
-
-		return
-	end
-
 	local bullet = {}
 	bullet.Num = num_bullets
 	bullet.Src = override_src or self:GetOwner():GetShootPos() -- Source
@@ -438,9 +426,6 @@ end
 
 function SWEP:PrimaryAttack()
 	if not self:CanShoot() then
-		if self:ShouldDryFire() then
-			self:PlayAnim(ACT_VM_DRYFIRE)
-		end
 		return
 	end
 	local clip = self:Clip1()

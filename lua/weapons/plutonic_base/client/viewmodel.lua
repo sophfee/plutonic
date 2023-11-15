@@ -57,9 +57,9 @@ local clamp = math.Clamp;
 local sin = math.sin;
 local cos = math.cos;
 local deg = math.deg;
-local Curtime = UnPredictedCurTime;
-local Frametime = RealFrameTime;
-local Realtime = RealTime;
+local Curtime = CurTime;
+local Frametime = FrameTime;
+local Realtime = CurTime;
 local vec = Vector;
 local lerp = Lerp;
 local lerpAngle = LerpAngle;
@@ -69,6 +69,8 @@ local easeOutQuad = Plutonic.Ease.OutQuad;
 local easeOutCirc = Plutonic.Ease.OutCirc;
 local easeInQuad = Plutonic.Ease.InQuad;
 local easeInCirc = Plutonic.Ease.InSine;
+local easeInBack = Plutonic.Ease.InBack;
+local easeOutBack = Plutonic.Ease.OutBack;
 local VECTOR_ZERO = vec(0, 0, 0);
 local ANGLE_ZERO = Angle(0, 0, 0);
 function SWEP:PreDrawViewModel(vm)
@@ -455,6 +457,9 @@ end
 
 lerpSpeed = 0;
 local WalkingTime = 0;
+local stepLunge = 0;
+local stepLungeNext = 0;
+
 function SWEP:DoWalkBob(pos, ang)
 	if self.DoCustomWalkBob then return self:DoCustomWalkBob(pos, ang); end
 	local rt = Realtime();
@@ -482,30 +487,28 @@ function SWEP:DoWalkBob(pos, ang)
 		end
 		local rate = 11.2
 
-		local sn0 = sin(rt * rate) * mv;
-		local cs0 = cos(rt * rate) * mv;
+		local sn0 = sin(Realtime() * rate) * mv;
+		local cs0 = cos(Realtime() * rate) * mv;
 		local m = cs0 > 0 and 1 or -1;
-		local sweep = easeInCirc(abs(cs0)) * -1 * m;
+		local sweep = math.ease.InQuint(abs(cs0)) * m;
 		
-		
-		local d = -sin(rt * rate * 2) * mv;
-		
-		local l = cos(rt * rate * 2);
-		m = sn0 > 0 and 1 or -1;
-		local sweeph = easeInCirc(abs(sn0)) * 1 * m;
+		local d = sin(Realtime() * rate * 2) * mv;		
+		local l = cos(Realtime() * rate * 2) * mv;
+		m = d > 0 and 1 or -1;
+		local sweeph = math.ease.InQuint(abs(d)) * 1 * m;
 		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(
 			pos,
 			ang,
 			corp,
 			Vector(
-				d * .125, 
-				(sn0 * .01) - (sweep * .4), 
-				max(cs0 * .375, l * .5)
+				((abs(sweeph) * -.3) + max(0, cs0) + l * .3535 + (sweep * .150)) / 4,
+				(cs0 * -.55) + (sweep * .152),
+				-(1 - d) * .42068
 			), 
 			Angle(
-				d * 1 + (abs(sn0) * 1.8) - (sweeph * .15),
-				sn0 * -2.8 + (sweep * .9),
-				l
+				(d * 1.1 + l) / 1.5,
+				(cs0 * .4 - sweep * .28 + (sn0 * 1.29)) * 2,
+				(d * .4 + l) * 0.20 - ((sweeph ^ 3) * .3)
 			)
 		);
 	end
@@ -518,8 +521,6 @@ function SWEP:DoWalkBob(pos, ang)
 		local cs0 = cos(rt * rate);
 		local m = cs0 > 0 and 1 or -1;
 		local sweep = easeInCirc(abs(cs0)) * -1 * m;
-		
-		
 		local d = -sin(rt * rate * 2);
 		local l = cos(rt * rate * 2);
 		m = sn0 > 0 and 1 or -1;
@@ -536,7 +537,7 @@ function SWEP:DoWalkBob(pos, ang)
 			Angle(
 				d * -1.25 + (abs(sn0) * 1.8) + (abs(sweeph) * .5),
 				sn0 * 1.75 + (sweep * .125),
-				l * 1.25 
+				l * 1.25
 			) * mv
 		);
 	end
@@ -597,7 +598,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 	if self.PreGetViewModelPosition then
 		pos, ang = self:PreGetViewModelPosition(pos, ang);
 	end
-
+	self.swag_angle = self.swag_angle or 0;
+	self.swag_angle = Lerp(Frametime() * 5, self.swag_angle, self:GetIronsights() and 0 or math.rad(LocalPlayer():GetBodyYawDifference() * math.pi * -2))	
+	ang:RotateAroundAxis(ang:Up(), self.swag_angle * math.pi * self.ViewModelFOV / 100)
+	pos = pos + ang:Right() * (math.rad(self.swag_angle) * (math.pi * (self.ViewModelFOV / 100)))
 	
 	local ply = self:GetOwner();
 	--pos, ang = pos, ang + ply.offset_ang
@@ -637,7 +641,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	--self.xva = xva
 	pos, ang = self:DoIronsights(pos, ang);
 	pos, ang = self:DoSprint(pos, ang);
-	local swayXv = (xva * .25);
+	local swayXv = (xva * .5);
 	local swayXa = -xva * 1;
 	if isIronsights then
 		rd = rd / 2;
@@ -667,7 +671,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local oxq = -(self.c_oxq or 0) * 8;
 	local oyq = self.c_oyq or 0;
 	local offsetPos = Vector(0, (degRoll * -.065) - (oxc * .35 - oxq * .415) * .2 + degRoll * .0, max(degRoll, 0) * .025); --[[FORWARD]] --[[RIGHT]] --oxq * -.05, --[[UP]] --oyq * -.05
-	local offsetAng = Angle(oyq * 1.75, (oxq * 1.0) - (oxc * 2.65), (oxq * 2.15) + (oxc * -.1) - (degRoll));
+	local offsetAng = Angle(oyq * 1.75, (oxq * 1.0) - (oxc * 2.65), (oxq * 2.15) + (oxc * .75) - (degRoll / 3));
 	local yofof = lerp(self.VMIronsights, -3, 3);
 	local corp = self.CenterOfRotationPos or VECTOR_ZERO
 	local cora = self.CenterOfRotationAng or ANGLE_ZERO
@@ -703,7 +707,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos = pos + (ang:Right() * self.VMRecoilPos.x);
 	pos = pos + (ang:Forward() * self.VMRecoilPos.y);
 	pos = pos + (ang:Up() * self.VMRecoilPos.z);
-	pos, ang = Plutonic.Framework.RotateAroundPoint(LocalToWorld(VECTOR_ZERO, ANGLE_ZERO, pos, ang), ang, VECTOR_ZERO, VECTOR_ZERO, -LocalPlayer():GetViewPunchAngles() - ANGLE_ZERO);
+	--pos, ang = Plutonic.Framework.RotateAroundPoint(LocalToWorld(VECTOR_ZERO, ANGLE_ZERO, pos, ang), ang, VECTOR_ZERO, VECTOR_ZERO, -LocalPlayer():GetViewPunchAngles() - ANGLE_ZERO);
 	att = self:GetAttachment(self:LookupAttachment(self.MuzzleFlashAttachment or "muzzle"));
 	xsn = VECTOR_ZERO;
 	if att then
