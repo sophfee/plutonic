@@ -90,11 +90,11 @@ scope_material:SetTexture("$basetexture", scope_rt:GetName())
 scope_material:SetTexture("$bumpmap", "effects/arc9/glass_nm")
 scope_material:SetInt("$translucent", 1)
 scope_material:SetFloat("$phong", 1)
-scope_material:SetFloat("$phongboost", 64)
+scope_material:SetFloat("$phongboost", 4)
 scope_material:SetFloat("$phongexponent", 512)
 scope_material:SetTexture("$envmap", "env_cubemap")
 scope_material:SetFloat("$envmapfresnel", 0)
-scope_material:SetVector("$phongfresnelranges", Vector(1, 1, 1))
+scope_material:SetVector("$phongfresnelranges", Vector(0.4, 0.9, 1))
 scope_material:SetVector("$envmaptint", Vector(0, 0,0))
 scope_material:SetInt("$ignorez", 1)
 -- use bump map alpha as envmap mask
@@ -116,7 +116,8 @@ local greenColor = Color(0, 255, 0)  -- optimized +10000fps
 local whiteColor = Color(255, 255, 255)
 local blackColor = Color(0, 0, 0)
 
-local tex_shadow = Material("hud/scopes/shadow.png", "mips smooth")
+local tex_shadow = Material("models/weapons/tfa_ins2/optics/mk4_crosshair.vtf") -- Material("models/weapons/tfa_ins2/optics/po4x_reticule")
+local textex_shadow = tex_shadow:GetTexture("$basetexture")
 local mat_black = Material("arccw/hud/black.png")
 local tex_black = mat_black:GetTexture("$basetexture")
 local tex_glass = Material("models/weapons/arc9_eft_shared/atts/optic/transparent_glass", "mips smooth")
@@ -148,15 +149,39 @@ function Plutonic:NoTexture()
     draw.NoTexture()
 end
 
+local res = {ScrW(),ScrH()}
+local sfx = function(x)
+    return x * (1024/res[1]) 
+end
+local sfy = function(y)
+    return y * (1024/res[2]) 
+end
+
+local framebuffer = Material("pp/motionblur");
+framebuffer:SetInt("$translucent", 1);
+--framebuffer:
+
+local function DrawTextureOnScope(mat, x, y, w, h)
+    
+    framebuffer:SetUndefined("$alpha");
+    framebuffer:SetInt("$translucent", 0);
+    framebuffer:SetTexture("$basetexture", "models/weapons/tfa_ins2/optics/mk4_crosshair");
+
+    render.SetMaterial(framebuffer)
+    render.DrawScreenQuadEx(x, y, w, h)
+end
+
 function Plutonic:DrawScopeShadow(x, y)
 
-    render.SetMaterial(tex_shadow)
-    render.DrawTextureToScreenRect(tex_shadow:GetTexture("$basetexture"), x - 512, y - 512, 1024, 1024)
+    local yaw = LocalPlayer():GetViewModel().c_oxq or 0
 
-    render.DrawTextureToScreenRect(tex_black, x - 256 - 2048, y - 256, 512 + 2048, 512)
-    render.DrawTextureToScreenRect(tex_black, x + 256, y - 256, 512 + 2048, 512)
-    render.DrawTextureToScreenRect(tex_black, x - 256, y - 256 - 2048, 512, 512 + 512)
-    render.DrawTextureToScreenRect(tex_black, x - 256, y + 256, 512, 512 + 2048)
+    x = x + sfy(yaw * 80)
+    DrawTextureOnScope(tex_shadow, x + sfy(192), y + sfx(192), sfy(1024), sfx(1024))
+    
+    --render.DrawTextureToScreenRect(tex_black, x - 256 - 512, y - 256, 2048 + 512, 256)
+    --render.DrawTextureToScreenRect(tex_black, x - 256 + 512 + 512, y - 256, 256, 1024)
+    --render.DrawTextureToScreenRect(tex_black, x - 256, y - 256 - 512, 512, 512 + 512)
+    --render.DrawTextureToScreenRect(tex_black, x - 256, y + 256, 512, 512 + 512)
 
 
 end
@@ -185,21 +210,20 @@ function Plutonic:RenderScope(Weapon, ViewModel, AttachmentData, Attachment)
     ang:RotateAroundAxis(ang:Right(), 180)
     ang:RotateAroundAxis(ang:Up(), -90)
 
-
+    cam.Start2D()
     render.PushRenderTarget(scope_rt, 0, 0, 512, 512)   
 
+    render.Clear( 0, 0, 0, 0, true, true)
     Plutonic.Framework.Overdraw = true
 
     cam.Start3D(pos, ang, 90, 0, 0, 512, 512, 16, 4096)
-
-    
-    render.SetBlend(1)
-    render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_DST_ALPHA, BLENDFUNC_ADD)
-    render.Clear( 0, 0, 0, 255, false, false)
+    render.Clear( 0, 0, 0, 0, true, true)
+    render.OverrideAlphaWriteEnable(true, false);
+    render.OverrideBlend(false, BLEND_SRC_COLOR, BLEND_DST_COLOR, BLENDFUNC_ADD)
     render.RenderView({
-        origin = pos,
+        origin = pos + AVDir:Forward() * 8,
         angles = AVDir,
-        fov = LocalPlayer():GetFOV() / (AttachmentData.Magnification or 4),
+        fov = LocalPlayer():GetFOV() / (AttachmentData.Magnification or 8),
         x = 0,
         y = 0,
         w = ScrW(),
@@ -208,19 +232,22 @@ function Plutonic:RenderScope(Weapon, ViewModel, AttachmentData, Attachment)
         drawhud = false,
         aspectratio = 1
     })
+    render.OverrideAlphaWriteEnable(false)
     render.OverrideBlend(false, BLEND_SRC_ALPHA, BLEND_DST_COLOR, BLENDFUNC_ADD)
 render.SetBlend(1)
     cam.End3D()
 
     
     render.SetMaterial(tex_shadow)
-    render.DrawScreenQuad()
+    --render.DrawScreenQuad()
 
-    self:DrawScopeShadow(256, 256)
+    self:DrawScopeShadow(Weapon.c_oxq or 0, 0)
     Plutonic.Framework.Overdraw = false
     
     
     render.PopRenderTarget()
+    
+    cam.End2D()
 end
 
 Plutonic:DefineBehavior("rt_scope", {
