@@ -36,3 +36,4 @@ function SWEP:EmitWorldSound(snd)
 	net.WriteString(snd)
 	net.SendPAS(self:GetPos())
 end
+

@@ -154,9 +154,6 @@ sound.Add(
 );
 
 function SWEP:IronsightsThink()
-	if (self.CanDecreaseBlowback or 0) < CurTime() then
-		self:SetIronsightsRecoil(math.Clamp(self:GetIronsightsRecoil() - (FrameTime() * 600), 0, 1));
-	end
 
 	if not self:CanIronsight() then
 		self:SetIronsights(false);

@@ -1,47 +1,137 @@
-/**************************************************************************/
-/*	shared/datatables.lua											      */
-/**************************************************************************/
-/*                      This file is a part of PLUTONIC                   */
-/*                              (c) 2022-2023                             */
-/*                  Written by Sophie (github.com/sophfee)                */
-/**************************************************************************/
-/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  */
-/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  */
-/*                                                                        */
-/* Permission is hereby granted, free of charge, to any person obtaining  */
-/* a copy of this software and associated documentation files (the        */
-/* "Software"), to deal in the Software without restriction, including    */
-/* without limitation the rights to use, copy, modify, merge, publish,    */
-/* distribute, sublicense, and/or sell copies of the Software, and to     */
-/* permit persons to whom the Software is furnished to do so, subject to  */
-/* the following conditions:                                              */
-/*                                                                        */
-/* The above copyright notice and this permission notice shall be         */
-/* included in all copies or substantial portions of the Software.        */
-/*                                                                        */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
-/**************************************************************************/
+--[[************************************************************************]]
+--[[	shared/datatables.lua											      ]]
+--[[************************************************************************]]
+--[[                      This file is a part of PLUTONIC                   ]]
+--[[                              (c) 2022-2023                             ]]
+--[[                  Written by Sophie (github.com/sophfee)                ]]
+--[[************************************************************************]]
+--[[ Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  ]]
+--[[ Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  ]]
+--[[                                                                        ]]
+--[[ Permission is hereby granted, free of charge, to any person obtaining  ]]
+--[[ a copy of this software and associated documentation files (the        ]]
+--[[ "Software"), to deal in the Software without restriction, including    ]]
+--[[ without limitation the rights to use, copy, modify, merge, publish,    ]]
+--[[ distribute, sublicense, and/or sell copies of the Software, and to     ]]
+--[[ permit persons to whom the Software is furnished to do so, subject to  ]]
+--[[ the following conditions:                                              ]]
+--[[                                                                        ]]
+--[[ The above copyright notice and this permission notice shall be         ]]
+--[[ included in all copies or substantial portions of the Software.        ]]
+--[[                                                                        ]]
+--[[ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        ]]
+--[[ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     ]]
+--[[ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. ]]
+--[[ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   ]]
+--[[ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   ]]
+--[[ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      ]]
+--[[ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 ]]
+--[[************************************************************************]]
+if vtx then
+	
+	function SWEP:GetIronsights(fallback)
+		return self:GetStreamVar("plutonic_ironsights", fallback);
+	end
 
-function SWEP:SetupDataTables()
-	-- QUESTION:
-	-- Could we migrate to STREAMED vars, if Longsword is running in the impulse Framework (or derived)?
-	-- Could provide a decent bump in performance. (sophie S.)
-	self:NetworkVar("Bool", 0, "Ironsights")
-	self:NetworkVar("Bool", 1, "Reloading")
-	self:NetworkVar("Bool", 2, "Bursting")
-	self:NetworkVar("Bool", 3, "Reliable")
-	self:NetworkVar("Int", 0, "FireMode")
-	self:NetworkVar("Float", 1, "IronsightsRecoil")
-	self:NetworkVar("Float", 2, "Recoil")
-	self:NetworkVar("Float", 3, "ReloadTime")
-	self:NetworkVar("Float", 4, "NextIdle")
-	if self.ExtraDataTables then
-		self.ExtraDataTables(self)
+	function SWEP:GetReloading(fallback)
+		return self:GetStreamVar("plutonic_reloading", fallback);
+	end
+
+	function SWEP:GetBursting(fallback)
+		return self:GetStreamVar("plutonic_bursting", fallback);
+	end
+
+	function SWEP:GetReliable(fallback)
+		return self:GetStreamVar("plutonic_reliable", fallback);
+	end
+
+	function SWEP:GetFireMode(fallback)
+		return self:GetStreamVar("plutonic_firemode", fallback);
+	end
+
+	function SWEP:GetIronsightsRecoil(fallback)
+		return self:GetStreamVar("plutonic_ironsightsrecoil", fallback);
+	end
+
+	function SWEP:GetRecoil(fallback)
+		return self:GetStreamVar("plutonic_recoil", fallback);
+	end
+
+	function SWEP:GetReloadTime(fallback)
+		return self:GetStreamVar("plutonic_reloadtime", fallback);
+	end
+
+	function SWEP:GetNextIdle(fallback)
+		return self:GetStreamVar("plutonic_nextidle", fallback);
+	end
+
+	function SWEP:SetIronsights(value)
+		self:SetStreamedVariable("plutonic_ironsights", value, true);
+	end
+
+	function SWEP:SetReloading(value)
+		self:SetStreamedVariable("plutonic_reloading", value, true);
+	end
+
+	function SWEP:SetBursting(value)
+		self:SetStreamedVariable("plutonic_bursting", value, true);
+	end
+
+	function SWEP:SetReliable(value)
+		self:SetStreamedVariable("plutonic_reliable", value, true);
+	end
+
+	function SWEP:SetFireMode(value)
+		self:SetStreamedVariable("plutonic_firemode", value, true);
+	end
+
+	function SWEP:SetIronsightsRecoil(value)
+		self:SetStreamedVariable("plutonic_ironsightsrecoil", value, true);
+	end
+
+	function SWEP:SetRecoil(value)
+		self:SetStreamedVariable("plutonic_recoil", value, true);
+	end
+
+	function SWEP:SetReloadTime(value)
+		self:SetStreamedVariable("plutonic_reloadtime", value, true);
+	end
+
+	function SWEP:SetNextIdle(value)
+		self:SetStreamedVariable("plutonic_nextidle", value, true);
+	end
+
+	function SWEP:SetupDataTables()
+		-- QUESTION:
+		-- stream vars.)
+		self:SetIronsights(false);
+		self:SetReloading(false);
+		self:SetBursting(false);
+		self:SetReliable(false);
+		self:SetFireMode(0);
+		self:SetIronsightsRecoil(0);
+		self:SetRecoil(0);
+		self:SetReloadTime(0);
+		if self.ExtraDataTables then
+			self.ExtraDataTables(self);
+		end
+	end
+else
+	function SWEP:SetupDataTables()
+		-- QUESTION:
+		-- Could we migrate to STREAMED vars, if Longsword is running in the impulse Framework (or derived)?
+		-- Could provide a decent bump in performance. (sophie S.)
+		self:NetworkVar("Bool", 0, "Ironsights");
+		self:NetworkVar("Bool", 1, "Reloading");
+		self:NetworkVar("Bool", 2, "Bursting");
+		self:NetworkVar("Bool", 3, "Reliable");
+		self:NetworkVar("Int", 0, "FireMode");
+		self:NetworkVar("Float", 1, "IronsightsRecoil");
+		self:NetworkVar("Float", 2, "Recoil");
+		self:NetworkVar("Float", 3, "ReloadTime");
+		self:NetworkVar("Float", 4, "NextIdle");
+		if self.ExtraDataTables then
+			self.ExtraDataTables(self);
+		end
 	end
 end
