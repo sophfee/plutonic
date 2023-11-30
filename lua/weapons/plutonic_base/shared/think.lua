@@ -5,8 +5,8 @@
 /*                              (c) 2022-2023                             */
 /*                  Written by Sophie (github.com/sophfee)                */
 /**************************************************************************/
-/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  */
-/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  */
+/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)         */
+/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)        */
 /*                                                                        */
 /* Permission is hereby granted, free of charge, to any person obtaining  */
 /* a copy of this software and associated documentation files (the        */
@@ -55,6 +55,11 @@ function SWEP:SprintChanged(is_sprinting)
 	else
 		self:SetHoldType(self.__cpyHoldType);
 	end
+
+    if CLIENT then
+        local message =  is_sprinting and "Sprint start" or "Sprint stop"
+        gui.AddCaption(string.format("<I><clr:20,160,170>[%s]</clr></I>", message), 4.0, true)
+    end
 
 	if not self.UseSprintSequence then return; end
 	local vm = self:GetOwner():GetViewModel();

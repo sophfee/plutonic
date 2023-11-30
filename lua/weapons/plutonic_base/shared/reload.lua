@@ -5,8 +5,8 @@
 /*                              (c) 2022-2023                             */
 /*                  Written by Sophie (github.com/sophfee)                */
 /**************************************************************************/
-/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  */
-/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  */
+/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)         */
+/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)        */
 /*                                                                        */
 /* Permission is hereby granted, free of charge, to any person obtaining  */
 /* a copy of this software and associated documentation files (the        */
@@ -66,6 +66,7 @@ function SWEP:Reload()
 
 	self:SetReloading(true)
 	self:SetReloadTime(CurTime() + self:GetOwner():GetViewModel():SequenceDuration())
+    if CLIENT then gui.AddCaption("<I><clr:100,160,170>[Reloading]</clr></I>", 3.0, true) end
 	hook.Run("LongswordWeaponReload", self:GetOwner(), self)
 end
 
@@ -84,6 +85,7 @@ function SWEP:FinishReload()
 		end
 	end
 
+    if CLIENT then gui.AddCaption("<I><clr:100,160,170>[Finished reload]</clr></I>", 3.0, true) end
 	self:SetClip1(self:Clip1() + amount)
 	self:GetOwner():RemoveAmmo(amount, self:GetPrimaryAmmoType())
 end

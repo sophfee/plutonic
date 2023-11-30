@@ -5,8 +5,8 @@
 /*                              (c) 2022-2023                             */
 /*                  Written by Sophie (github.com/sophfee)                */
 /**************************************************************************/
-/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  */
-/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  */
+/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)         */
+/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)        */
 /*                                                                        */
 /* Permission is hereby granted, free of charge, to any person obtaining  */
 /* a copy of this software and associated documentation files (the        */

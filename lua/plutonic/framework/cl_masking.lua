@@ -5,8 +5,8 @@
 /*                              (c) 2022-2023                             */
 /*                  Written by Sophie (github.com/sophfee)                */
 /**************************************************************************/
-/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  */
-/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  */
+/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)         */
+/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)        */
 /*                                                                        */
 /* Permission is hereby granted, free of charge, to any person obtaining  */
 /* a copy of this software and associated documentation files (the        */
@@ -56,6 +56,29 @@ Plutonic.Framework.Mask = function(...)
 	render.SetStencilReferenceValue(0x1F)
 	render.SetStencilCompareFunction(STENCIL_EQUAL)
 end
+
+Plutonic.Framework.InverseMask = function(...)
+	render.SetStencilReferenceValue(0)
+	render.SetStencilPassOperation(STENCIL_KEEP)
+	render.SetStencilZFailOperation(STENCIL_KEEP)
+	render.ClearStencil()
+	render.SetStencilEnable(true)
+	render.SetStencilWriteMask(0xF0)
+	render.ClearStencilBufferRectangle(0, 0, ScrW(), ScrH(), 0x0F)
+	render.SetStencilCompareFunction(STENCIL_NEVER)
+	render.SetStencilTestMask(0x00)
+	render.SetStencilFailOperation(STENCIL_INCR)
+	-- Draw the model to the stencil buffer
+	local masks = {...}
+	for _, ent in ipairs(masks) do
+		ent:DrawModel()
+	end
+
+	render.SetStencilTestMask(0xFF)
+	render.SetStencilReferenceValue(0x1F)
+	render.SetStencilCompareFunction(STENCIL_NOTEQUAL)
+end
+
 
 function Plutonic:Mask(...)
 	Plutonic.Framework.Mask(...)

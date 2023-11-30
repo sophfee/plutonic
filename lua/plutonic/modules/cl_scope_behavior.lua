@@ -1,12 +1,11 @@
 --[[************************************************************************]]
---[[	cl_rt_scope.lua											              ]]
+--[[ plutonic/modules/cl_scope_behavior.lua                                 ]]
 --[[************************************************************************]]
 --[[                      This file is a part of PLUTONIC                   ]]
 --[[                              (c) 2022-2023                             ]]
 --[[                  Written by Sophie (github.com/sophfee)                ]]
 --[[************************************************************************]]
---[[ Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  ]]
---[[ Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  ]]
+--[[ Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)	        ]]
 --[[                                                                        ]]
 --[[ Permission is hereby granted, free of charge, to any person obtaining  ]]
 --[[ a copy of this software and associated documentation files (the        ]]
@@ -167,7 +166,23 @@ function Plutonic:DrawScopeShadow(x, y)
 end
 
 function Plutonic:RenderScope(Weapon, ViewModel, AttachmentData, Attachment)
-    if not Weapon:GetIronsights() then return; end
+    Plutonic.Framework.InverseMask(Attachment)
+
+    
+    DrawMaterialOverlay("pp/arc9/adsblur", -.02)
+
+    Plutonic.Framework.UnMask()
+
+    if not Weapon:GetIronsights() then
+        if not Attachment.plutonic_scope then
+            Attachment:SetSubMaterial(0, "");
+            --Attachment:submat;
+
+
+            Attachment.plutonic_scope = false;
+        end 
+        return; 
+    end
     if not Attachment.plutonic_scope then
         Attachment:SetSubMaterial(0, "");
         Attachment:SetSubMaterial(1, "!plutonic_scope");
@@ -175,7 +190,9 @@ function Plutonic:RenderScope(Weapon, ViewModel, AttachmentData, Attachment)
     end
 
     --DrawBokehDOF(24 * Weapon.VMIronsights, 0.0025, 0.5)
-    DrawToyTown(4, ScrH()/2)
+    --DrawToyTown(4, ScrH()/2))
+
+    
 
     local AVDir = Attachment:GetAngles();
     AVDir:RotateAroundAxis(AVDir:Right(), 180);
@@ -207,13 +224,10 @@ function Plutonic:RenderScope(Weapon, ViewModel, AttachmentData, Attachment)
     );
 
     render.SetBlend(1);
-    --cam.End3D();
     render.SetMaterial(tex_shadow);
-    --render.DrawScreenQuad()
-    DrawMaterialOverlay("models/weapons/arc9_eft_shared/atts/optic/transparent_glass", 1.0);
+    DrawMaterialOverlay("models/weapons/arc9_eft_shared/atts/optic/transparent_glass", 3.0);
+    DrawMaterialOverlay("effects/arc9/rtglass", 3.0);
     Plutonic:DrawScopeShadow(Weapon.c_oxq or 0, 0);
-
-    
     Plutonic.Framework.Overdraw = false;
     render.PopRenderTarget();
     -- cam.End2D();
@@ -271,3 +285,10 @@ Plutonic:DefineBehavior(
         end
     }
 );
+
+hook.Add("RenderScreenspaceEffects", "plutonic", function()
+    
+    --DrawMaterialOverlay("pp/arc9/adsblur", -.02)
+end)
+
+hook.Remove("PreDrawEffects", "plutonic")

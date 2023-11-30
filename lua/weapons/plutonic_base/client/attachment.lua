@@ -1,12 +1,12 @@
 /**************************************************************************/
-/*	client/attachment.lua											      */
+/*  client/attachment.lua                                                 */
 /**************************************************************************/
 /*                      This file is a part of PLUTONIC                   */
 /*                              (c) 2022-2023                             */
 /*                  Written by Sophie (github.com/sophfee)                */
 /**************************************************************************/
-/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  */
-/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  */
+/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)         */
+/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)        */
 /*                                                                        */
 /* Permission is hereby granted, free of charge, to any person obtaining  */
 /* a copy of this software and associated documentation files (the        */
@@ -30,6 +30,7 @@
 
 function SWEP:Attach(att)
 	-- backend
+    gui.AddCaption("<I><clr:200, 20, 0>Weapon modified...</clr></I>", 2.0, false);
 	self.EquippedAttachments[att] = true
 	self:AttachmentEquipped(att)
 	if self.Attachments[att].ModSetup then
