@@ -1,34 +1,32 @@
-/**************************************************************************/
-/*	viewmodel.lua											              */
-/**************************************************************************/
-/*                      This file is a part of PLUTONIC                   */
-/*                              (c) 2022-2023                             */
-/*                  Written by Sophie (github.com/sophfee)                */
-/**************************************************************************/
-/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  */
-/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  */
-/*                                                                        */
-/* Permission is hereby granted, free of charge, to any person obtaining  */
-/* a copy of this software and associated documentation files (the        */
-/* "Software"), to deal in the Software without restriction, including    */
-/* without limitation the rights to use, copy, modify, merge, publish,    */
-/* distribute, sublicense, and/or sell copies of the Software, and to     */
-/* permit persons to whom the Software is furnished to do so, subject to  */
-/* the following conditions:                                              */
-/*                                                                        */
-/* The above copyright notice and this permission notice shall be         */
-/* included in all copies or substantial portions of the Software.        */
-/*                                                                        */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
-/**************************************************************************/
-
-
+--[[************************************************************************]]
+--[[	viewmodel.lua											              ]]
+--[[************************************************************************]]
+--[[                      This file is a part of PLUTONIC                   ]]
+--[[                              (c) 2022-2023                             ]]
+--[[                  Written by Sophie (github.com/sophfee)                ]]
+--[[************************************************************************]]
+--[[ Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)		  ]]
+--[[ Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)		  ]]
+--[[                                                                        ]]
+--[[ Permission is hereby granted, free of charge, to any person obtaining  ]]
+--[[ a copy of this software and associated documentation files (the        ]]
+--[[ "Software"), to deal in the Software without restriction, including    ]]
+--[[ without limitation the rights to use, copy, modify, merge, publish,    ]]
+--[[ distribute, sublicense, and/or sell copies of the Software, and to     ]]
+--[[ permit persons to whom the Software is furnished to do so, subject to  ]]
+--[[ the following conditions:                                              ]]
+--[[                                                                        ]]
+--[[ The above copyright notice and this permission notice shall be         ]]
+--[[ included in all copies or substantial portions of the Software.        ]]
+--[[                                                                        ]]
+--[[ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        ]]
+--[[ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     ]]
+--[[ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. ]]
+--[[ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   ]]
+--[[ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   ]]
+--[[ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      ]]
+--[[ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 ]]
+--[[************************************************************************]]
 SWEP.CustomEvents = SWEP.CustomEvents or {};
 SWEP.ViewModelPos = Vector(0, 0, 0);
 SWEP.ViewModelAngle = Angle(0, 0, 0);
@@ -79,11 +77,7 @@ function SWEP:PreDrawViewModel(vm)
 		self.CustomMatSetup = true;
 	end
 
-	if Plutonic.Framework.Overdraw then
-		
-		return;
-	end
-
+	if Plutonic.Framework.Overdraw then return; end
 	local drawnNames = {};
 	self.EquippedAttachments = self.EquippedAttachments or {};
 	self.AttachmentEntCache = self.AttachmentEntCache or {};
@@ -124,14 +118,9 @@ function SWEP:PreDrawViewModel(vm)
 		att:SetAngles(ang);
 		if attData.RenderOverride then
 			attData.RenderOverride(self, vm, att);
-		else
-			--att:DrawModel();
 		end
-
 		drawnNames[attName] = true;
-		if (Plutonic.Behaviors[attData.Behavior] and Plutonic.Behaviors[attData.Behavior].onFrame) then
-			--Plutonic.Behaviors[attData.Behavior].onFrame(self, vm, attData, att);
-		end
+		if Plutonic.Behaviors[attData.Behavior] and Plutonic.Behaviors[attData.Behavior].onFrame then Plutonic.Behaviors[attData.Behavior].onFrame(self, vm, attData, att); end
 	end
 
 	for name, csEnt in pairs(self.AttachmentEntCache) do
@@ -142,43 +131,43 @@ function SWEP:PreDrawViewModel(vm)
 end
 
 function SWEP:InitRT()
-	self.ScopeTex = Material("ph_scope/ph_scope_lens3")
-	self.ScopeRenderTarget = GetRenderTarget( "plutonic_scope_rt", 512, 512, true )
-	self.ScopeRenderMaterial = CreateMaterial("plutonic_scope_hd", "UnlitGeneric", {
-		["$model"] = 1,
-		["$basetexture"] = self.ScopeRenderTarget:GetName(),
-		["$phong"] = 1,
-		["$phongexponent"] = 128,
-		["$rimlight"] = 1,
-		["$rimlightexponent"] = 32,
-		["$rimlightboost"] = 128
-	})
+	self.ScopeTex = Material("ph_scope/ph_scope_lens3");
+	self.ScopeRenderTarget = GetRenderTarget("plutonic_scope_rt", 512, 512, true);
+	self.ScopeRenderMaterial = CreateMaterial(
+		"plutonic_scope_hd",
+		"UnlitGeneric",
+		{
+			["$model"] = 1,
+			["$basetexture"] = self.ScopeRenderTarget:GetName(),
+			["$phong"] = 1,
+			["$phongexponent"] = 128,
+			["$rimlight"] = 1,
+			["$rimlightexponent"] = 32,
+			["$rimlightboost"] = 128
+		}
+	);
 
-	local material = Material("!plutonic_scope_hd")
-	material:SetTexture("$basetexture", self.ScopeRenderTarget)
-	material:SetInt("$phong", 1)
-	material:SetFloat("$phongexponent", 128)
-	material:SetFloat( "$pp_colour_addr", 0 )
-	material:SetFloat( "$pp_colour_addg", 0 )
-	material:SetFloat( "$pp_colour_addb", 0 )
-	material:SetFloat( "$pp_colour_mulr", 0 )
-	material:SetFloat( "$pp_colour_mulg", 0 )
-	material:SetFloat( "$pp_colour_mulb", 0 )
-	material:SetFloat( "$pp_colour_brightness", 0 )
-	material:SetInt( "$rimlight", 1 )
-	material:SetFloat( "$rimlightexponent", 20 )
-	material:SetFloat( "$rimlightboost", 100 )
-	material:SetFloat( "$selfillum", 0 )
-	material:Recompute()
+	local material = Material("!plutonic_scope_hd");
+	material:SetTexture("$basetexture", self.ScopeRenderTarget);
+	material:SetInt("$phong", 1);
+	material:SetFloat("$phongexponent", 128);
+	material:SetFloat("$pp_colour_addr", 0);
+	material:SetFloat("$pp_colour_addg", 0);
+	material:SetFloat("$pp_colour_addb", 0);
+	material:SetFloat("$pp_colour_mulr", 0);
+	material:SetFloat("$pp_colour_mulg", 0);
+	material:SetFloat("$pp_colour_mulb", 0);
+	material:SetFloat("$pp_colour_brightness", 0);
+	material:SetInt("$rimlight", 1);
+	material:SetFloat("$rimlightexponent", 20);
+	material:SetFloat("$rimlightboost", 100);
+	material:SetFloat("$selfillum", 0);
+	material:Recompute();
 end
 
 function SWEP:ViewModelDrawn(flags)
-	self.Owner:GetHands():Draw()
-	
-	if Plutonic.Framework.Overdraw then
-		
-		return;
-	end
+	self.Owner:GetHands():Draw();
+	if Plutonic.Framework.Overdraw then return; end
 	local vm = self:GetOwner():GetViewModel();
 	if not IsValid(vm) then return; end
 	if self.ExtraViewModelRender then
@@ -230,12 +219,9 @@ function SWEP:ViewModelDrawn(flags)
 		end
 
 		drawnNames[attName] = true;
-		if (Plutonic.Behaviors[attData.Behavior] and Plutonic.Behaviors[attData.Behavior].onFrame) then
+		if Plutonic.Behaviors[attData.Behavior] and Plutonic.Behaviors[attData.Behavior].onFrame then
 			Plutonic.Behaviors[attData.Behavior].onFrame(self, vm, attData, att);
 		end
-		
-
-		
 	end
 
 	for name, csEnt in pairs(self.AttachmentEntCache) do
@@ -327,7 +313,6 @@ function SWEP:PostRender()
 		self.c_lang = lerpAngle(Frametime() * 9, self.c_lang or ANGLE_ZERO, loweredAng);
 	end
 
-	
 	self.VMRecoilPos = lerpVector(ft * 9.8, self.VMRecoilPos, VECTOR_ZERO);
 	self.VMRecoilAng = lerpAngle(ft * 9.8, self.VMRecoilAng, ANGLE_ZERO);
 end
@@ -424,14 +409,12 @@ end
 function SWEP:DoIdle(pos, ang)
 	self.VMIdle = self.VMIdle or 0;
 	local rt = Realtime();
-	
 	local breath0 = sin(rt * .495) * cos(rt * 1.6) * 1.0;
 	local breath1 = cos(rt * 1.625) * 9.6;
 	local breath2 = sin(rt * .95) * cos(rt * .6) * -3.4;
+	local corp = self.CenterOfRotationPos or VECTOR_ZERO;
 
-	local corp = self.CenterOfRotationPos or VECTOR_ZERO
-
-	return Plutonic.Framework.RotateAroundPoint(pos, ang, corp, Vector(0, 0, 0), Angle(breath0, breaht1, breath2) * (.75 - self.VMIronsights));
+	return Plutonic.Framework.RotateAroundPoint(pos, ang, corp, Vector(0, 0, 0), Angle(breath0, breaht1, breath2) * (.95 - self.VMIronsights));
 end
 
 SWEP.LoweredMidPos = Vector(4, -3, 0.4);
@@ -459,13 +442,11 @@ lerpSpeed = 0;
 local WalkingTime = 0;
 local stepLunge = 0;
 local stepLungeNext = 0;
-
 function SWEP:DoWalkBob(pos, ang)
 	if self.DoCustomWalkBob then return self:DoCustomWalkBob(pos, ang); end
 	local rt = Realtime();
-	local corp = self.CenterOfRotationPos or VECTOR_ZERO
-	local cora = self.CenterOfRotationAng or ANGLE_ZERO
-
+	local corp = self.CenterOfRotationPos or VECTOR_ZERO;
+	local cora = self.CenterOfRotationAng or ANGLE_ZERO;
 	if self:GetOwner():GetVelocity():Length2DSqr() > 60 ^ 2 then
 		WalkingTime = WalkingTime + FrameTime() * 2;
 	end
@@ -485,38 +466,22 @@ function SWEP:DoWalkBob(pos, ang)
 		if not self.LoweredPos then
 			modif = 0.7;
 		end
-		local rate = 11.2
 
+		local rate = 11.2;
 		local sn0 = sin(Realtime() * rate) * mv;
 		local cs0 = cos(Realtime() * rate) * mv;
 		local m = cs0 > 0 and 1 or -1;
 		local sweep = math.ease.InQuint(abs(cs0)) * m;
-		
-		local d = sin(Realtime() * rate * 2) * mv;		
+		local d = sin(Realtime() * rate * 2) * mv;
 		local l = cos(Realtime() * rate * 2) * mv;
 		m = d > 0 and 1 or -1;
 		local sweeph = math.ease.InQuint(abs(d)) * 1 * m;
-		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(
-			pos,
-			ang,
-			corp,
-			Vector(
-				((abs(sweeph) * -.3) + max(0, cs0) + l * .3535 + (sweep * .150)) / 4,
-				(cs0 * -.55) + (sweep * .152),
-				-(1 - d) * .42068
-			), 
-			Angle(
-				(d * 1.1 + l) / 1.5,
-				(cs0 * .4 - sweep * .28 + (sn0 * 1.29)) * 2,
-				(d * .4 + l) * 0.20 - ((sweeph ^ 3) * .3)
-			)
-		);
+		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(pos, ang, corp, Vector(((abs(sweeph) * -.3) + max(0, cs0) + l * .3535 + (sweep * .150)) / 4, (cs0 * -.55) + (sweep * .152), -(1 - d) * .42068), Angle((d * 1.1 + l) / 1.5, (cs0 * .4 - sweep * .28 + (sn0 * 1.29)) * 2, (d * .4 + l) * 0.20 - ((sweeph ^ 3) * .3)));
 	end
 
 	local pos1, ang1 = pos + Vector(), ang + Angle();
 	do
-		local rate = 11.2 / 1.25
-
+		local rate = 11.2 / 1.25;
 		local sn0 = sin(rt * rate);
 		local cs0 = cos(rt * rate);
 		local m = cs0 > 0 and 1 or -1;
@@ -525,21 +490,7 @@ function SWEP:DoWalkBob(pos, ang)
 		local l = cos(rt * rate * 2);
 		m = sn0 > 0 and 1 or -1;
 		local sweeph = easeInCirc(abs(sn0)) * 1 * m;
-		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(
-			pos,
-			ang,
-			corp,
-			Vector(
-				d * .1, 
-				(sn0 * -.2) - (sweep * .1), 
-				-(abs(cs0) * .175) - 0.2
-			) * mv, 
-			Angle(
-				d * -1.25 + (abs(sn0) * 1.8) + (abs(sweeph) * .5),
-				sn0 * 1.75 + (sweep * .125),
-				l * 1.25
-			) * mv
-		);
+		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(pos, ang, corp, Vector(d * .1, (sn0 * -.2) - (sweep * .1), -(abs(cs0) * .175) - 0.2) * mv, Angle(d * -1.25 + (abs(sn0) * 1.8) + (abs(sweeph) * .5), sn0 * 1.75 + (sweep * .125), l * 1.25) * mv);
 	end
 
 	local interp = Plutonic.Ease.InOutQuart(self.VMSprint);
@@ -598,14 +549,13 @@ function SWEP:GetViewModelPosition(pos, ang)
 	if self.PreGetViewModelPosition then
 		pos, ang = self:PreGetViewModelPosition(pos, ang);
 	end
+
 	self.swag_angle = self.swag_angle or 0;
-	self.swag_angle = Lerp(Frametime() * 5, self.swag_angle, self:GetIronsights() and 0 or math.rad(LocalPlayer():GetBodyYawDifference() * math.pi * -2))	
-	ang:RotateAroundAxis(ang:Up(), self.swag_angle * math.pi * self.ViewModelFOV / 100)
-	pos = pos + ang:Right() * (math.rad(self.swag_angle) * (math.pi * (self.ViewModelFOV / 100)))
-	
+	self.swag_angle = Lerp(Frametime() * 5, self.swag_angle, self:GetIronsights() and 0 or math.rad(LocalPlayer():GetBodyYawDifference() * math.pi * -2));
+	ang:RotateAroundAxis(ang:Up(), self.swag_angle * math.pi * self.ViewModelFOV / 100);
+	pos = pos + ang:Right() * (math.rad(self.swag_angle) * (math.pi * (self.ViewModelFOV / 100)));
 	local ply = self:GetOwner();
 	--pos, ang = pos, ang + ply.offset_ang
-
 	self.centeredMode = self.centeredMode or GetConVar("plutonic_centered");
 	if self.centeredMode and self.centeredMode:GetBool() then
 		self.VMCenter = self.VMCenter or 0;
@@ -641,7 +591,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	--self.xva = xva
 	pos, ang = self:DoIronsights(pos, ang);
 	pos, ang = self:DoSprint(pos, ang);
-	local swayXv = (xva * .5);
+	local swayXv = xva * .5;
 	local swayXa = -xva * 1;
 	if isIronsights then
 		rd = rd / 2;
@@ -673,8 +623,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local offsetPos = Vector(0, (degRoll * -.065) - (oxc * .35 - oxq * .415) * .2 + degRoll * .0, max(degRoll, 0) * .025); --[[FORWARD]] --[[RIGHT]] --oxq * -.05, --[[UP]] --oyq * -.05
 	local offsetAng = Angle(oyq * 1.75, (oxq * 1.0) - (oxc * 2.65), (oxq * 2.15) + (oxc * .75) - (degRoll / 3));
 	local yofof = lerp(self.VMIronsights, -3, 3);
-	local corp = self.CenterOfRotationPos or VECTOR_ZERO
-	local cora = self.CenterOfRotationAng or ANGLE_ZERO
+	local corp = self.CenterOfRotationPos or VECTOR_ZERO;
+	local cora = self.CenterOfRotationAng or ANGLE_ZERO;
 	local vm = self:GetOwner():GetViewModel();
 	--local bpn_weapon = vm:LookupBone("b_wpn");
 	--local point = WorldToLocal(EyePos(), EyeAngles(), vm:GetBonePosition(bpn_weapon), EyeAngles());
@@ -682,7 +632,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.PointOrigin = xsn;
 	pos, ang = self:DoCrouch(pos, ang);
 	pos, ang = self:DoBlocked(pos, ang);
-
 	local diffp, diffa = pos + Vector(), ang + Angle();
 	pos, ang = self:DoIdle(pos, ang);
 	diffp, diffa = diffp - pos, diffa - ang;
@@ -719,10 +668,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	self.PointOrigin = xsn;
 	pos, ang = self:DoWalkBob(pos, ang);
-
 	local lookDown = -1.725 * ang:Forward() + -.185 * ang:Up();
 	local lookUp = 4 * ang:Forward() + .65 * ang:Up();
-
 	pos = pos + lerpVector(EyeAngles().p / 180, lookDown, lookUp) * (1 - self.VMIronsights);
 
 	return pos, ang;

@@ -35,9 +35,9 @@ local GetConVar = GetConVar
 local LocalPlayer = LocalPlayer
 function SWEP:DrawHUD()
 
-    if not Plutonic.DebugConvar:GetBool() then
-        return
-    end
+	if not Plutonic.DebugConvar:GetBool() then
+		return
+	end
 
 	local line = 4
 
@@ -143,38 +143,41 @@ concommand.Add(
 	end
 )
 
-concommand.Add(
-	"plutonic_debug_vm_attachments",
-	function(ply, cmd, args)
-		PrintTable(ply:GetViewModel():GetAttachments())
+concommand.Add("plutonic_debug_vm_attachments", function(ply, cmd, args)
+	for k, v in pairs(ply:GetViewModel():GetAttachments()) do
+		print(k, v.name, v.id)
+		local att = ply:GetViewModel():GetAttachment(v.id)
+		local pos, ang = att.Pos, att.Ang
+		pos, ang = WorldToLocal(pos, ang, ply:EyePos(), ply:EyeAngles())
+		print(pos, ang)
 	end
-)
+end)
 
 concommand.Add("plutonic_debug_vm_sequences", function(ply, cmd, args)
-    print("\n--- SEQUENCE RAW DUMP ---")
-    PrintTable(ply:GetViewModel():GetSequenceList())
+	print("\n--- SEQUENCE RAW DUMP ---")
+	PrintTable(ply:GetViewModel():GetSequenceList())
 
-    print("\n--- ACTIVITY NUM TO SEQUENCE DUMP ---")
-    local vm = ply:GetViewModel()
-    for i = 0, vm:GetSequenceCount() - 1 do
-        local seq = vm:GetSequenceName(i)
-        local act = vm:GetSequenceActivity(i)
-        print(act, seq)
-    end
+	print("\n--- ACTIVITY NUM TO SEQUENCE DUMP ---")
+	local vm = ply:GetViewModel()
+	for i = 0, vm:GetSequenceCount() - 1 do
+		local seq = vm:GetSequenceName(i)
+		local act = vm:GetSequenceActivity(i)
+		print(act, seq)
+	end
 
-    print("\n--- SEQUENCE LENGTHS ---")
-    local data = {};
-    local longest_name = 0;
-    for i = 0, vm:GetSequenceCount() - 1 do
-        local seq = vm:GetSequenceName(i)
-        if #seq > longest_name then longest_name = #seq; end
-        local len = vm:SequenceDuration(i);
-        local set = {i, seq, len};
-        table.insert(data, set);
-    end
+	print("\n--- SEQUENCE LENGTHS ---")
+	local data = {};
+	local longest_name = 0;
+	for i = 0, vm:GetSequenceCount() - 1 do
+		local seq = vm:GetSequenceName(i)
+		if #seq > longest_name then longest_name = #seq; end
+		local len = vm:SequenceDuration(i);
+		local set = {i, seq, len};
+		table.insert(data, set);
+	end
 
-    for index, d in ipairs(data) do
-        local fml = string.format("%.4f", d[3]);
-        MsgC(d[2], string.rep(" ", longest_name - #d[2] + 1), fml, "\n")    
-    end
+	for index, d in ipairs(data) do
+		local fml = string.format("%.4f", d[3]);
+		MsgC(d[2], string.rep(" ", longest_name - #d[2] + 1), fml, "\n")    
+	end
 end)

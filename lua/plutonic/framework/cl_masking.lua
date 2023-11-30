@@ -57,6 +57,20 @@ Plutonic.Framework.Mask = function(...)
 	render.SetStencilCompareFunction(STENCIL_EQUAL)
 end
 
+function Plutonic:Mask(...)
+	Plutonic.Framework.Mask(...)
+end
+
+function Plutonic:RenderMask(ent, renderFunc)
+	local success, err;
+	success, err = pcall(self.Framework.Mask, ent);
+	if not success then MsgC(Color(255, 0, 0), "Plutonic:RenderMask failed: " .. err .. "\n") return end
+	success, err = pcall(renderFunc);
+	if not success then MsgC(Color(255, 0, 0), "Plutonic:RenderMask<Anonymous> failed: " .. err .. "\n") return end
+	success, err = pcall(self.Framework.UnMask)
+	if not success then MsgC(Color(255, 0, 0), "Plutonic:UnMask failed: " .. err .. "\n") return end
+end
+
 --- Ends a mask
 -- @realm client
 Plutonic.Framework.UnMask = function()
@@ -69,4 +83,8 @@ Plutonic.Framework.UnMask = function()
 	render.SetStencilZFailOperation(STENCIL_KEEP)
 	render.ClearStencil()
 	render.SetStencilEnable(false)
+end
+
+function Plutonic:UnMask()
+	Plutonic.Framework.UnMask()
 end
