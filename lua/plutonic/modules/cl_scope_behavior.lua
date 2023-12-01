@@ -156,7 +156,7 @@ function Plutonic:DrawScopeShadow(x, y)
     local vel = LocalPlayer():GetVelocity():Length2D();
     if vel > 20 then
         blur_amt = math.Approach(blur_amt, vel / 20, FrameTime() * 5.2);
-        render.BlurRenderTarget(scope_rt, math.Round(blur_amt, 4), math.Round(blur_amt, 4), 4);
+        --render.BlurRenderTarget(scope_rt, math.Round(blur_amt, 4), math.Round(blur_amt, 4), 4);
     end
 
     --render.DrawTextureToScreenRect(tex_black, x - 256 - 512, y - 256, 2048 + 512, 256)
@@ -166,12 +166,6 @@ function Plutonic:DrawScopeShadow(x, y)
 end
 
 function Plutonic:RenderScope(Weapon, ViewModel, AttachmentData, Attachment)
-    Plutonic.Framework.InverseMask(Attachment)
-
-    
-    DrawMaterialOverlay("pp/arc9/adsblur", -.02)
-
-    Plutonic.Framework.UnMask()
 
     if not Weapon:GetIronsights() then
         if not Attachment.plutonic_scope then
@@ -231,6 +225,9 @@ function Plutonic:RenderScope(Weapon, ViewModel, AttachmentData, Attachment)
     Plutonic.Framework.Overdraw = false;
     render.PopRenderTarget();
     -- cam.End2D();
+
+    cam.Start3D(nil, nil, 100)
+    cam.End3D()
 end
 
 Plutonic:DefineBehavior(
@@ -257,7 +254,6 @@ local function Plutonic_RenderHolographicReticule_renderCallback()
     local ViewModel = RViewModel;
     local AttData_t = RAttData_t;
     local EAttachment = REAttachment;
-    local Attachment = ViewModel:GetAttachment(EAttachment);
     local ang = EAttachment:GetAngles();
     local up, forward, right = ang:Up(), ang:Forward(), ang:Right();
     --ang:RotateAroundAxis(right, -180)
@@ -266,15 +262,29 @@ local function Plutonic_RenderHolographicReticule_renderCallback()
     local reticuleMaterial = reticule.Material;
     local reticuleColor = reticule.Color;
     local reticuleSize = reticule.Size;
-    local reticulePos = EAttachment:GetPos() + reticule.Pos;
+    local reticulePos = EAttachment:GetPos();
+    reticulePos = reticulePos + EAttachment:GetAngles():Right() * reticule.Pos.y;
+    reticulePos = reticulePos + EAttachment:GetAngles():Up() * reticule.Pos.z;
+    reticulePos = reticulePos + EAttachment:GetAngles():Forward() * reticule.Pos.x;
+
     --reticulePos = reticulePos + EAttachment:GetAngles():Forward() * 0.1;
+
+    debugoverlay.Axis(reticulePos, ang, 1, 1.0, true)
+
     render.SetMaterial(reticuleMaterial);
-    render.DrawSprite(reticulePos, reticuleSize, reticuleSize, reticuleColor, 18);
+
+    ang:RotateAroundAxis(ang:Up(), -90);
+    forward = ang:Forward();
+
+    render.DrawQuadEasy(reticulePos, -forward, reticuleSize, reticuleSize, reticuleColor, 180);
+   -- render.DrawSprite(reticulePos, reticuleSize, reticuleSize, reticuleColor, 18);
 end
 
 function Plutonic:RenderHolographicReticule(Weapon, ViewModel, AttData_t, EAttachment)
     RWeapon, RViewModel, RAttData_t, REAttachment = Weapon, ViewModel, AttData_t, EAttachment;
-    Plutonic_RenderHolographicReticule_renderCallback(); -- Plutonic:RenderMask(EAttachment, Plutonic_RenderHolographicReticule_renderCallback);
+    Plutonic:Mask(EAttachment);
+    Plutonic_RenderHolographicReticule_renderCallback(); -- Plutonic:RenderMask(EAttachment, Plutonic_RenderHolographicReticule_renderCallback
+    Plutonic:UnMask();
 end
 
 Plutonic:DefineBehavior(
