@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*	shared/base.lua											      		  */
+/*  shared/base.lua                                                       */
 /**************************************************************************/
 /*                      This file is a part of PLUTONIC                   */
 /*                              (c) 2022-2023                             */
@@ -210,7 +210,7 @@ function SWEP:Initialize()
 			end
 			if (v.Behavior == "rt_scope") then
 				bInitRT = true
-			end 
+			end
 		end
 	end
 
