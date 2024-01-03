@@ -15,7 +15,7 @@ net.Receive(
 		local dsp = 0
 		if not IsValid(entity) then return end -- Edge case where entity is invalid
 		if owner == LocalPlayer() then
-			local shouldPlay = Singularity and Singularity.GetSetting("view_thirdperson", false)
+			local shouldPlay = hook.Run("ShouldDrawLocalPlayer", LocalPlayer());
 			if shouldPlay then
 				entity:EmitSound(snd, nil, nil, nil, nil, nil, dsp)
 			end
