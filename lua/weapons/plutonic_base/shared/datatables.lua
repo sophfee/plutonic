@@ -28,7 +28,6 @@
 --[[ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 ]]
 --[[************************************************************************]]
 if vtx then
-	
 	function SWEP:GetIronsights(fallback)
 		return self:GetStreamVar("plutonic_ironsights", fallback);
 	end

@@ -33,13 +33,19 @@ local debugValue = Color(200, 200, 200, 255)
 local ironFade = ironFade or 0
 local GetConVar = GetConVar
 local LocalPlayer = LocalPlayer
+
+local mins = {}
+local maxs = {}
+local prev = {}
+local changes = {}
+
 function SWEP:DrawHUD()
 
 	if not Plutonic.DebugConvar:GetBool() then
 		return
 	end
 
-	local line = 4
+	--local line = 4
 
 	Plutonic:DebugText("Plutonic", "Debug", 8, true)
 	Plutonic:DebugText("Class Name", self.ClassName, 10)
@@ -51,6 +57,22 @@ function SWEP:DrawHUD()
 	Plutonic:DebugText("drawing", tostring(self.VMIronsights >= 0.250), 18)
 	Plutonic:DebugText("attachments", tostring(table.ToString(self.EquippedAttachments, nil, false)), 19)
 	
+	local line = 21
+	for dgn, dgv in pairs(Plutonic.StoredDebugData or {}) do
+		prev[dgn] = prev[dgn] or 0
+		changes[dgn] = changes[dgn] or 0
+		local change = math.abs(dgv - prev[dgn])
+		changes[dgn] = math.max(changes[dgn], change)
+		prev[dgn] = dgv
+
+		mins[dgn] = math.min(mins[dgn] or 0, dgv)
+		maxs[dgn] = math.max(maxs[dgn] or 0, dgv)
+
+		Plutonic:DebugText(dgn .. " Value", dgv, line)
+		Plutonic:DebugText("Greastest Change Change", changes[dgn], line + 1, false)
+		--Plutonic:DebugText(dgn .. " Maxs", maxs[dgn], line + 2, false)
+		line = line + 3
+	end
 
 	if self.Attachments then
 		local hasScope = false
@@ -69,7 +91,6 @@ function SWEP:DrawHUD()
 
 		return
 	end
-
 	local scrw = ScrW()
 	local scrh = ScrH()
 	local ft = FrameTime()

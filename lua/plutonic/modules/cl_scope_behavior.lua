@@ -196,6 +196,7 @@ function Plutonic:RenderScope(Weapon, ViewModel, AttachmentData, Attachment)
     ang:RotateAroundAxis(ang:Right(), 180);
     ang:RotateAroundAxis(ang:Up(), -90);
     --cam.Start2D();
+    cam.Start3D(nil, nil, 75 / (AttachmentData.Magnification or 8), 0, 0, 512, 512, 16, 4096);
     render.PushRenderTarget(scope_rt, 0, 0, 512, 512);
     render.Clear(0, 0, 0, 0, true, true);
     Plutonic.Framework.Overdraw = true;
@@ -204,13 +205,13 @@ function Plutonic:RenderScope(Weapon, ViewModel, AttachmentData, Attachment)
     --render.OverrideAlphaWriteEnable(true, false);
     render.RenderView(
         {
-            origin = pos + AVDir:Forward() * 8,
+            origin = pos,
             angles = AVDir,
-            fov = LocalPlayer():GetFOV() / (AttachmentData.Magnification or 8),
+            fov = 75/(AttachmentData.Magnification or 8),
             x = 0,
             y = 0,
-            w = 1920,
-            h = 1080,
+            w = 2560,
+            h = 1440,
             drawviewmodel = false,
             drawhud = false,
             aspectratio = 1
@@ -226,7 +227,6 @@ function Plutonic:RenderScope(Weapon, ViewModel, AttachmentData, Attachment)
     render.PopRenderTarget();
     -- cam.End2D();
 
-    cam.Start3D(nil, nil, 100)
     cam.End3D()
 end
 
