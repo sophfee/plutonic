@@ -304,6 +304,8 @@ function SWEP:ShootEffects()
 		self.CrosshairGapBoost = 16
 		self.VMRecoilPos = self.BlowbackPos
 		self.VMRecoilAng = self.BlowbackAngle
+		self.och = self.och or 0
+		self.och = self.och + math.Rand(-100.0, 100.0)
 		self:ProceduralRecoil(1)
 		if self.Primary.Shell then
 			local vm = self:GetOwner():GetViewModel()

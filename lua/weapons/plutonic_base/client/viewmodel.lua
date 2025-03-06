@@ -18,6 +18,7 @@ SWEP.c_lpos = Vector(0, 0, 0);
 SWEP.c_oxc = 0;
 SWEP.c_oxq = 0;
 SWEP.c_oyq = 0;
+SWEP.c_och = 0;
 local math = math;
 local render = render;
 local reticule = Material("models/weapons/insurgency_sandstorm/ins2_sandstorm/kobra_reticle");
@@ -37,6 +38,7 @@ local lerpVector = LerpVector;
 local approach = math.Approach;
 local easeOutQuad = Plutonic.Ease.OutQuad;
 local easeOutCirc = Plutonic.Ease.OutCirc;
+local easeInQuad = Plutonic.Ease.InQuad;
 local VECTOR_ZERO = vec(0, 0, 0);
 local ANGLE_ZERO = Angle(0, 0, 0);
 function SWEP:PreDrawViewModel(vm)
@@ -146,16 +148,28 @@ end
 function SWEP:PostRender()
 	self:DoWallLeanThink();
 	local dx = self.VMDeltaX or 0;
+	self.LastFrame_VMDeltaX = self.LastFrame_VMDeltaX  or dx;
 	local dy = self.VMDeltaY or 0;
+	self.LastFrame_VMDeltaY = self.LastFrame_VMDeltaY or dy;
 	local oxc_a = min(abs(dx) / 8, 1);
-	local oxc = easeOutQuad(oxc_a) * clamp(dx / -4, -.5, .5);
+	local oxc = easeOutQuad(oxc_a) * clamp(dx / -9, -1., 1.);
 	self.c_oxc = lerp(Frametime() * 8, self.c_oxc or 0, oxc);
 	local oxq_a = min(abs(dx) / 16, 1);
 	local oxq = easeOutCirc(1 - oxq_a) * clamp(dx / 16, -.5, .5); -- Plutonic.Ease.OutQuad(min(abs(self.VMDeltaX) / 8, 1)) * clamp(self.VMDeltaX, -8, 8)
 	self.c_oxq = lerp(Frametime() * 12, self.c_oxq or 0, oxq);
-	local oyq_a = min(abs(dy) / 1, 1);
-	local oyq = easeOutQuad(oyq_a) * clamp(dy, -1, 1);
+	local oyq_a = min(abs(dy) / 16, 1);
+	local oyq = easeInQuad(oyq_a) * clamp(dy, -1, 1);
 	self.c_oyq = lerp(Frametime() * 8, self.c_oyq or 0, oyq);
+
+	-- och = amount of change, smoothed back to 0
+	self.och = self.och or 0;
+	self.och = self.och + abs(self.LastFrame_VMDeltaX - dx) / 20;
+	local och_a = lerp(Frametime() * 5, self.och or 0, 0);
+	self.och = och_a;
+
+	local och = lerp(Frametime() * 11, self.c_och or 0, self.och);
+	self.c_och = och;
+
 	self.Ironsights = self:GetIronsights();
 	self._sprinting = self._sprinting or false;
 	local sprinting = self:IsSprinting();
@@ -326,6 +340,10 @@ function SWEP:DoSprint(pos, ang)
 	return pos, ang;
 end
 
+function sign(number)
+    return number > 0 and 1 or (number == 0 and 0 or -1)
+end
+
 lerpSpeed = 0;
 local WalkingTime = 0;
 function SWEP:DoWalkBob(pos, ang)
@@ -335,7 +353,7 @@ function SWEP:DoWalkBob(pos, ang)
 		WalkingTime = WalkingTime + FrameTime() * 2;
 	end
 
-	local mv = clamp(self:GetOwner():GetVelocity():Length2D() / 200, 0, 1);
+	local mv = clamp(self:GetOwner():GetVelocity():Length2D() / 250, 0, 1.0);
 	if self:GetIronsights() then
 		mv = mv * 0.25;
 	end
@@ -351,27 +369,54 @@ function SWEP:DoWalkBob(pos, ang)
 			modif = 0.7;
 		end
 
-		local sn0 = sin(rt * 12.6) * mv;
-		local cs0 = cos(rt * 12.6) * mv;
+		local sin126 = sin(rt * 12.6);
+		local cos126 = cos(rt * 12.6);
+
+		local sprintSwayBob = math.pow(cos126, 2);
+
+		local sn0 = sin126 * mv;
+		local cs0 = cos126 * mv;
 		local d = -sin(rt * 25.2);
-		local ب = sin(rt * 25.2) * cos(rt * 6.3) * -5.6;
-		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(-9, -2, -3), Vector(d * -.1, sn0 * -.6, -(abs(cs0) * .7145) - 0.2) * modif, Angle(d * -1 + (abs(sn0) * -.8), sn0 * -2.8, ب) * modif);
+		local baab = sin(rt * 25.2) * cos(rt * 6.3) * -5.6;
+		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(
+			pos,
+			ang,
+			Vector(10, 0, -4),
+			Vector(abs(sn0) * -.1, sn0 * 1.6, -(abs(sprintSwayBob) * .7145)) * modif,
+			Angle(d * 1 + (abs(sn0) * 2.8), sn0 * -3.8, baab) * modif
+		);
 	end
 
 	local pos1, ang1 = pos + Vector(), ang + Angle();
 	do
-		local sn1 = sin(rt * 8.4) * mv;
-		local sn2 = sin(rt * 4.2);
-		local sz3 = cos(rt * 8.4) * cos(rt * 12.6) * .079;
-		local cs2 = abs(cos(rt * 4.2));
-		local ب = sin(rt * 25.2) * cos(rt * 6.3) * (3 * mv);
-		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(-9, -2, -3), Vector(-0, sn1 * -.39 + (sn2 * -1.2 * mv), sz3 * mv - (mv * .5)), Angle((cs2 * 2.75 * mv) + (cs2 * -3.39 * mv), sn2 * -5.2 * mv, ب));
+		mv = min(mv, .5)
+		local sin84 = sin(rt * 8.4);
+		local sin42 = sin(rt * 4.2);
+		local sin21 = sin(rt * 2.1);
+		local cos126 = cos(rt * 12.6);
+		local cos84 = cos(rt * 8.4);
+		local cos42 = cos(rt * 4.2);
+		local cos21 = cos(rt * 2.1);
+		local sn1 = ((sin84*sin84)*sign(sin84)) * mv;
+		local sn2 = sin42 * mv;
+		local sz3 = cos84 - cos126 * .079;
+		local cs2 = (cos84*cos84)*sign(cos84);
+		local baab = cos(rt * 2.1)--sin(rt * 12.6) * cos(rt * 3.15) * (3 * mv);
+		local upDn = math.pow(sn1, 3) * abs(sin84);
+		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(
+			pos,
+			ang,
+			Vector(9, -2, -3),
+
+			Vector(-0, sn1 * .09 - (sn2 * .2 * mv), abs((sin84-cos84)*mv)*.8),
+			Angle((abs(upDn) * 7.2 * mv) + (cs2 * 1.39 * mv), (sn1-sz3) * -3.2 * mv, baab)
+		);
 	end
 
 	local interp = Plutonic.Ease.InOutQuart(self.VMSprint);
 	pos, ang = lerpVector(interp, pos1, pos0), lerpAngle(interp, ang1, ang0);
 	if not self:IsSprinting() then
-		ang:RotateAroundAxis(ang:Forward(), cos(rt * 16.8) * mv * .1);
+		--ang:RotateAroundAxis(ang:Forward(), cos(rt * 16.8) * mv * 1.1);
 	end
 
 	return pos, ang;
@@ -489,10 +534,20 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local oxc = (self.c_oxc or 0) * 8;
 	local oxq = (self.c_oxq or 0) * 8;
 	local oyq = self.c_oyq or 0;
-	local offsetPos = Vector(0, oxc * -.8 - oxq * 1 - degRoll * .0625, oyq * .25 - abs(degRoll) * .0925 + (abs(oxq) * -.1 + abs(oxc) * .07)); --[[FORWARD]] --[[RIGHT]] --oxq * -.05, --[[UP]] --oyq * -.05
-	local offsetAng = Angle(-oyq + degPitch, oxq - (oxc * 2.164), (oxq * -2.4) - degRoll + (oxc * 1.1));
+	local och = self.c_och or 0;
+	local ohfh = math.pow(self.c_och or 0, .40);
+	ohfh = ohfh * ohfh;
+	
+	local clampoch = self:GetIronsights() and 4 or 12;
+	local minoch = clamp(och, -clampoch, clampoch)
+	--oyq = oyq + (cos(Realtime() * 8.2) * minoch * .01552);
+	--oxq = oxq + (sin(Realtime() * 16.4) * minoch * .01552);
+	--degRoll = degRoll + (cos(Realtime() * 16.4) * minoch * .02);
+
+	local offsetPos = Vector(abs(oxc) * .031, oxc * .5 - oxq * -1.3 , oyq * 3.25 + (abs(oxq) * -0.01 + abs(oxc) * .07)); --[[FORWARD]] --[[RIGHT]] --oxq * -.05, --[[UP]] --oyq * -.05
+	local offsetAng = Angle(oyq * -2.0 - degPitch, (oxq * -.2) + (oxc * -.06), -degRoll + (oxc * .1));
 	local yofof = lerp(self.VMIronsights, -3, 0);
-	pos, ang = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(9, -2.5, yofof), offsetPos, offsetAng);
+	pos, ang = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(9, 4, 0), offsetPos, offsetAng);
 	self.PointOrigin = xsn;
 	pos, ang = self:DoCrouch(pos, ang);
 	pos, ang = self:DoBlocked(pos, ang);
