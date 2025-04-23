@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  shared/base.lua                                                       */
+/**************************************************************************/
+/*                      This file is a part of PLUTONIC                   */
+/*                              (c) 2022-2023                             */
+/*                  Written by Sophie (github.com/sophfee)                */
+/**************************************************************************/
+/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)         */
+/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)        */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 --      Copyright (c) 2022-2023, sophie S. All rights reserved      --
 -- Plutonic is a project built for Landis Games. --
 -- [ File Details ]
@@ -101,7 +131,7 @@ sound.Add(
 	}
 )
 
--- Singularity
+-- impulse
 function SWEP:OnLowered()
 	self:EmitSound("Plutonic.Raise", nil, nil, nil, nil, SND_NOFLAGS, 1)
 end
@@ -170,6 +200,22 @@ function SWEP:Initialize()
 		self.VMIdle = 0
 		self.VMRecoil = Vector()
 		self.VMRecoilAng = Angle()
+	end
+
+	local bInitRT = false
+	if self.Attachments then
+		for k, v in pairs(self.Attachments) do
+			if v.Cosmetic then
+				util.PrecacheModel(v.Cosmetic.Model)
+			end
+			if (v.Behavior == "rt_scope") then
+				bInitRT = true
+			end
+		end
+	end
+
+	if bInitRT and Plutonic.IsClient then
+		self:InitRT()
 	end
 
 	self:SetIronsights(false)
@@ -248,18 +294,6 @@ function SWEP:Deploy()
 end
 
 function SWEP:ShootBullet(damage, num_bullets, aimcone, override_src, override_dir)
-	if self.UseBallistics then
-		if Plutonic.IsClient then return end
-		local bulllet = ents.Create("plutonic_ballistic")
-		bulllet:SetPos(self:GetOwner():GetShootPos())
-		bulllet:SetAngles(self:GetOwner():GetAimVector():Angle())
-		bulllet:SetOwner(self:GetOwner())
-		bulllet:Spawn()
-		bulllet:Launch()
-
-		return
-	end
-
 	local bullet = {}
 	bullet.Num = num_bullets
 	bullet.Src = override_src or self:GetOwner():GetShootPos() -- Source
@@ -304,8 +338,6 @@ function SWEP:ShootEffects()
 		self.CrosshairGapBoost = 16
 		self.VMRecoilPos = self.BlowbackPos
 		self.VMRecoilAng = self.BlowbackAngle
-		self.och = self.och or 0
-		self.och = self.och + math.Rand(-100.0, 100.0)
 		self:ProceduralRecoil(1)
 		if self.Primary.Shell then
 			local vm = self:GetOwner():GetViewModel()
@@ -328,7 +360,11 @@ function SWEP:ShootEffects()
 			vm:SendViewModelMatchingSequence(vm:LookupSequence(self.PrimaryFireSequence))
 		else
 			if self:Clip1() <= 0 then
-				self:PlayAnim(ACT_VM_PRIMARYATTACK_EMPTY)
+				if not self.Primary.NoEmptyAnimation then
+					self:PlayAnim(ACT_VM_PRIMARYATTACK_EMPTY)
+				else
+					self:PlayAnim(ACT_VM_PRIMARYATTACK)
+				end
 			else
 				self:PlayAnim(ACT_VM_PRIMARYATTACK)
 			end
@@ -382,8 +418,16 @@ function SWEP:IsSprinting()
 	return (self:GetOwner():GetVelocity():Length2D() > self:GetOwner():GetRunSpeed() - 50) and self:GetOwner():IsOnGround()
 end
 
+function SWEP:ShouldDryFire()
+	if self.m_bDryFired then return false end;
+	self.m_bDryFired = true
+	return true;
+end
+
 function SWEP:PrimaryAttack()
-	if not self:CanShoot() then return end
+	if not self:CanShoot() then
+		return
+	end
 	local clip = self:Clip1()
 	if self.Primary.Burst and clip >= 3 then
 		self:SetBursting(true)
@@ -403,13 +447,13 @@ function SWEP:PrimaryAttack()
 		self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self:CalculateSpread())
 		self:AddRecoil()
 		self:ViewPunch()
-		if self.Primary.Sound_World then
+		if false then--self.Primary.Sound_World then
 			if Plutonic.IsClient then
 				local owner = self:GetOwner()
 				if owner == LocalPlayer() then
-					local shouldPlay = Singularity and Singularity.GetSetting("view_thirdperson", false)
+					local shouldPlay = impulse and impulse.GetSetting("view_thirdperson", false)
 					if shouldPlay == false then
-						self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_STATIC, SND_NOFLAGS, 0)
+						self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_STATIC, SND_NOFLAGS, nil)
 					end
 				end
 			end
@@ -427,6 +471,8 @@ function SWEP:PrimaryAttack()
 		if diff > engine.TickInterval() or diff < 0 then
 			curatt = curtime
 		end
+
+		self.LastPrimaryAttack = CurTime()
 
 		self:SetNextPrimaryFire(curatt + self.Primary.Delay)
 	else

@@ -4,7 +4,7 @@ SWEP.Base = "plutonic_base"
 
 
 SWEP.PrintName = ".357 Magnum"
-SWEP.Category = "Landis: Guns"
+SWEP.Category = "Plutonic";
 
 SWEP.Spawnable = true
 SWEP.AdminOnly = false
@@ -38,13 +38,13 @@ sound.Add({
 	sound = {"357/357_fire2.wav","357/357_fire2.wav"}
 })
 
-SWEP.Primary.Sound = Sound("Weapon_357.Fire")
-SWEP.Primary.Sound_World = Sound("Weapon_357.NPC_Fire")
+SWEP.Primary.Sound = Sound("Weapon_357.Fire") -- Please never use a sound path in here, the sound gets buggy. Please use sound.Add examples above.
+SWEP.Primary.Sound_World = Sound("Weapon_357.NPC_Fire") -- Firing sound that plays in the world.
 SWEP.Primary.Recoil = 7.4 -- base recoil value, SWEP.Spread mods can change this
 SWEP.Primary.Damage = 51
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Cone = 0.02
-SWEP.Primary.Delay = Plutonic.FireRate.RPM(122)
+SWEP.Primary.Delay = Plutonic.FireRate.RPM(122) -- Rounds Per Minute, (RPM) can also use Rounds Per Second (RPS)
 SWEP.Primary.RecoilUp = 4
 SWEP.Primary.RecoilDown = 3
 SWEP.Primary.RecoilSide = 0.56
@@ -83,22 +83,21 @@ SWEP.IronsightsFOV = .82
 SWEP.IronsightsSensitivity = 0.8
 SWEP.IronsightsCrosshair = false
 SWEP.IronsightsRecoilVisualMultiplier = 1
-SWEP.BlowbackPos = Vector(0, -16, -15)
+SWEP.BlowbackPos = Vector(0, -16, -15) -- Vector to move bone <or root> relative to bone <or view> orientation while firing. 
 SWEP.BlowbackAngle = Angle(32, -1.2, 0)
 
-SWEP.LoweredMidPos = Vector(1, -2.08, -6.641)
+SWEP.LoweredMidPos = Vector(1, -2.08, -6.641) -- Positon/Angle that the SWEP is moved into while running. This disables the ability to shoot 
 SWEP.LoweredMidAng = Angle(12.4, -5.301, -1.299)
- 
 SWEP.LoweredPos = Vector(1.559, -8.08, -7.641)
 SWEP.LoweredAng = Angle(33.4, -5.301, -4)
 
 SWEP.LowerPos = Vector(1, -7.08, -6.641)
 SWEP.LowerAngles = Angle(24.4, -5.301, 1.299)
 
-SWEP.CenteredPos = Vector(-2.65, 0.915, -2.55)
-SWEP.CenteredAng = Angle(0.5, -0.06, 6)
+SWEP.CenteredPos = Vector(-2.65, 0.915, -2.55) -- Centered Positon for when plutonic_centered is active 
+SWEP.CenteredAng = Angle(0.5, -0.06, 6) -- Centered Angle for when plutonic_centered is active
 
-SWEP.MuzzleEffect = "muzzleflash_pistol_deagle"
+SWEP.MuzzleEffect = "muzzleflash_pistol_deagle" -- Muzzleflash that is shown, see lua/autorun/plutonic_init.lua line 29 for more information
 SWEP.MuzzleFlashAttachment = nil
 SWEP.CannotChamber = true
 

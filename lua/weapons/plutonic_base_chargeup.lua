@@ -1,7 +1,40 @@
+--[[************************************************************************]]
+--[[	plutonic_base_chargeup.lua											  ]]
+--[[************************************************************************]]
+--[[                      This file is a part of PLUTONIC                   ]]
+--[[                              (c) 2022-2023                             ]]
+--[[                  Written by Sophie (github.com/sophfee)                ]]
+--[[************************************************************************]]
+--[[ Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)         ]]
+--[[ Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)        ]]
+--[[                                                                        ]]
+--[[ Permission is hereby granted, free of charge, to any person obtaining  ]]
+--[[ a copy of this software and associated documentation files (the        ]]
+--[[ "Software"), to deal in the Software without restriction, including    ]]
+--[[ without limitation the rights to use, copy, modify, merge, publish,    ]]
+--[[ distribute, sublicense, and/or sell copies of the Software, and to     ]]
+--[[ permit persons to whom the Software is furnished to do so, subject to  ]]
+--[[ the following conditions:                                              ]]
+--[[                                                                        ]]
+--[[ The above copyright notice and this permission notice shall be         ]]
+--[[ included in all copies or substantial portions of the Software.        ]]
+--[[                                                                        ]]
+--[[ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        ]]
+--[[ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     ]]
+--[[ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. ]]
+--[[ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   ]]
+--[[ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   ]]
+--[[ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      ]]
+--[[ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 ]]
+--[[************************************************************************]]
 AddCSLuaFile()
+
+-- For some weird reason, if you are holding your sprint key while firing. Then fire again after the charge as long as you are holding your sprint key it insta fires.
+-- I'll look into it soon - FizzySodaaa 
 
 SWEP.Base = "plutonic_base"
 SWEP.Charged = false
+SWEP.ChargeSound = Sound("")
 
 function SWEP:CanShoot()
 	return self:CanPrimaryAttack() and 
@@ -35,7 +68,7 @@ function SWEP:PrimaryAttack()
 			if CLIENT then 
 				local owner = self:GetOwner()
 				if owner == LocalPlayer() then
-					local shouldPlay = Singularity and Singularity.GetSetting("view_thirdperson", false)
+					local shouldPlay = impulse and impulse.GetSetting("view_thirdperson", false)
 
 					if shouldPlay == false then
 						self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_STATIC, SND_NOFLAGS, 0)
@@ -61,6 +94,12 @@ SWEP.Primary.ChargeTime = 1
 
 
 function SWEP:OnChargeStateChanged(state)
+	if state then
+		if CurTime() < self.lastplayed then return; end
+		self.lastplayed = CurTime() + 1;
+		self:EmitSound(self.ChargeSound);
+		--print("Sound played!")
+	end
 end
 
 hook.Add("StartCommand", "Plutonic_StartCommand", function(ply, cmd)
@@ -122,4 +161,4 @@ function SWEP:Think()
 	end
 end
 
-print("loaded!")
+--print("loaded!")

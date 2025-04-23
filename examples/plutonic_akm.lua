@@ -3,7 +3,7 @@ AddCSLuaFile()
 SWEP.Base = "plutonic_base"
 
 SWEP.PrintName = "AKM"
-SWEP.Category = "Landis: Guns"
+SWEP.Category = "Plutonic";
 
 SWEP.Spawnable = true
 SWEP.AdminOnly = false
@@ -50,6 +50,7 @@ Plutonic.AddWeaponSound = function(name, path, type, volume, pitch)
 	})
 end
 
+-- These are sounds from the model below, you'll have to tear open the model to actually get them.
 
 Plutonic.AddWeaponSound(pref .. ".Fp", path .. "akm_fp.wav", "GunShot")
 Plutonic.AddWeaponSound(pref .. ".FpSilenced", path .. "akm_fp_silenced.wav", "GunShotSilenced")
@@ -63,7 +64,7 @@ Plutonic.AddWeaponSound(pref .. ".MagoutRattle", path .. "handling/ak74_magout_r
 Plutonic.AddWeaponSound(pref .. ".ROF", {path .. "handling/ak74_fireselect_1.wav", path .. "handling/ak74_fireselect_2.wav"})
 Plutonic.AddWeaponSound(pref .. ".Rattle", path .. "handling/ak74_rattle.wav")
 
-SWEP.Primary.Sound = Sound(pref .. ".Fp")
+SWEP.Primary.Sound = Sound(pref .. ".Fp") -- Please never use a sound path in here, the sound gets buggy. Please use sound.Add examples above.
 SWEP.Primary.Sound_World = Sound("Weapon_AKM.NPC_Fire")
 SWEP.Primary.Recoil = .99 -- base recoil value, SWEP.Spread mods can change this
 SWEP.Primary.MaxRecoil = 6
@@ -72,7 +73,7 @@ SWEP.Primary.Damage = 15.5
 SWEP.Primary.PenetrationScale = 1.68
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Cone = 0.025
-SWEP.Primary.Delay = Plutonic.FireRate.RPM(600)
+SWEP.Primary.Delay = Plutonic.FireRate.RPM(600) -- Rounds Per Minute, (RPM) can also use Rounds Per Second (RPS)
 SWEP.Primary.Piercing = true
 
 SWEP.Primary.RecoilUp = 0.5
@@ -123,27 +124,20 @@ SWEP.Reverb.Primary.OutdoorEnabled = true
 SWEP.Reverb.Primary.Outdoor = Sound("weapons/tfa_csgo/ak47/ak47-1-distant.wav")
 SWEP.Reverb.Primary.OutdoorRange = 50000
 
-local ShootAnims = {
-	"shoot1",
-	"shoot2",
-	"shoot3"
-}
-
 SWEP.PrimaryFireSequence =nil
 
-SWEP.MuzzleEffect = "muzzleflash_3"
+SWEP.MuzzleEffect = "muzzleflash_3" -- Muzzleflash that is shown, see lua/autorun/plutonic_init.lua line 29 for more information
 SWEP.MuzzleFlashAttachment = "muzzle_supp"
 
-SWEP.LoweredPos = Vector(2.119, .4, 1.1)
+SWEP.LoweredPos = Vector(2.119, .4, 1.1) -- Positon/Angle that the SWEP is moved into while running. This disables the ability to shoot 
 SWEP.LoweredAng = Angle(-12.7, 29.7, -5.9)
-
 SWEP.LoweredMidPos = Vector(2.119,-1.921,.8)
 SWEP.LoweredMidAng = Angle(-1.7, 18.7, 2.9)
 
 SWEP.LowerAngles = Angle(23, -9, -2.4)
 SWEP.LowerPos = Vector(-2, -8.6, -3)
 
-SWEP.CenteredPos = Vector(-3.41, 2.22,  -4.58)
+SWEP.CenteredPos = Vector(-3.41, 2.22,  -4.58) -- Centered Positon for when plutonic_centered is active
 SWEP.CenteredAng = Angle(2.92,0, 0)
 
 SWEP.UseSprintSequence = false
@@ -232,7 +226,7 @@ sound.Add({
 	pitch = {95, 105}
 })
 SWEP.ReloadProceduralCameraFrac = .4
-SWEP.DoEmptyReloadAnim = true
+SWEP.DoEmptyReloadAnim = true -- Empty reload animation, if there is no empty reload animation on a weapon, there will be no reload animation making the reload instant.
 
 function SWEP:GetReloadAnimation(pos, ang, t)
 	local vm = self.Owner:GetViewModel()

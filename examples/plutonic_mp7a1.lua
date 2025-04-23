@@ -3,7 +3,7 @@ AddCSLuaFile()
 SWEP.Base = "plutonic_base"
 
 SWEP.PrintName = "MP7A1"
-SWEP.Category = "Landis: Guns"
+SWEP.Category = "Plutonic";
 SWEP.UseHands = true
 SWEP.Spawnable = true
 SWEP.AdminOnly = false
@@ -71,7 +71,7 @@ sound.Add({
 		")weapons/mp7/mp7_suppressed_tp.wav"
 	}
 })
-SWEP.Primary.Sound =  Sound("Weapon_SMG1.FireSound")
+SWEP.Primary.Sound =  Sound("Weapon_SMG1.FireSound") -- Please never use a sound path in here, the sound gets buggy. Please use sound.Add examples above.
 SWEP.Primary.Sound_World = Sound("Weapon_SMG1.FireSoundW")
 
 SWEP.Primary.Recoil = 0.23 -- base recoil value, SWEP.Spread mods can change this
@@ -80,7 +80,7 @@ SWEP.IronsightsFireActivity = ACT_VM_PRIMARYATTACK_1
 SWEP.Primary.Damage = 10
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Cone = 0.028
-SWEP.Primary.Delay = Plutonic.FireRate.RPM(870)
+SWEP.Primary.Delay = Plutonic.FireRate.RPM(870) -- Rounds Per Minute, (RPM) can also use Rounds Per Second (RPS)
 SWEP.Primary.Shell = "ShellEject"
 SWEP.Primary.ShellScale = 1.5
 SWEP.Primary.ShellAttachment = 2
@@ -144,13 +144,13 @@ SWEP.IronsightsAng_C79 = Angle(0, 0, 0)
 SWEP.IronsightsSensitivity = 0.8
 SWEP.IronsightsCrosshair = false
 SWEP.IronsightsRecoilVisualMultiplier = 1
-SWEP.BlowbackPos         = Vector(0, -0, -0.0) -- Vector to move bone <or root> relative to bone <or view> orientation.
+SWEP.BlowbackPos         = Vector(0, -0, -0.0) -- Vector to move bone <or root> relative to bone <or view> orientation while firing.
 SWEP.BlowbackAngle          = Angle(0, 0, 0)
 
-SWEP.CenteredPos = Vector(-5.5, -4, -1.65)
+SWEP.CenteredPos = Vector(-5.5, -4, -1.65) -- Centered Positon for when plutonic_centered is active
 SWEP.CenteredAng = Angle(0.472, 0.017, 0)
 
-SWEP.MuzzleEffect = "muzzleflash_smg"
+SWEP.MuzzleEffect = "muzzleflash_smg" -- Muzzleflash that is shown, see lua/autorun/plutonic_init.lua line 29 for more information
 SWEP.MuzzleAttachment = "muzzle"
 
 SWEP.LowerPos = Vector(2.72, 0, 0.6)

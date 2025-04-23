@@ -1,5 +1,33 @@
---      Copyright (c) 2022-2023, sophie S. All rights reserved      --
--- Plutonic is a project built for Landis Games. --
+/**************************************************************************/
+/*  client/sound.lua													  */
+/**************************************************************************/
+/*                      This file is a part of PLUTONIC                   */
+/*                              (c) 2022-2023                             */
+/*                  Written by Sophie (github.com/sophfee)                */
+/**************************************************************************/
+/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)         */
+/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)        */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+-- This is an older viewmodel, merged this with the newer one. Personally I like this one the most. Give's plutonic a nice feel. - FizzySodaaa (again)
 SWEP.CustomEvents = SWEP.CustomEvents or {};
 SWEP.ViewModelPos = Vector(0, 0, 0);
 SWEP.ViewModelAngle = Angle(0, 0, 0);
@@ -7,10 +35,10 @@ SWEP.BarrelLength = 6;
 SWEP.VMDeltaX = 0;
 SWEP.VMDeltaY = 0;
 SWEP.VMRoll = 0;
-SWEP.VMRecoilPos = Vector(0, 0, 0);
-SWEP.VMRecoilAng = Angle(0, 0, 0);
-SWEP.VMOffsetPos = Vector(0, 0, 0);
-SWEP.VMOffsetAng = Angle(0, 0, 0);
+SWEP.VMRecoilPos = Vector(0, 0, 0)
+SWEP.VMRecoilAng = Angle(0, 0, 0)
+SWEP.VMOffsetPos = Vector(0, 0, 0)
+SWEP.VMOffsetAng = Angle(0, 0, 0)
 SWEP.Primary.FirePower = 1;
 SWEP.c_alpha = 0;
 SWEP.c_lang = Angle(0, 0, 0);
@@ -18,7 +46,6 @@ SWEP.c_lpos = Vector(0, 0, 0);
 SWEP.c_oxc = 0;
 SWEP.c_oxq = 0;
 SWEP.c_oyq = 0;
-SWEP.c_och = 0;
 local math = math;
 local render = render;
 local reticule = Material("models/weapons/insurgency_sandstorm/ins2_sandstorm/kobra_reticle");
@@ -38,7 +65,6 @@ local lerpVector = LerpVector;
 local approach = math.Approach;
 local easeOutQuad = Plutonic.Ease.OutQuad;
 local easeOutCirc = Plutonic.Ease.OutCirc;
-local easeInQuad = Plutonic.Ease.InQuad;
 local VECTOR_ZERO = vec(0, 0, 0);
 local ANGLE_ZERO = Angle(0, 0, 0);
 function SWEP:PreDrawViewModel(vm)
@@ -47,10 +73,107 @@ function SWEP:PreDrawViewModel(vm)
 		self.CustomMatSetup = true;
 	end
 
-	if self.scopedIn then return self.scopedIn; end
+	if Plutonic.Framework.Overdraw then return; end
+	local drawnNames = {};
+	self.EquippedAttachments = self.EquippedAttachments or {};
+	self.AttachmentEntCache = self.AttachmentEntCache or {};
+	for attName, _ in pairs(self.EquippedAttachments) do
+		local attData = self.Attachments[attName];
+		if not attData then continue; end
+		local c = attData.Cosmetic;
+		local att = self.AttachmentEntCache[attName];
+		if not IsValid(att) then
+			if Plutonic.Behaviors[attData.Behavior] and Plutonic.Behaviors[attData.Behavior].onCreate then
+				att = Plutonic.Behaviors[attData.Behavior].onCreate(self, vm, attData);
+				self.AttachmentEntCache[attName] = att;
+			else
+				att = ClientsideModel(c.Model, RENDERGROUP_VIEWMODEL);
+				if c.ParentToAttachment then
+					local attTo = self.AttachmentEntCache[c.ParentToAttachment];
+					if not IsValid(attTo) then continue; end
+					att:SetParent(attTo);
+				else
+					att:SetParent(vm);
+				end
+				att:SetNoDraw(true);
+				att:AddEffects(EF_BONEMERGE);
+				if c.Scale then
+					if c.BoneScale then
+						att:ManipulateBoneScale(0, Vector(c.Scale, c.Scale, c.Scale));
+					else
+						att:SetModelScale(c.Scale);
+					end
+				end
+
+				self.AttachmentEntCache[attName] = att;
+			end
+		end
+
+		local bone = vm:LookupBone(c.Bone);
+		if not bone then continue; end
+		local m = vm:GetBoneMatrix(bone);
+		if not m then continue; end
+		local pos = m:GetTranslation();
+		local ang = m:GetAngles();
+		pos = pos + ang:Forward() * c.Pos.x;
+		pos = pos + ang:Right() * c.Pos.y;
+		pos = pos + ang:Up() * c.Pos.z;
+		att:SetPos(pos);
+		ang:RotateAroundAxis(ang:Up(), c.Ang.y);
+		ang:RotateAroundAxis(ang:Right(), c.Ang.p);
+		ang:RotateAroundAxis(ang:Forward(), c.Ang.r);
+		att:SetAngles(ang);
+		if attData.RenderOverride then
+			attData.RenderOverride(self, vm, att);
+		end
+		drawnNames[attName] = true;
+		if Plutonic.Behaviors[attData.Behavior] and Plutonic.Behaviors[attData.Behavior].onFrame then Plutonic.Behaviors[attData.Behavior].onFrame(self, vm, attData, att); end
+	end
+
+	for name, csEnt in pairs(self.AttachmentEntCache) do
+		if not drawnNames[name] then
+			csEnt:Remove();
+		end
+	end
 end
 
-function SWEP:ViewModelDrawn()
+function SWEP:InitRT()
+	self.ScopeTex = Material("ph_scope/ph_scope_lens3");
+	self.ScopeRenderTarget = GetRenderTarget("plutonic_scope_rt", 512, 512, true);
+	self.ScopeRenderMaterial = CreateMaterial(
+		"plutonic_scope_hd",
+		"UnlitGeneric",
+		{
+			["$model"] = 1,
+			["$basetexture"] = self.ScopeRenderTarget:GetName(),
+			["$phong"] = 1,
+			["$phongexponent"] = 128,
+			["$rimlight"] = 1,
+			["$rimlightexponent"] = 32,
+			["$rimlightboost"] = 128
+		}
+	);
+
+	local material = Material("!plutonic_scope_hd");
+	material:SetTexture("$basetexture", self.ScopeRenderTarget);
+	material:SetInt("$phong", 1);
+	material:SetFloat("$phongexponent", 128);
+	material:SetFloat("$pp_colour_addr", 0);
+	material:SetFloat("$pp_colour_addg", 0);
+	material:SetFloat("$pp_colour_addb", 0);
+	material:SetFloat("$pp_colour_mulr", 0);
+	material:SetFloat("$pp_colour_mulg", 0);
+	material:SetFloat("$pp_colour_mulb", 0);
+	material:SetFloat("$pp_colour_brightness", 0);
+	material:SetInt("$rimlight", 1);
+	material:SetFloat("$rimlightexponent", 20);
+	material:SetFloat("$rimlightboost", 100);
+	material:SetFloat("$selfillum", 0);
+	material:Recompute();
+end
+
+function SWEP:ViewModelDrawn(flags)
+	self.Owner:GetHands():Draw();
 	if Plutonic.Framework.Overdraw then return; end
 	local vm = self:GetOwner():GetViewModel();
 	if not IsValid(vm) then return; end
@@ -103,20 +226,8 @@ function SWEP:ViewModelDrawn()
 		end
 
 		drawnNames[attName] = true;
-		if attData.Behavior == "1x_Sight" then
-			Plutonic.Framework.Mask(att);
-			local rpos = attData.Reticule.Pos;
-			pos, ang = att:GetPos(), att:GetAngles();
-			ang:RotateAroundAxis(ang:Forward(), -0);
-			ang:RotateAroundAxis(ang:Up(), -90);
-			pos = pos + ang:Forward() * -rpos.x;
-			pos = pos + ang:Right() * rpos.y;
-			pos = pos + ang:Up() * rpos.z;
-			local size = attData.Reticule.Size or 32;
-			render.SetMaterial(attData.Reticule.Material or reticule);
-			render.DrawQuadEasy(pos, ang:Forward(), size, size, attData.Reticule.Color or color_white, ang.r);
-			--render.DrawSprite(pos, size, size, color_white)
-			Plutonic.Framework.UnMask();
+		if Plutonic.Behaviors[attData.Behavior] and Plutonic.Behaviors[attData.Behavior].onFrame then
+			Plutonic.Behaviors[attData.Behavior].onFrame(self, vm, attData, att);
 		end
 	end
 
@@ -148,28 +259,16 @@ end
 function SWEP:PostRender()
 	self:DoWallLeanThink();
 	local dx = self.VMDeltaX or 0;
-	self.LastFrame_VMDeltaX = self.LastFrame_VMDeltaX  or dx;
 	local dy = self.VMDeltaY or 0;
-	self.LastFrame_VMDeltaY = self.LastFrame_VMDeltaY or dy;
 	local oxc_a = min(abs(dx) / 8, 1);
-	local oxc = easeOutQuad(oxc_a) * clamp(dx / -9, -1., 1.);
+	local oxc = easeOutQuad(oxc_a) * clamp(dx / -4, -.5, .5);
 	self.c_oxc = lerp(Frametime() * 8, self.c_oxc or 0, oxc);
 	local oxq_a = min(abs(dx) / 16, 1);
 	local oxq = easeOutCirc(1 - oxq_a) * clamp(dx / 16, -.5, .5); -- Plutonic.Ease.OutQuad(min(abs(self.VMDeltaX) / 8, 1)) * clamp(self.VMDeltaX, -8, 8)
 	self.c_oxq = lerp(Frametime() * 12, self.c_oxq or 0, oxq);
-	local oyq_a = min(abs(dy) / 16, 1);
-	local oyq = easeInQuad(oyq_a) * clamp(dy, -1, 1);
+	local oyq_a = min(abs(dy) / 1, 1);
+	local oyq = easeOutQuad(oyq_a) * clamp(dy, -1, 1);
 	self.c_oyq = lerp(Frametime() * 8, self.c_oyq or 0, oyq);
-
-	-- och = amount of change, smoothed back to 0
-	self.och = self.och or 0;
-	self.och = self.och + abs(self.LastFrame_VMDeltaX - dx) / 20;
-	local och_a = lerp(Frametime() * 5, self.och or 0, 0);
-	self.och = och_a;
-
-	local och = lerp(Frametime() * 11, self.c_och or 0, self.och);
-	self.c_och = och;
-
 	self.Ironsights = self:GetIronsights();
 	self._sprinting = self._sprinting or false;
 	local sprinting = self:IsSprinting();
@@ -181,7 +280,7 @@ function SWEP:PostRender()
 	end
 
 	self.VMSprint = lerp(Frametime() * 4, self.VMSprint or 0, sprinting and 1 or 0);
-	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 1.7);
+	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 1.8);
 	local tr = util.TraceLine(
 		{
 			start = self:GetOwner():GetShootPos(),
@@ -340,10 +439,6 @@ function SWEP:DoSprint(pos, ang)
 	return pos, ang;
 end
 
-function sign(number)
-    return number > 0 and 1 or (number == 0 and 0 or -1)
-end
-
 lerpSpeed = 0;
 local WalkingTime = 0;
 function SWEP:DoWalkBob(pos, ang)
@@ -353,7 +448,7 @@ function SWEP:DoWalkBob(pos, ang)
 		WalkingTime = WalkingTime + FrameTime() * 2;
 	end
 
-	local mv = clamp(self:GetOwner():GetVelocity():Length2D() / 250, 0, 1.0);
+	local mv = clamp(self:GetOwner():GetVelocity():Length2D() / 200, 0, 1);
 	if self:GetIronsights() then
 		mv = mv * 0.25;
 	end
@@ -369,54 +464,27 @@ function SWEP:DoWalkBob(pos, ang)
 			modif = 0.7;
 		end
 
-		local sin126 = sin(rt * 12.6);
-		local cos126 = cos(rt * 12.6);
-
-		local sprintSwayBob = math.pow(cos126, 2);
-
-		local sn0 = sin126 * mv;
-		local cs0 = cos126 * mv;
+		local sn0 = sin(rt * 12.6) * mv;
+		local cs0 = cos(rt * 12.6) * mv;
 		local d = -sin(rt * 25.2);
-		local baab = sin(rt * 25.2) * cos(rt * 6.3) * -5.6;
-		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(
-			pos,
-			ang,
-			Vector(10, 0, -4),
-			Vector(abs(sn0) * -.1, sn0 * 1.6, -(abs(sprintSwayBob) * .7145)) * modif,
-			Angle(d * 1 + (abs(sn0) * 2.8), sn0 * -3.8, baab) * modif
-		);
+		local ب = sin(rt * 25.2) * cos(rt * 6.3) * -5.6;
+		pos0, ang0 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(-9, -2, -3), Vector(d * -.1, sn0 * -.6, -(abs(cs0) * .7145) - 0.2) * modif, Angle(d * -1 + (abs(sn0) * -.8), sn0 * -2.8, ب) * modif);
 	end
 
 	local pos1, ang1 = pos + Vector(), ang + Angle();
 	do
-		mv = min(mv, .5)
-		local sin84 = sin(rt * 8.4);
-		local sin42 = sin(rt * 4.2);
-		local sin21 = sin(rt * 2.1);
-		local cos126 = cos(rt * 12.6);
-		local cos84 = cos(rt * 8.4);
-		local cos42 = cos(rt * 4.2);
-		local cos21 = cos(rt * 2.1);
-		local sn1 = ((sin84*sin84)*sign(sin84)) * mv;
-		local sn2 = sin42 * mv;
-		local sz3 = cos84 - cos126 * .079;
-		local cs2 = (cos84*cos84)*sign(cos84);
-		local baab = cos(rt * 2.1)--sin(rt * 12.6) * cos(rt * 3.15) * (3 * mv);
-		local upDn = math.pow(sn1, 3) * abs(sin84);
-		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(
-			pos,
-			ang,
-			Vector(9, -2, -3),
-
-			Vector(-0, sn1 * .09 - (sn2 * .2 * mv), abs((sin84-cos84)*mv)*.8),
-			Angle((abs(upDn) * 7.2 * mv) + (cs2 * 1.39 * mv), (sn1-sz3) * -3.2 * mv, baab)
-		);
+		local sn1 = sin(rt * 8.4) * mv;
+		local sn2 = sin(rt * 4.2);
+		local sz3 = cos(rt * 8.4) * cos(rt * 12.6) * .079;
+		local cs2 = abs(cos(rt * 4.2));
+		local ب = sin(rt * 25.2) * cos(rt * 6.3) * (3 * mv);
+		pos1, ang1 = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(-9, -2, -3), Vector(-0, sn1 * -.39 + (sn2 * -1.2 * mv), sz3 * mv - (mv * .5)), Angle((cs2 * 2.75 * mv) + (cs2 * -3.39 * mv), sn2 * -5.2 * mv, ب));
 	end
 
 	local interp = Plutonic.Ease.InOutQuart(self.VMSprint);
 	pos, ang = lerpVector(interp, pos1, pos0), lerpAngle(interp, ang1, ang0);
 	if not self:IsSprinting() then
-		--ang:RotateAroundAxis(ang:Forward(), cos(rt * 16.8) * mv * 1.1);
+		ang:RotateAroundAxis(ang:Forward(), cos(rt * 16.8) * mv * .1);
 	end
 
 	return pos, ang;
@@ -534,20 +602,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local oxc = (self.c_oxc or 0) * 8;
 	local oxq = (self.c_oxq or 0) * 8;
 	local oyq = self.c_oyq or 0;
-	local och = self.c_och or 0;
-	local ohfh = math.pow(self.c_och or 0, .40);
-	ohfh = ohfh * ohfh;
-	
-	local clampoch = self:GetIronsights() and 4 or 12;
-	local minoch = clamp(och, -clampoch, clampoch)
-	--oyq = oyq + (cos(Realtime() * 8.2) * minoch * .01552);
-	--oxq = oxq + (sin(Realtime() * 16.4) * minoch * .01552);
-	--degRoll = degRoll + (cos(Realtime() * 16.4) * minoch * .02);
-
-	local offsetPos = Vector(abs(oxc) * .031, oxc * .5 - oxq * -1.3 , oyq * 3.25 + (abs(oxq) * -0.01 + abs(oxc) * .07)); --[[FORWARD]] --[[RIGHT]] --oxq * -.05, --[[UP]] --oyq * -.05
-	local offsetAng = Angle(oyq * -2.0 - degPitch, (oxq * -.2) + (oxc * -.06), -degRoll + (oxc * .1));
+	local offsetPos = Vector(0, oxc * -.8 - oxq * 1 - degRoll * .0625, oyq * .25 - abs(degRoll) * .0925 + (abs(oxq) * -.1 + abs(oxc) * .07)); --[[FORWARD]] --[[RIGHT]] --oxq * -.05, --[[UP]] --oyq * -.05]]
+	local offsetAng = Angle(-oyq + degPitch, oxq - (oxc * 2.164), (oxq * -2.4) - degRoll + (oxc * 1.1));
 	local yofof = lerp(self.VMIronsights, -3, 0);
-	pos, ang = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(9, 4, 0), offsetPos, offsetAng);
+	pos, ang = Plutonic.Framework.RotateAroundPoint(pos, ang, Vector(9, -2.5, yofof), offsetPos, offsetAng);
 	self.PointOrigin = xsn;
 	pos, ang = self:DoCrouch(pos, ang);
 	pos, ang = self:DoBlocked(pos, ang);
@@ -605,13 +663,8 @@ function SWEP:DrawHoloSight(vm_pos, vm_ang, att)
 	print("[Plutonic] DrawHoloSight is deprecated!");
 end
 
-Plutonic.Hooks.Add("PostDrawPlayerHands", function() end);
 function SWEP:ProceduralRecoil(force)
-	self.lastshot = CurTime();
-	if self:GetIronsights() then
-		force = force * 0.08;
-	end
-
+	if self:GetIronsights() then force = force * 0.08 end
 	force = force;
 	local rPos = self.BlowbackPos + Vector();
 	local rAng = self.BlowbackAngle + Angle();
@@ -621,7 +674,7 @@ function SWEP:ProceduralRecoil(force)
 	local yawKnock = math.Rand(-0.6, 0.6) * force;
 	rAng:RotateAroundAxis(rAng:Up(), yawKnock);
 	rPos = rPos + (rAng:Right() * (yawKnock / 2));
-	local rollKnock = math.Rand(-2, 2) * force;
+	local rollKnock = math.Rand(-4, 2) * force;
 	rAng:RotateAroundAxis(rAng:Forward(), rollKnock);
 	rPos = rPos + (rAng:Right() * (rollKnock / 2));
 	rPos = rPos - (rAng:Forward() * math.Rand(4, 6)) * force;
@@ -634,27 +687,41 @@ end
 SWEP.CAM_ReloadAlp = 0;
 SWEP.CAM_ReloadAct = 0;
 function SWEP:CalcView(ply, pos, ang, fov)
-	if not Plutonic.Framework.GetControl_Bool("use_anim_cam", true) then return; end
-	if self:GetReloading() then
-		local vm = self:GetOwner():GetViewModel();
-		local n_ang = nil;
-		-- aim
-		if not self.GetReloadAnimation then
-			local aim = vm:GetAttachment(self.ReloadAttach or 2);
-			if aim then
-				n_ang = (aim.Pos - pos):Angle();
+
+	local m = Matrix();
+	m:SetAngles(ang);
+	m:SetTranslation(pos);
+
+	m:Translate(self.ViewPunchPlutonicP or VECTOR_ZERO);
+	m:Rotate(self.ViewPunchPlutonicA or ANGLE_ZERO);
+
+	pos = m:GetTranslation();
+	ang = m:GetAngles();
+
+	if Plutonic.Framework.GetControl_Bool("use_anim_cam", true) then
+		if self:GetReloading() then
+			local vm = self:GetOwner():GetViewModel();
+			local n_ang = nil;
+			-- aim
+			if not self.GetReloadAnimation then
+				local aim = vm:GetAttachment(self.ReloadAttach or 2);
+				if aim then
+					n_ang = (aim.Pos - pos):Angle();
+				end
+			else
+				n_ang = self:GetReloadAnimation(pos, ang, self.CAM_ReloadAlp);
 			end
+
+			self.CAM_ReloadAlp = Lerp(Frametime(), self.CAM_ReloadAlp, self.ReloadProceduralCameraFrac or .1);
+
+			return pos, lerpAngle(self.CAM_ReloadAlp * ((vm:SequenceDuration() - (Curtime() - self.CAM_ReloadAct)) / vm:SequenceDuration()), ang, n_ang), fov;
 		else
-			n_ang = self:GetReloadAnimation(pos, ang, self.CAM_ReloadAlp);
-		end
+			self.CAM_ReloadAlp = 0;
+			self.CAM_ReloadAct = Curtime();
 
-		self.CAM_ReloadAlp = Lerp(Frametime(), self.CAM_ReloadAlp, self.ReloadProceduralCameraFrac or .1);
-
-		return pos, lerpAngle(self.CAM_ReloadAlp * ((vm:SequenceDuration() - (Curtime() - self.CAM_ReloadAct)) / vm:SequenceDuration()), ang, n_ang), fov;
-	else
-		self.CAM_ReloadAlp = 0;
-		self.CAM_ReloadAct = Curtime();
-
-		return pos, ang, fov;
+			return pos, ang, fov;
+		end;
 	end
+
+	return pos, ang, fov;
 end

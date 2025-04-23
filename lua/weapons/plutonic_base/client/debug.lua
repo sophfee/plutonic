@@ -1,93 +1,77 @@
---      Copyright (c) 2022-2023, sophie S. All rights reserved      --
--- Plutonic is a project built for Landis Games. --
-CreateClientConVar("plutonic_debug", "0", false, false)
-CreateClientConVar("plutonic_centered", "0", true, false, "Centers the viewmodel, DOOM style.", 0, 1)
-surface.CreateFont(
-	"PlutonicDebugSimple",
-	{
-		font = "Segoe UI Black",
-		size = 14,
-		weight = 1000,
-		antialias = true,
-		shadow = true
-	}
-)
-
-surface.CreateFont(
-	"PlutonicDebugUnSimple",
-	{
-		font = "Segoe UI Black",
-		size = 32,
-		weight = 1000,
-		antialias = true,
-		shadow = true
-	}
-)
+/**************************************************************************/
+/*  client/debug.lua											          s*/
+/**************************************************************************/
+/*                      This file is a part of PLUTONIC                   */
+/*                              (c) 2022-2023                             */
+/*                  Written by Sophie (github.com/sophfee)                */
+/**************************************************************************/
+/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)         */
+/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)        */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 local debugCol = Color(12, 120, 255, 255)
 local debugValue = Color(200, 200, 200, 255)
 local ironFade = ironFade or 0
 local GetConVar = GetConVar
 local LocalPlayer = LocalPlayer
+
+local mins = {}
+local maxs = {}
+local prev = {}
+local changes = {}
+
 function SWEP:DrawHUD()
-	local debugMode = GetConVar("plutonic_debug")
-	if Singularity_DevHud or debugMode:GetBool() then
-		local scrW = 68
-		local scrH = 292
-		local dev = GetConVar("developer"):GetInt()
-		if dev == 0 then
-			LocalPlayer():ConCommand("developer 1")
-		end
 
-		surface.SetFont("PlutonicDebugUnSimple")
-		surface.SetTextColor(debugCol)
-		surface.SetTextPos(64, 96)
-		surface.DrawText("[PLUTONIC v1.0.0]")
-		surface.SetFont("PlutonicDebugSimple")
-		surface.SetTextPos(64, 128)
-		surface.DrawText("Debug Mode Enabled!")
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) - 0)
-		surface.DrawText((self.PrintName or "PrintName ERROR") .. " [BDMG: " .. (self.Primary.Damage or "?") .. ", RPM: " .. (60 / (self.Primary.Delay or 0)) .. ", SHOTS: " .. (self.Primary.NumShots or "?") .. "]")
-		surface.SetTextColor(debugCol)
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 15)
-		surface.DrawText("Recoil: ")
-		surface.SetTextColor(debugValue)
-		surface.DrawText(tostring(math.Round(self.Recoil or 0, 4)))
-		surface.SetTextColor(debugCol)
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 30)
-		surface.DrawText("Spread: ")
-		surface.SetTextColor(debugValue)
-		surface.DrawText(tostring(math.Round(self.LastSpread or 0, 4)))
-		--surface.DrawText("Last Spread: "..math.Round(self.LastSpread or "[SHOOT WEAPON]", 4))
-		if self.LastSpread then
-			surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 45)
-			surface.SetTextColor(debugCol)
-			surface.DrawText("Cone: ")
-			surface.SetTextColor(debugValue)
-			local perc = self.LastSpread / self.Primary.Cone
-			surface.DrawText(math.floor(perc * 100) .. "% of Base Cone")
-			--
-		end
+	if not Plutonic.DebugConvar:GetBool() then
+		return
+	end
 
-		local ns = (self:GetNextPrimaryFire() or 0) - CurTime()
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 105)
-		surface.DrawText("Next Shot: " .. (ns > 0 and ns or "CLEAR"))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 120)
-		surface.DrawText("VMBobCycle Oscillation: " .. tostring(self.VMBobCycle))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 135)
-		surface.DrawText("VMBetterVis Oscillation: " .. math.Round(tostring(self.VMRDBEF), 8))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 150)
-		surface.DrawText("VMBlocked: " .. tostring(self.VMBlocked))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 165)
-		surface.DrawText("VMVel: " .. tostring(math.Round(self.VMVel, 4)))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 180)
-		surface.DrawText("VMIronsightsFraction: " .. tostring(self.VMIronsights))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 195)
-		surface.DrawText("VMSprint: " .. tostring(self.VMSprint))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 210)
-		surface.DrawText("Attachments: " .. table.concat(self.AttachmentEntCache, ", "))
-		surface.SetTextPos((scrW / 2) + 30, (scrH / 2) + 225)
-		surface.DrawText("VMRecoilAng: " .. tostring(self.VMRecoilAng))
+	--local line = 4
+
+	Plutonic:DebugText("Plutonic", "Debug", 8, true)
+	Plutonic:DebugText("Class Name", self.ClassName, 10)
+	Plutonic:DebugText("Damage", self.Primary.Damage, 11)
+	Plutonic:DebugText("Recoil", self.Primary.Recoil, 12)
+	Plutonic:DebugText("RT", "Debug", 14, true)
+	Plutonic:DebugText("rendertarget", tostring(self.ScopeRenderTarget), 16)
+	Plutonic:DebugText("scope", tostring(self.ScopeRenderMaterial), 17)
+	Plutonic:DebugText("drawing", tostring(self.VMIronsights >= 0.250), 18)
+	Plutonic:DebugText("attachments", tostring(table.ToString(self.EquippedAttachments, nil, false)), 19)
+	
+	local line = 21
+	for dgn, dgv in pairs(Plutonic.StoredDebugData or {}) do
+		prev[dgn] = prev[dgn] or 0
+		changes[dgn] = changes[dgn] or 0
+		local change = math.abs(dgv - prev[dgn])
+		changes[dgn] = math.max(changes[dgn], change)
+		prev[dgn] = dgv
+
+		mins[dgn] = math.min(mins[dgn] or 0, dgv)
+		maxs[dgn] = math.max(maxs[dgn] or 0, dgv)
+
+		Plutonic:DebugText(dgn .. " Value", dgv, line)
+		Plutonic:DebugText("Greastest Change Change", changes[dgn], line + 1, false)
+		--Plutonic:DebugText(dgn .. " Maxs", maxs[dgn], line + 2, false)
+		line = line + 3
 	end
 
 	if self.Attachments then
@@ -107,7 +91,6 @@ function SWEP:DrawHUD()
 
 		return
 	end
-
 	local scrw = ScrW()
 	local scrh = ScrH()
 	local ft = FrameTime()
@@ -162,7 +145,7 @@ end
 
 hook.Add(
 	"ShouldDrawHUDBox",
-	"PlutonicSingularityHUDStopDrawing",
+	"PlutonicHUDStopDrawing",
 	function()
 		local v = tonumber(plutonic_debug_StopHUDDraw or 1)
 		plutonic_debug_StopHUDDraw = false
@@ -181,9 +164,41 @@ concommand.Add(
 	end
 )
 
-concommand.Add(
-	"plutonic_debug_vm_attachments",
-	function(ply, cmd, args)
-		PrintTable(ply:GetViewModel():GetAttachments())
+concommand.Add("plutonic_debug_vm_attachments", function(ply, cmd, args)
+	for k, v in pairs(ply:GetViewModel():GetAttachments()) do
+		print(k, v.name, v.id)
+		local att = ply:GetViewModel():GetAttachment(v.id)
+		local pos, ang = att.Pos, att.Ang
+		pos, ang = WorldToLocal(pos, ang, ply:EyePos(), ply:EyeAngles())
+		print(pos, ang)
 	end
-)
+end)
+
+concommand.Add("plutonic_debug_vm_sequences", function(ply, cmd, args)
+	print("\n--- SEQUENCE RAW DUMP ---")
+	PrintTable(ply:GetViewModel():GetSequenceList())
+
+	print("\n--- ACTIVITY NUM TO SEQUENCE DUMP ---")
+	local vm = ply:GetViewModel()
+	for i = 0, vm:GetSequenceCount() - 1 do
+		local seq = vm:GetSequenceName(i)
+		local act = vm:GetSequenceActivity(i)
+		print(act, seq)
+	end
+
+	print("\n--- SEQUENCE LENGTHS ---")
+	local data = {};
+	local longest_name = 0;
+	for i = 0, vm:GetSequenceCount() - 1 do
+		local seq = vm:GetSequenceName(i)
+		if #seq > longest_name then longest_name = #seq; end
+		local len = vm:SequenceDuration(i);
+		local set = {i, seq, len};
+		table.insert(data, set);
+	end
+
+	for index, d in ipairs(data) do
+		local fml = string.format("%.4f", d[3]);
+		MsgC(d[2], string.rep(" ", longest_name - #d[2] + 1), fml, "\n")    
+	end
+end)

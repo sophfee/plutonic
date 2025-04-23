@@ -1,4 +1,33 @@
--- Separating for my fucking brains sake.
+/**************************************************************************/
+/*	shared/reload.lua											      	  */
+/**************************************************************************/
+/*                      This file is a part of PLUTONIC                   */
+/*                              (c) 2022-2023                             */
+/*                  Written by Sophie (github.com/sophfee)                */
+/**************************************************************************/
+/* Copyright (c) 2022-2023 Sophie S. (https://github.com/sophfee)         */
+/* Copyright (c) 2019-2021 Jake Green (https://github.com/vingard)        */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 function SWEP:CanReload()
 	if self:GetOwner():IsNPC() then return self:Clip1() < self.Primary.ClipSize and not self:GetReloading() and self:GetNextPrimaryFire() < CurTime() end
 	if self:GetReloading() then return end
@@ -37,11 +66,13 @@ function SWEP:Reload()
 
 	self:SetReloading(true)
 	self:SetReloadTime(CurTime() + self:GetOwner():GetViewModel():SequenceDuration())
+    if CLIENT then gui.AddCaption("<I><clr:100,160,170>[Reloading]</clr></I>", 3.0, true) end
 	hook.Run("LongswordWeaponReload", self:GetOwner(), self)
 end
 
 function SWEP:FinishReload()
 	self:SetReloading(false)
+	self.m_bDryFired = false;
 	local amount
 	-- one in the chamber
 	if self.CannotChamber then
@@ -54,6 +85,7 @@ function SWEP:FinishReload()
 		end
 	end
 
+    if CLIENT then gui.AddCaption("<I><clr:100,160,170>[Finished reload]</clr></I>", 3.0, true) end
 	self:SetClip1(self:Clip1() + amount)
 	self:GetOwner():RemoveAmmo(amount, self:GetPrimaryAmmoType())
 end
