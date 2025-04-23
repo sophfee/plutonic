@@ -347,8 +347,8 @@ function SWEP:IsDucked()
 	return (self:GetOwner():KeyDown(IN_DUCK) or self:GetOwner():Crouching()) and not isIronsights;
 end
 
-SWEP.CrouchPos = Vector(.7, -0, -.4);
-SWEP.CrouchAng = Angle(0, 0, -0);
+SWEP.CrouchPos = Vector(.9, -1, -.0);
+SWEP.CrouchAng = Angle(0, 0, -9);
 function SWEP:DoCrouch(pos, ang)
 	self.VMCrouch = self.VMCrouch or 0;
 	local alpha;
