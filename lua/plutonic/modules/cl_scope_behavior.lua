@@ -112,7 +112,7 @@ local mat_ReticuleAxis = CreateMaterial(
     "VertexLitGeneric",
     {
         ["$basetexture"] = tex_shadow:GetTexture("$basetexture"):GetName(),
-        ["$bumpmap"] = tex_glass:GetTexture("$bumpmap"):GetName(),
+        --["$bumpmap"] = tex_glass:GetTexture("$bumpmap"):GetName(),
         ["$translucent"] = 1,
         ["$phong"] = 1,
         ["$phongboost"] = 8,
