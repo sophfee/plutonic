@@ -12,7 +12,7 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=3469217810
 
 # Console Commands
 'plutonic_centered' - Centers the viewmodel, DOOM style.
-'plutonic_lowquality' - Disables muzzleflash dynamic lighting.
+'plutonic_lowquality' - Performance mode, disables muzzleflashes and other stuff.
 'plutonic_no_blur' - Disables ironsight blur.
 'plutonic_debug' - Shows stats and other information on your active weapon.
 'plutonic_debug_vm_attachments' - Prints attachment points on your active weapon.

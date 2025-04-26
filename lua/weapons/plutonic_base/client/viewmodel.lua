@@ -30,7 +30,7 @@
 do
 	local pMeta = FindMetaTable("Player")
 	function pMeta:GetBodyYawDifference()
-	  return 0
+	  return 0 -- just to return anything
 	end
   end
 SWEP.CustomEvents = SWEP.CustomEvents or {};
