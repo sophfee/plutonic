@@ -29,9 +29,6 @@
 --[[************************************************************************]]
 AddCSLuaFile()
 
--- For some weird reason, if you are holding your sprint key while firing. Then fire again after the charge as long as you are holding your sprint key it insta fires.
--- I'll look into it soon - FizzySodaaa 
-
 SWEP.Base = "plutonic_base"
 SWEP.Charged = false
 SWEP.ChargeSound = Sound("")
