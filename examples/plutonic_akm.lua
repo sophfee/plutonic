@@ -1,5 +1,7 @@
 AddCSLuaFile()
 
+-- Model: https://steamcommunity.com/sharedfiles/filedetails/?id=2915506130&searchtext=TFA+AKM
+
 SWEP.Base = "plutonic_base"
 
 SWEP.PrintName = "AKM"
