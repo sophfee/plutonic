@@ -1,5 +1,7 @@
 AddCSLuaFile()
 
+-- Model: https://steamcommunity.com/sharedfiles/filedetails/?id=1243624080&searchtext=TFA+MP7
+
 SWEP.Base = "plutonic_base"
 
 SWEP.PrintName = "MP7A1"
