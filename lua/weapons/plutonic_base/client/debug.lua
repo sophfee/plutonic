@@ -44,9 +44,7 @@ function SWEP:DrawHUD()
 	if not Plutonic.DebugConvar:GetBool() then
 		return
 	end
-
-	--local line = 4
-
+	
 	Plutonic:DebugText("Plutonic", "Debug", 8, true)
 	Plutonic:DebugText("Class Name", self.ClassName, 10)
 	Plutonic:DebugText("Damage", self.Primary.Damage, 11)
@@ -70,7 +68,6 @@ function SWEP:DrawHUD()
 
 		Plutonic:DebugText(dgn .. " Value", dgv, line)
 		Plutonic:DebugText("Greastest Change Change", changes[dgn], line + 1, false)
-		--Plutonic:DebugText(dgn .. " Maxs", maxs[dgn], line + 2, false)
 		line = line + 3
 	end
 
