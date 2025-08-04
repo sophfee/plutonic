@@ -13,7 +13,6 @@ SWEP.CenteredPos = Vector(0, 0, 0);
 SWEP.CenteredAng = Angle(0, 0, 0);
 SWEP.Slot = 4;
 SWEP.SlotPos = 1;
---SWEP.LowerAngles = Angle(15, -10, -20)
 SWEP.CSMuzzleFlashes = false;
 SWEP.Primary.Sound = Sound("WeaponFrag.Roll");
 SWEP.Primary.ImpactSound = Sound("Canister.ImpactHard");
