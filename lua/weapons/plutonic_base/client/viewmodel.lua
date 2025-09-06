@@ -28,11 +28,13 @@
 --[[ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 ]]
 --[[************************************************************************]]
 do
-	local pMeta = FindMetaTable("Player")
-	function pMeta:GetBodyYawDifference()
-	  return 0 -- just to return anything
+	local pMeta = 
+	FindMetaTable("Player")
+	function
+		pMeta:GetBodyYawDifference()
+		return 0
 	end
-  end
+end
 SWEP.CustomEvents = SWEP.CustomEvents or {};
 SWEP.ViewModelPos = Vector(0, 0, 0);
 SWEP.ViewModelAngle = Angle(0, 0, 0);
@@ -77,6 +79,9 @@ local easeInBack = Plutonic.Ease.InBack;
 local easeOutBack = Plutonic.Ease.OutBack;
 local VECTOR_ZERO = vec(0, 0, 0);
 local ANGLE_ZERO = Angle(0, 0, 0);
+
+SWEP.Primary.LoopSound = nil
+
 function SWEP:PreDrawViewModel(vm)
 	if self.CustomMaterial and not self.CustomMatSetup then
 		self:GetOwner():GetViewModel():SetMaterial(self.CustomMaterial);
@@ -324,7 +329,7 @@ function SWEP:PostRender()
 	end
 
 	self.VMSprint = lerp(Frametime() * 2, self.VMSprint or 0, sprinting and 1 or 0);
-	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 1.7);
+	self.VMIronsights = approach(self.VMIronsights or 0, self:GetIronsights() and 1 or 0, FrameTime() * 2.3);
 	local tr = util.TraceLine(
 		{
 			start = self:GetOwner():GetShootPos(),
@@ -402,8 +407,8 @@ function SWEP:IsDucked()
 	return (self:GetOwner():KeyDown(IN_DUCK) or self:GetOwner():Crouching()) and not isIronsights;
 end
 
-SWEP.CrouchPos = Vector(.9, -1, -.0);
-SWEP.CrouchAng = Angle(0, 0, -9);
+SWEP.CrouchPos = Vector(.7, -0, -.4);
+SWEP.CrouchAng = Angle(0, 0, -0);
 function SWEP:DoCrouch(pos, ang)
 	self.VMCrouch = self.VMCrouch or 0;
 	local alpha;
@@ -811,9 +816,9 @@ function SWEP:ProceduralRecoil(force)
 	self.VMRecoilSeed = math.Rand(1000000, 9999999);
 
 	local pl = self.ViewPunchEffects[math.random(1, #self.ViewPunchEffects)];
-	PrintTable(pl);
+	/*PrintTable(pl);
 	print(type(pl))
-	print(type(pl[2]))
+	print(type(pl[2]))*/
 	if isvector(pl.Pos) and isangle(pl.Ang) then
 		self:PL_ViewPunch(pl.Pos, pl.Ang);
 	end
