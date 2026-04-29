@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 SWEP.Base = "plutonic_base_shotgun"
 
-SWEP.PrintName = "SPAS-12"
+SWEP.PrintName = "Shotgun Example"
 SWEP.Category = "Plutonic";
 
 SWEP.Spawnable = true

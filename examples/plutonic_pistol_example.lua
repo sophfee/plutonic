@@ -3,7 +3,7 @@ AddCSLuaFile()
 SWEP.Base = "plutonic_base"
 
 
-SWEP.PrintName = ".357 Magnum"
+SWEP.PrintName = "Pistol Example"
 SWEP.Category = "Plutonic";
 
 SWEP.Spawnable = true

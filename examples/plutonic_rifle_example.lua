@@ -4,7 +4,7 @@ AddCSLuaFile()
 
 SWEP.Base = "plutonic_base"
 
-SWEP.PrintName = "AKM"
+SWEP.PrintName = "Rifle Example"
 SWEP.Category = "Plutonic";
 
 SWEP.Spawnable = true

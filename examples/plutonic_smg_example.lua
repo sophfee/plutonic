@@ -4,7 +4,7 @@ AddCSLuaFile()
 
 SWEP.Base = "plutonic_base"
 
-SWEP.PrintName = "MP7A1"
+SWEP.PrintName = "SMG Example"
 SWEP.Category = "Plutonic";
 SWEP.UseHands = true
 SWEP.Spawnable = true
